@@ -10,6 +10,7 @@ import {
   Label,
 } from "@/components/ui";
 import { toast } from "sonner";
+import { Eye, EyeClosedIcon } from "lucide-react";
 
 type LoginForm = {
   email: string;
@@ -21,15 +22,17 @@ const isDev = process.env.NODE_ENV === "development";
 export default function LoginPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-  const {
-    register,
+  const { 
+    register, 
     handleSubmit,
-    formState: { errors },
+    watch,
+    formState: { errors }, 
   } = useForm<LoginForm>({
     defaultValues: { email: "", password: "" },
   });
-
+  const isPassEntered = watch("password").length > 0 ? true : false;
   const onSubmit = async (data: LoginForm) => {
     try {
       setIsLoading(true);
@@ -55,31 +58,32 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md rounded-lg border bg-white p-8 shadow-sm">
-        <h1 className="mb-6 text-center text-2xl font-semibold">Sign In</h1>
+    <div className="flex min-h-screen items-center justify-center bg-background text-foreground">
+      <div className="w-full max-w-md rounded-lg border border-border bg-card p-8 shadow-sm">
+        <h1 className="mb-6 text-center text-3xl font-semibold text-foreground">Sign In</h1>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           <div>
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email" className="text-foreground text-md">Email</Label>
             <Input
               id="email"
               type="email"
               placeholder="email@example.com"
-              className="mt-2"
+              className="mt-2 bg-input text-foreground border-border"
               {...register("email", { required: "Email is required" })}
             />
             {errors.email && (
-              <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>
+              <p className="mt-1 text-sm text-destructive">{errors.email.message}</p>
             )}
           </div>
 
           <div>
-            <Label htmlFor="password">Password</Label>
-            <Input
+            <Label htmlFor="password" className="text-foreground text-md">Password</Label>
+            <div className="relative">
+              <Input
               id="password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               placeholder="••••••••"
-              className="mt-2"
+              className="mt-2 bg-input text-foreground border-border pr-10"
               {...register("password", {
                 required: "Password is required",
                 minLength: {
@@ -87,13 +91,25 @@ export default function LoginPage() {
                   message: "Password must be at least 8 characters",
                 },
               })}
-            />
+              />
+              {isPassEntered && <button
+                type="button"
+                onClick={() => setShowPassword(prev => !prev)}
+                className="absolute flex items-center inset-y-6.75 space-y-1 right-2 text-muted-foreground cursor-pointer"               >
+                {showPassword ? <EyeClosedIcon /> : <Eye />}
+              </button>}
+            </div>
+                         
             {errors.password && (
-              <p className="mt-1 text-sm text-red-500">{errors.password.message}</p>
+              <p className="mt-1 text-sm text-destructive">{errors.password.message}</p>
             )}
           </div>
 
-          <Button type="submit" className="w-full cursor-pointer" disabled={isLoading}>
+          <Button
+            type="submit"
+            className="w-full cursor-pointer bg-primary text-md text-primary-foreground hover:bg-primary/90"
+            disabled={isLoading}
+          >
             {isLoading ? "Signing in..." : "Sign In"}
           </Button>
         </form>
