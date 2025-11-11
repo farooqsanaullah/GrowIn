@@ -2,7 +2,13 @@ export { Button } from "./button";
 export { Input } from "./input";
 export { Label } from "./label";
 export { Textarea } from "./textarea";
-export { Select } from "./select";
+export { 
+  Select, 
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue 
+} from "./select";
 export { Slider } from "./slider";
 // export { FloatingLabelInput } from "./FloatingLabelInput"
 // export { Checkbox } from "./checkbox";
