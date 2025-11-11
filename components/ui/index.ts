@@ -3,6 +3,8 @@ export { Input } from "./input";
 export { Label } from "./label";
 export { Textarea } from "./textarea";
 export { Select } from "./select";
+export { Slider } from "./slider";
+// export { FloatingLabelInput } from "./FloatingLabelInput"
 // export { Checkbox } from "./checkbox";
 // export { Switch } from "./switch";
 // export { RadioGroup } from "./radio-group";
