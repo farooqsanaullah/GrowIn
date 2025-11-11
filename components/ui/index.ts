@@ -1,10 +1,10 @@
 export { Button } from "./button";
 export { Input } from "./input";
 export { Label } from "./label";
+export { Textarea } from "./textarea";
+export { Select } from "./select";
 // export { Checkbox } from "./checkbox";
 // export { Switch } from "./switch";
-// export { Textarea } from "./textarea";
-// export { Select } from "./select";
 // export { RadioGroup } from "./radio-group";
 // export { Avatar } from "./avatar";
 // export { Card } from "./card";
