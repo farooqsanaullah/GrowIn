@@ -5,16 +5,11 @@ import { useForm, Controller } from "react-hook-form";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Eye, EyeClosedIcon } from "lucide-react";
+import { Eye, EyeClosedIcon, Loader } from "lucide-react";
 import {
   Button,
   Input,
-  Label,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Label
 } from "@/components/ui";
 import Link from "next/link";
 
@@ -104,6 +99,41 @@ export default function SignupPage() {
         </h1>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          {/* Role */}
+          <Controller
+            name="role"
+            control={control}
+            defaultValue="investor"
+            rules={{ required: "Role is required" }}
+            render={({ field }) => (
+              <div className="flex flex-col gap-1">
+                <div className="flex gap-2">
+                  <Button
+                    type="button" // Prevent form submit
+                    variant={field.value === "investor" ? "default" : "outline"}
+                    className="flex-grow cursor-pointer"
+                    onClick={() => field.onChange("investor")}
+                  >
+                    Investor
+                  </Button>
+
+                  <Button
+                    type="button" // Prevent form submit
+                    variant={field.value === "founder" ? "default" : "outline"}
+                    className="flex-grow cursor-pointer"
+                    onClick={() => field.onChange("founder")}
+                  >
+                    Founder
+                  </Button>
+                </div>
+
+                {errors.role && (
+                  <p className="mt-1 text-sm text-destructive">{errors.role.message}</p>
+                )}
+              </div>
+            )}
+          />
+
           {/* Full Name */}
           <div>
             <Label htmlFor="name" className="text-foreground text-md">
@@ -142,32 +172,6 @@ export default function SignupPage() {
               </p>
             )}
           </div>
-
-          {/* Role */}
-          <Controller
-            name="role"
-            control={control}
-            defaultValue="founder"
-            rules={{ required: "Role is required" }}
-            render={({ field }) => (
-              <div>
-                <Label htmlFor="role" className="text-foreground text-md">Role: </Label>
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger className="mt-2 cursor-pointer">
-                    <SelectValue placeholder="Select Role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="founder" className="cursor-pointer">Founder</SelectItem>
-                    <SelectItem value="investor" className="cursor-pointer">Investor</SelectItem>
-                    <SelectItem value="admin" className="cursor-pointer">Admin</SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.role && (
-                  <p className="text-destructive">{errors.role.message}</p>
-                )}
-              </div>
-            )}
-          />
 
           {/* Password */}
           <div>
@@ -265,6 +269,7 @@ export default function SignupPage() {
             )}
           </div>
 
+          {/* SignIn Page Link */}
           <p className="text-sm">
             Already have an account? SignIn{" "}
             <Link
@@ -275,13 +280,22 @@ export default function SignupPage() {
             </Link>
           </p>
 
+          {/* SignUp Button */}
           <Button
             type="submit"
-            className="w-full cursor-pointer bg-primary text-md text-primary-foreground hover:bg-primary/90"
             disabled={isLoading}
+            className="w-full cursor-pointer bg-primary text-md text-primary-foreground hover:bg-primary/90"
           >
-            {isLoading ? "Signing up..." : "Sign Up"}
+            {isLoading ? (
+              <>
+                Signing up
+                <Loader className="animate-spin ml-2" />
+              </>
+            ) : (
+              "Sign Up"
+            )}
           </Button>
+
         </form>
       </div>
     </div>
