@@ -107,7 +107,7 @@ export default function SignupPage() {
         password: data.password,
       });
 
-      router.push("/"); // Redirect after signup
+      router.push("/signin"); // Redirect to signin after signup
     } catch (error) {
       isDev && console.error("Signup error:", error);
       toast.error("Something went wrong");
@@ -169,14 +169,20 @@ export default function SignupPage() {
                 id="userName"
                 type="text"
                 placeholder="John Doe"
-                autoComplete="username"
-                className="mt-2 bg-input text-foreground border-border pr-10"
+                autoComplete="new-username"
+                className={`mt-2 bg-input text-foreground pr-10 border
+                  ${
+                    isAvailable === true && !isChecking
+                      ? "bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
+                      : "border-border"
+                  }`}
                 {...register("userName", { required: "Username is required" })}
               />
               {isChecking && (
                 <Loader className="animate-spin absolute right-2 top-3.5 w-5 h-5 text-muted-foreground" />
               )}
             </div>
+
             {isAvailable === true && !isChecking && (
               <p className="mt-1 text-sm text-success">Username is available.</p>
             )}
