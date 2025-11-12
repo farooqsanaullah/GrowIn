@@ -11,6 +11,7 @@ import {
 } from "@/components/ui";
 import { toast } from "sonner";
 import { Eye, EyeClosedIcon } from "lucide-react";
+import Link from "next/link";
 
 type LoginForm = {
   email: string;
@@ -104,6 +105,8 @@ export default function LoginPage() {
               <p className="mt-1 text-sm text-destructive">{errors.password.message}</p>
             )}
           </div>
+
+          <p className="text-sm">Don't have an account? SignUp <Link className="text-sm underline text-primary hover:text-primary" href={"/signup"}>here</Link></p>
 
           <Button
             type="submit"

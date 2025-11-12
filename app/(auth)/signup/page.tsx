@@ -19,6 +19,7 @@ import {
 } from "@/components/ui";
 
 import { Slider } from "@/components/ui";
+import Link from "next/link";
 
 type SignupForm = {
   name: string;
@@ -349,6 +350,7 @@ export default function SignupPage() {
             )}
           </div>
 
+          <p className="text-sm">Already have an account? SignIn <Link className="text-sm underline text-primary hover:text-primary" href={"/signin"}>here</Link></p>
 
           <Button
             type="submit"
