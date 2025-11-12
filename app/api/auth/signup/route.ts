@@ -11,10 +11,10 @@ export async function POST(req: NextRequest) {
     await connectDB();
 
     const body = await req.json();
-    const { name, email, password, role } = body;
+    const { userName, email, password, role } = body;
 
     // --- Basic validation ---
-    if (!name || !email || !password || !role) return error("Name, email, password, and role are required", 400);
+    if (!userName || !email || !password || !role) return error("userName, email, password, and role are required", 400);
 
     if (!["investor", "founder"].includes(role)) return error("Invalid role", 400);
 
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
 
     // --- Create new user ---
     const newUser = new User({
-      name,
+      userName,
       email,
       password: hashedPassword,
       role,
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
 
     // --- Respond success ---
     return success("[Signup API] User registered successfully", 201, {
-      name,
+      userName,
       email,
       role,
     });

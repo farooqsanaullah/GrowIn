@@ -14,7 +14,7 @@ import {
 import Link from "next/link";
 
 type SignupForm = {
-  name: string;
+  userName: string;
   email: string;
   password: string;
   confirmPassword: string;
@@ -45,7 +45,7 @@ export default function SignupPage() {
     formState: { errors },
   } = useForm<SignupForm>({
     defaultValues: {
-      name: "",
+      userName: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -137,7 +137,7 @@ export default function SignupPage() {
           {/* Full Name */}
           <div>
             <Label htmlFor="name" className="text-foreground text-md">
-              Full Name
+              User Name
             </Label>
             <Input
               id="name"
@@ -145,11 +145,11 @@ export default function SignupPage() {
               autoFocus
               placeholder="John Doe"
               className="mt-2 bg-input text-foreground border-border"
-              {...register("name", { required: "Name is required" })}
+              {...register("userName", { required: "Username is required" })}
             />
-            {errors.name && (
+            {errors.userName && (
               <p className="mt-1 text-sm text-destructive">
-                {errors.name.message}
+                {errors.userName.message}
               </p>
             )}
           </div>
