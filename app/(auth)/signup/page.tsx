@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -36,7 +36,9 @@ export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-
+  const [isChecking, setIsChecking] = useState(false);
+  const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
+  
   const {
     register,
     handleSubmit,
@@ -53,9 +55,32 @@ export default function SignupPage() {
     },
   });
 
+  const userNameValue = watch("userName");
   const passwordValue = watch("password") || "";
   const confirmValue = watch("confirmPassword") || "";
   const { lengthCheck, specialCharCheck, digitCheck } = getPasswordStrength(passwordValue);
+
+  useEffect(() => {
+    if (!userNameValue) {
+      setIsAvailable(null);
+      return;
+    }
+
+    const delayDebounceFn = setTimeout(async () => {
+      try {
+        setIsChecking(true);
+        const res = await fetch(`/api/auth/check-username?username=${encodeURIComponent(userNameValue)}`);
+        const data = await res.json();
+        setIsAvailable(data.available); // expects { available: true/false }
+      } catch (err) {
+        setIsAvailable(null);
+      } finally {
+        setIsChecking(false);
+      }
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(delayDebounceFn); // cleanup previous timeout
+  }, [userNameValue]);
 
   const onSubmit = async (data: SignupForm) => {
     try {
@@ -134,23 +159,32 @@ export default function SignupPage() {
             )}
           />
 
-          {/* Full Name */}
+          {/* User Name */}
           <div>
-            <Label htmlFor="name" className="text-foreground text-md">
+            <Label htmlFor="userName" className="text-foreground text-md">
               User Name
             </Label>
-            <Input
-              id="name"
-              type="text"
-              autoFocus
-              placeholder="John Doe"
-              className="mt-2 bg-input text-foreground border-border"
-              {...register("userName", { required: "Username is required" })}
-            />
+            <div className="relative">
+              <Input
+                id="userName"
+                type="text"
+                placeholder="John Doe"
+                autoComplete="username"
+                className="mt-2 bg-input text-foreground border-border pr-10"
+                {...register("userName", { required: "Username is required" })}
+              />
+              {isChecking && (
+                <Loader className="animate-spin absolute right-2 top-3.5 w-5 h-5 text-muted-foreground" />
+              )}
+            </div>
+            {isAvailable === true && !isChecking && (
+              <p className="mt-1 text-sm text-success">Username is available.</p>
+            )}
+            {isAvailable === false && !isChecking && (
+              <p className="mt-1 text-sm text-destructive">Username is already taken.</p>
+            )}
             {errors.userName && (
-              <p className="mt-1 text-sm text-destructive">
-                {errors.userName.message}
-              </p>
+              <p className="mt-1 text-sm text-destructive">{errors.userName.message}</p>
             )}
           </div>
 
