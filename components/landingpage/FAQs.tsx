@@ -13,6 +13,7 @@ const FAQs = () => {
     textMuted: '#657da8'
   };
 
+
   const faqs = [
     {
       id: 1,
@@ -146,5 +147,6 @@ const FAQs = () => {
     </section>
   );
 };
+
 
 export default FAQs;
