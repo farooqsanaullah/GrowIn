@@ -12,6 +12,7 @@ interface FundingRange {
 }
 
 export interface IUser {
+  userName: string;
   name: string;
   email: string;
   password: string;
@@ -19,6 +20,9 @@ export interface IUser {
   profileImage?: string;
   bio?: string;
   socialLinks?: SocialLinks;
+  // Address
+  city?: string;
+  country?: string;
   // Founder specific
   experience?: string;
   skills?: string[];
@@ -30,10 +34,11 @@ export interface IUser {
 
 const userSchema = new Schema<IUser>(
   {
+    userName: { type: String, required: true, unique: true },
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true, select: false },
-    role: { type: String, enum: ["investor", "founder", "admin"], required: true },
+    role: { type: String, enum: ["investor", "founder"], required: true },
     profileImage: { type: String },
     bio: { type: String },
     socialLinks: {
@@ -41,6 +46,9 @@ const userSchema = new Schema<IUser>(
       linkedin: { type: String },
       website: { type: String },
     },
+    // Address
+    city: { type: String },
+    country: { type: String },
     // Founder specific
     experience: { type: String },
     skills: [{ type: String }],
