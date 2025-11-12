@@ -3,56 +3,55 @@
 const Footer = () => {
   // Custom color scheme
   const colors = {
-    bgPrimary: '#D6F6FE',
-    bgSecondary: '#FEE8BD',
-    textPrimary: '#16263d',
-    textSecondary: '#65728d',
-    textMuted: '#657da8'
+    bgPrimary: "#D6F6FE",
+    bgSecondary: "#FEE8BD",
+    textPrimary: "#16263d",
+    textSecondary: "#65728d",
+    textMuted: "#657da8",
   };
 
   const footerLinks = {
     platform: [
-      { name: 'For Founders', href: '#founders' },
-      { name: 'For Investors', href: '#investors' },
-      { name: 'Competitions', href: '#competitions' },
-      { name: 'Success Stories', href: '#stories' }
+      { name: "For Founders", href: "#founders" },
+      { name: "For Investors", href: "#investors" },
+      { name: "Competitions", href: "#competitions" },
+      { name: "Success Stories", href: "#stories" },
     ],
     company: [
-      { name: 'About Us', href: '#about' },
-      { name: 'Careers', href: '#careers' },
-      { name: 'Press', href: '#press' },
-      { name: 'Contact', href: '#contact' }
+      { name: "About Us", href: "#about" },
+      { name: "Careers", href: "#careers" },
+      { name: "Press", href: "#press" },
+      { name: "Contact", href: "#contact" },
     ],
     resources: [
-      { name: 'Blog', href: '#blog' },
-      { name: 'Help Center', href: '#help' },
-      { name: 'API Docs', href: '#api' },
-      { name: 'Community', href: '#community' }
+      { name: "Blog", href: "#blog" },
+      { name: "Help Center", href: "#help" },
+      { name: "API Docs", href: "#api" },
+      { name: "Community", href: "#community" },
     ],
     legal: [
-      { name: 'Privacy Policy', href: '#privacy' },
-      { name: 'Terms of Service', href: '#terms' },
-      { name: 'Cookie Policy', href: '#cookies' },
-      { name: 'GDPR', href: '#gdpr' }
-    ]
+      { name: "Privacy Policy", href: "#privacy" },
+      { name: "Terms of Service", href: "#terms" },
+      { name: "Cookie Policy", href: "#cookies" },
+      { name: "GDPR", href: "#gdpr" },
+    ],
   };
 
   const socialLinks = [
-    { name: 'Twitter', icon: '𝕏', href: '#twitter' },
-    { name: 'LinkedIn', icon: '💼', href: '#linkedin' },
-    { name: 'Instagram', icon: '📷', href: '#instagram' },
-    { name: 'GitHub', icon: '💻', href: '#github' }
+    { name: "Twitter", icon: "𝕏", href: "#twitter" },
+    { name: "LinkedIn", icon: "💼", href: "#linkedin" },
+    { name: "Instagram", icon: "📷", href: "#instagram" },
+    { name: "GitHub", icon: "💻", href: "#github" },
   ];
 
   return (
-    <footer 
+    <footer
       className="relative"
-      style={{ 
+      style={{
         backgroundColor: colors.bgPrimary,
-        borderTop: `1px solid ${colors.textMuted}30`
+        borderTop: `1px solid ${colors.textMuted}30`,
       }}
     >
-      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main Footer Content */}
         <div className="py-12 lg:py-16">
@@ -60,22 +59,17 @@ const Footer = () => {
             {/* Brand Section */}
             <div className="lg:col-span-2">
               <div className="flex items-center space-x-3 mb-6">
-
-                <img
-                 src="/logo.png"
-                 alt="GrowIn Logo"
-                 width={150}
-                />
-
+                <img src="/logo.png" alt="GrowIn Logo" width={150} />
               </div>
-              <p 
+              <p
                 className="text-base leading-relaxed mb-6 max-w-sm"
                 style={{ color: colors.textMuted }}
               >
-                The AI-powered startup ecosystem connecting founders and investors. 
-                Build, compete, and grow with the future of innovation.
+                The AI-powered startup ecosystem connecting founders and
+                investors. Build, compete, and grow with the future of
+                innovation.
               </p>
-              
+
               {/* Social Links */}
               <div className="flex space-x-4">
                 {socialLinks.map((social) => (
@@ -83,20 +77,22 @@ const Footer = () => {
                     key={social.name}
                     href={social.href}
                     className="w-10 h-10 rounded-lg flex items-center justify-center text-lg transition-all duration-300 hover:scale-110"
-                    style={{ 
-                      backgroundColor: colors.bgSecondary + '80',
+                    style={{
+                      backgroundColor: colors.bgSecondary + "80",
                       color: colors.textSecondary,
-                      border: `1px solid ${colors.textMuted}30`
+                      border: `1px solid ${colors.textMuted}30`,
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = colors.textPrimary;
-                      e.currentTarget.style.color = 'white';
+                      e.currentTarget.style.backgroundColor =
+                        colors.textPrimary;
+                      e.currentTarget.style.color = "white";
                       e.currentTarget.style.boxShadow = `0 5px 15px ${colors.textPrimary}40`;
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = colors.bgSecondary + '80';
+                      e.currentTarget.style.backgroundColor =
+                        colors.bgSecondary + "80";
                       e.currentTarget.style.color = colors.textSecondary;
-                      e.currentTarget.style.boxShadow = 'none';
+                      e.currentTarget.style.boxShadow = "none";
                     }}
                     title={social.name}
                   >
@@ -108,7 +104,7 @@ const Footer = () => {
 
             {/* Platform Links */}
             <div className="pt-[58px]">
-              <h3 
+              <h3
                 className="text-lg font-semibold mb-4"
                 style={{ color: colors.textPrimary }}
               >
@@ -137,7 +133,7 @@ const Footer = () => {
 
             {/* Company Links */}
             <div className="pt-[58px]">
-              <h3 
+              <h3
                 className="text-lg font-semibold mb-4"
                 style={{ color: colors.textPrimary }}
               >
@@ -166,7 +162,7 @@ const Footer = () => {
 
             {/* Resources Links */}
             <div className="pt-[58px]">
-              <h3 
+              <h3
                 className="text-lg font-semibold mb-4"
                 style={{ color: colors.textPrimary }}
               >
@@ -195,7 +191,7 @@ const Footer = () => {
 
             {/* Legal Links */}
             <div className="pt-[58px]">
-              <h3 
+              <h3
                 className="text-lg font-semibold mb-4"
                 style={{ color: colors.textPrimary }}
               >
@@ -225,55 +221,55 @@ const Footer = () => {
         </div>
 
         {/* Newsletter Section */}
-        <div 
+        <div
           className="py-8 border-t border-b mb-8"
-          style={{ borderColor: colors.textMuted + '30' }}
+          style={{ borderColor: colors.textMuted + "30" }}
         >
           <div className="max-w-2xl mx-auto text-center">
-            <h3 
+            <h3
               className="text-xl font-bold mb-4"
               style={{ color: colors.textPrimary }}
             >
               Stay Updated with GrowIn
             </h3>
-            <p 
-              className="text-base mb-6"
-              style={{ color: colors.textMuted }}
-            >
-              Get the latest startup insights, competition updates, and success stories delivered to your inbox.
+            <p className="text-base mb-6" style={{ color: colors.textMuted }}>
+              Get the latest startup insights, competition updates, and success
+              stories delivered to your inbox.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
               <input
                 type="email"
                 placeholder="Enter your email"
                 className="flex-1 px-4 py-3 rounded-lg border text-base transition-all duration-300 focus:outline-none focus:ring-2"
-                style={{ 
-                  backgroundColor: 'white',
-                  borderColor: colors.textMuted + '50',
-                  color: colors.textPrimary
+                style={{
+                  backgroundColor: "white",
+                  borderColor: colors.textMuted + "50",
+                  color: colors.textPrimary,
                 }}
                 onFocus={(e) => {
                   e.currentTarget.style.borderColor = colors.textPrimary;
                   e.currentTarget.style.boxShadow = `0 0 0 2px ${colors.textPrimary}20`;
                 }}
                 onBlur={(e) => {
-                  e.currentTarget.style.borderColor = colors.textMuted + '50';
-                  e.currentTarget.style.boxShadow = 'none';
+                  e.currentTarget.style.borderColor = colors.textMuted + "50";
+                  e.currentTarget.style.boxShadow = "none";
                 }}
               />
-              <button 
+              <button
                 className="px-6 py-3 font-semibold text-white rounded-lg transition-all duration-300 hover:scale-105 shadow-lg"
-                style={{ 
+                style={{
                   backgroundColor: colors.textPrimary,
-                  boxShadow: '0 5px 15px rgba(22, 38, 61, 0.25)'
+                  boxShadow: "0 5px 15px rgba(22, 38, 61, 0.25)",
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = colors.textSecondary;
-                  e.currentTarget.style.boxShadow = '0 8px 25px rgba(22, 38, 61, 0.35)';
+                  e.currentTarget.style.boxShadow =
+                    "0 8px 25px rgba(22, 38, 61, 0.35)";
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = colors.textPrimary;
-                  e.currentTarget.style.boxShadow = '0 5px 15px rgba(22, 38, 61, 0.25)';
+                  e.currentTarget.style.boxShadow =
+                    "0 5px 15px rgba(22, 38, 61, 0.25)";
                 }}
               >
                 Subscribe
@@ -284,19 +280,20 @@ const Footer = () => {
 
         {/* Bottom Section */}
         <div className="py-6 flex flex-col sm:flex-row justify-between items-center">
-          <p 
+          <p
             className="text-sm mb-4 sm:mb-0"
             style={{ color: colors.textMuted }}
           >
-            © 2025 GrowIn. All rights reserved. Built with 💙 for the startup ecosystem.
+            © 2025 GrowIn. All rights reserved. Built with 💙 for the startup
+            ecosystem.
           </p>
           <div className="flex items-center space-x-6">
             <div className="flex items-center space-x-2">
-              <div 
+              <div
                 className="w-2 h-2 rounded-full animate-pulse"
-                style={{ backgroundColor: '#10b981' }}
+                style={{ backgroundColor: "#10b981" }}
               ></div>
-              <span 
+              <span
                 className="text-sm font-medium"
                 style={{ color: colors.textMuted }}
               >
