@@ -2,20 +2,7 @@
 import React from "react";
 import Link from "next/link";
 import { Heart, Star, Users } from "lucide-react";
-
-export interface Startup {
-  _id: string;
-  profilePic?: string;
-  title: string;
-  industry: string;
-  badges?: string[];
-  avgRating: number;
-  ratingCount: number;
-  followers: number;
-  status: string; // keeping it for now, but not using it
-  categoryType: string;
-  description?: string;
-}
+import { Startup } from "@/types/startup"; // ✅ Import Startup interface from types
 
 interface StartupCardProps {
   startup: Startup;
@@ -31,6 +18,8 @@ const colors = {
 
 const StartupCard: React.FC<StartupCardProps> = ({ startup }) => {
   const profilePic = startup.profilePic || "/fallback-image.png";
+  const fullStars = Math.floor(startup.avgRating);
+  const hasHalfStar = startup.avgRating % 1 >= 0.5;
 
   return (
     <Link href={`/startup/${startup._id}`} className="block">
@@ -115,16 +104,30 @@ const StartupCard: React.FC<StartupCardProps> = ({ startup }) => {
             {startup.description || ""}
           </p>
 
+          {/* Rating + Followers */}
           <div
             className="flex items-center justify-between mt-4 text-sm"
             style={{ color: colors.textSecondary }}
           >
-            <div className="flex items-center gap-1 group">
-              <Star
-                size={16}
-                className="text-yellow-400 transition-transform duration-300 group-hover:scale-110"
-              />
-              <span>
+            <div className="flex items-center gap-1">
+              {/* ⭐ Stars according to avgRating */}
+              {[...Array(5)].map((_, i) => {
+                const fill =
+                  i < fullStars
+                    ? "text-yellow-400"
+                    : hasHalfStar && i === fullStars
+                    ? "text-yellow-300"
+                    : "text-gray-300";
+                return (
+                  <Star
+                    key={i}
+                    size={16}
+                    className={`${fill} transition-transform duration-300 group-hover:scale-110`}
+                    fill={fill.includes("yellow") ? "currentColor" : "none"}
+                  />
+                );
+              })}
+              <span className="ml-1">
                 {startup.avgRating.toFixed(1)} ({startup.ratingCount})
               </span>
             </div>
@@ -136,6 +139,7 @@ const StartupCard: React.FC<StartupCardProps> = ({ startup }) => {
             </div>
           </div>
 
+          {/* Category + Raised */}
           <div className="flex justify-between mt-3">
             <span
               className="px-2 py-1 text-xs rounded-full font-medium"
