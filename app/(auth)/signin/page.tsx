@@ -12,6 +12,7 @@ import {
 import { toast } from "sonner";
 import { Eye, EyeClosedIcon } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 type LoginForm = {
   email: string;
@@ -61,7 +62,20 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background text-foreground">
       <div className="w-full max-w-md rounded-lg border border-border bg-card p-8 shadow-sm">
+        
+        {/* Logo */}
+        <div className="flex justify-center mt-[-10]">
+          <Image
+            src="/logo.png"
+            alt="App Logo"
+            width={125}     // adjust size as needed
+            height={0}
+            className="rounded-md" // optional
+          />
+        </div>
+
         <h1 className="mb-6 text-center text-3xl font-semibold text-foreground">Sign In</h1>
+        
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           <div>
             <Label htmlFor="email" className="text-foreground text-md">Email</Label>

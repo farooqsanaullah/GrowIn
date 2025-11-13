@@ -13,6 +13,7 @@ import {
 } from "@/components/ui";
 import Link from "next/link";
 import { EMAIL_REGEX } from "@/lib/constants/regex";
+import Image from "next/image";
 
 type SignupForm = {
   userName: string;
@@ -121,9 +122,19 @@ export default function SignupPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background text-foreground">
       <div className="w-full max-w-md rounded-lg border border-border bg-card p-8 shadow-sm">
-        <h1 className="mb-6 text-center text-3xl font-semibold text-foreground">
-          Sign Up
-        </h1>
+        
+        {/* Logo */}
+        <div className="flex justify-center mt-[-10]">
+          <Image
+            src="/logo.png"
+            alt="App Logo"
+            width={125}
+            height={0}
+            className="rounded-md"
+          />
+        </div>
+        
+        <h1 className="mb-6 text-center text-3xl font-semibold text-foreground">Sign Up</h1>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           {/* Role */}
