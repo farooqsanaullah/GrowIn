@@ -1,7 +1,7 @@
 // app/explore/page.tsx
-import { Startup } from "@/app/types/startup";
-import startupsData from "@/app/startups.json";
-import ClientExplore from "./ClientExplore";
+import { Startup } from "@/types/startup";
+import startupsData from "@/app/data/startups.json";
+import ClientExplore from "@/components/explore/ClientExplore";
 
 export default async function ExplorePage() {
   const data = startupsData as Startup[];
