@@ -1,6 +1,6 @@
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
-import LinkedInProvider from "next-auth/providers/linkedin";
+import GithubProvider from "next-auth/providers/github";
 import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
 import { NextAuthOptions } from "next-auth";
 import { connectDB } from "@/lib/db/connect";
@@ -11,8 +11,8 @@ const {
   NODE_ENV, 
   GOOGLE_CLIENT_ID, 
   GOOGLE_CLIENT_SECRET, 
-  LINKEDIN_CLIENT_ID, 
-  LINKEDIN_CLIENT_SECRET 
+  GITHUB_CLIENT_ID, 
+  GITHUB_CLIENT_SECRET 
 } = process.env;
 const isDev = NODE_ENV === "development";
 
@@ -22,9 +22,11 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt", // we can also use 'database' if we want DB sessions
   },
   pages: {
-    signIn: "/signin",      // custom sign-in page
-    // error: "/error",   // custom error page
-    error: "/signin",   // custom error page
+    signIn: "/signin",   // custom sign-in page
+    error: "/signin",    // redirects OAuth/sign-in errors to the same sign-in page
+    // we could also have:
+    // signOut: "/signout", // custom sign-out page
+    // newUser: "/welcome",  // page for new users after sign-up
   },
   providers: [
     CredentialsProvider({
@@ -59,9 +61,9 @@ export const authOptions: NextAuthOptions = {
       clientId: GOOGLE_CLIENT_ID!,
       clientSecret: GOOGLE_CLIENT_SECRET!,
     }),
-    LinkedInProvider({
-      clientId: LINKEDIN_CLIENT_ID!,
-      clientSecret: LINKEDIN_CLIENT_SECRET!,
+    GithubProvider({
+      clientId: GITHUB_CLIENT_ID!,
+      clientSecret: GITHUB_CLIENT_SECRET!,
     }),
   ],
   callbacks: {
