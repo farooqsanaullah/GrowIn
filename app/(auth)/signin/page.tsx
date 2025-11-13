@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { signIn, getProviders } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Button, Input, Label, Separator } from "@/components/ui";
-import { toast } from "sonner";
+import { toast } from "react-hot-toast";
 import { Eye, EyeClosedIcon, Loader } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -45,14 +45,17 @@ export default function LoginPage() {
 
       if (!res?.ok) {
         toast.error("Invalid email or password");
+        alert("Invalid email or password");
         return;
       }
 
       toast.success("Login successful");
+      alert("Login successful");
       router.push("/"); // redirect after login
     } catch (error) {
       isDev && console.error("Login error:", error);
       toast.error("Something went wrong");
+      alert("Something went wrong");
     } finally {
       setIsLoading(false);
     }
