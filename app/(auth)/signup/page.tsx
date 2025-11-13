@@ -201,7 +201,7 @@ export default function SignupPage() {
             </div>
 
             {isAvailable === true && !isChecking && (
-              <p className="mt-1 text-sm text-success">Username is available.</p>
+              <p className="mt-1 text-sm text-success">Username <b>{userNameValue}</b> is available.</p>
             )}
             {isAvailable === false && !isChecking && (
               <p className="mt-1 text-sm text-destructive">Username is already taken.</p>
