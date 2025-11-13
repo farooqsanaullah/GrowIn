@@ -10,7 +10,7 @@ import {
   Label,
 } from "@/components/ui";
 import { toast } from "sonner";
-import { Eye, EyeClosedIcon } from "lucide-react";
+import { Eye, EyeClosedIcon, Loader } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -77,6 +77,7 @@ export default function LoginPage() {
         <h1 className="mb-6 text-center text-3xl font-semibold text-foreground">Sign In</h1>
         
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          {/* Email */}
           <div>
             <Label htmlFor="email" className="text-foreground text-md">Email</Label>
             <Input
@@ -91,6 +92,7 @@ export default function LoginPage() {
             )}
           </div>
 
+          {/* Password */}
           <div>
             <Label htmlFor="password" className="text-foreground text-md">Password</Label>
             <div className="relative">
@@ -120,14 +122,31 @@ export default function LoginPage() {
             )}
           </div>
 
-          <p className="text-sm">Don't have an account? SignUp <Link className="text-sm underline text-primary hover:text-primary" href={"/signup"}>here</Link></p>
+          {/* SignUp Page Link */}
+          <p className="text-sm">
+            Don't have an account? SignUp{" "}
+            <Link 
+              className="text-sm underline text-primary hover:text-primary" 
+              href={"/signup"}
+            >
+              here
+            </Link>
+          </p>
 
+          {/* SignIn Button */}
           <Button
             type="submit"
-            className="w-full cursor-pointer bg-primary text-md text-primary-foreground hover:bg-primary/90"
             disabled={isLoading}
+            className="w-full cursor-pointer bg-primary text-md text-primary-foreground hover:bg-primary/90"
           >
-            {isLoading ? "Signing in..." : "Sign In"}
+            {isLoading ? (
+              <>
+                Signing in
+                <Loader className="animate-spin ml-2" />
+              </>
+            ) : (
+              "Sign In"
+            )}
           </Button>
         </form>
       </div>
