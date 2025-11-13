@@ -1,4 +1,6 @@
+"use client";
 import React from "react";
+import Link from "next/link";
 import { Heart, Star, Users } from "lucide-react";
 
 export interface Startup {
@@ -10,7 +12,7 @@ export interface Startup {
   avgRating: number;
   ratingCount: number;
   followers: number;
-  status: string;
+  status: string; // keeping it for now, but not using it
   categoryType: string;
   description?: string;
 }
@@ -19,94 +21,144 @@ interface StartupCardProps {
   startup: Startup;
 }
 
+const colors = {
+  bgPrimary: "#D6F6FE",
+  bgSecondary: "#FEE8BD",
+  textPrimary: "#16263d",
+  textSecondary: "#65728d",
+  textMuted: "#657da8",
+};
+
 const StartupCard: React.FC<StartupCardProps> = ({ startup }) => {
+  const profilePic = startup.profilePic || "/fallback-image.png";
+
   return (
-    <div className="group relative bg-white rounded-xl shadow-lg overflow-hidden flex flex-col h-full transform transition-transform duration-300 hover:scale-105 hover:shadow-2xl">
+    <Link href={`/startup/${startup._id}`} className="block">
+      <div
+        className="group relative bg-white rounded-xl shadow-md overflow-hidden flex flex-col h-full transform transition-all duration-300 ease-out hover:-translate-y-1 hover:scale-[1.02] hover:shadow-xl cursor-pointer"
+        style={{ color: colors.textPrimary }}
+      >
+        {/* Cover Image */}
+        <div className="relative h-48 w-full overflow-hidden">
+          <img
+            src={profilePic}
+            alt={`${startup.title} cover`}
+            className="w-full h-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
+          />
 
-      {/* Cover Image */}
-      <div className="relative h-48 w-full overflow-hidden">
-        <img
-          src={startup.profilePic || "/fallback-image.png"}
-          alt={startup.title}
-          className="w-full h-full object-cover transition-transform duration-300 ease-in-out hover:scale-110"
-        />
-
-        {/* Badges */}
-        <div className="absolute top-2 left-2 flex gap-1 opacity-90">
-          {startup.badges?.slice(0, 2).map((badge) => (
-            <span
-              key={badge}
-              className="text-xs bg-white/90 backdrop-blur-sm text-gray-800 px-2 py-1 rounded-full font-medium transform transition-transform duration-300 hover:scale-110"
-            >
-              {badge}
-            </span>
-          ))}
-        </div>
-
-        {/* Like Button */}
-        <button
-          className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-md hover:bg-red-100 transition-transform transform hover:scale-110"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Heart className="text-red-500" size={18} />
-        </button>
-      </div>
-
-      {/* Founder Picture (Facebook-style overlap) */}
-      <div className="absolute top-40 right-4 z-10">
-        <img
-          src={startup.profilePic || "/fallback-image.png"}
-          alt="Founder"
-          className="w-20 h-20 rounded-full border-4 border-white shadow-md object-cover"
-        />
-      </div>
-
-      {/* Content Section */}
-      <div className="pt-14 p-4 flex flex-col flex-1">
-        <h3 className="font-bold text-lg truncate">{startup.title}</h3>
-        <p className="text-sm text-gray-500 truncate">{startup.industry}</p>
-
-        {/* Description */}
-        <p className="text-sm text-gray-700 mt-2 line-clamp-3 group-hover:line-clamp-none transition-all duration-500">
-          {startup.description || ""}
-        </p>
-
-        {/* Rating and Followers */}
-        <div className="flex items-center justify-between mt-4 text-sm text-gray-600">
-          <div className="flex items-center gap-1 group">
-            <Star
-              size={16}
-              className="text-yellow-400 transition-transform duration-300 group-hover:scale-125"
-            />
-            <span>
-              {startup.avgRating.toFixed(1)} ({startup.ratingCount})
-            </span>
+          {/* Badges */}
+          <div className="absolute top-2 left-2 flex gap-1 opacity-95">
+            {startup.badges?.slice(0, 2).map((badge, i) => (
+              <span
+                key={badge}
+                className="text-xs px-2 py-1 rounded-full font-medium transition-all duration-300 group-hover:scale-105 backdrop-blur-sm"
+                style={{
+                  backgroundColor:
+                    i % 2 === 0 ? colors.bgPrimary : colors.bgSecondary,
+                  color: colors.textPrimary,
+                }}
+              >
+                {badge}
+              </span>
+            ))}
+            {startup.badges && startup.badges.length > 2 && (
+              <span
+                className="text-xs px-2 py-1 rounded-full font-medium backdrop-blur-sm"
+                style={{
+                  backgroundColor: colors.bgSecondary,
+                  color: colors.textPrimary,
+                }}
+              >
+                +{startup.badges.length - 2}
+              </span>
+            )}
           </div>
-          <div className="flex items-center gap-1">
-            <Users size={16} className="text-gray-500" />
-            <span className="font-semibold">
-              {startup.followers.toLocaleString()}
-            </span>
-          </div>
-        </div>
 
-        {/* Status and Category */}
-        <div className="flex justify-between mt-3">
-          <span
-            className={`px-2 py-1 text-xs rounded-full ${
-              startup.status === "Active"
-                ? "bg-green-100 text-green-700 animate-pulse"
-                : "bg-gray-100 text-gray-500"
-            }`}
+          {/* Like Button */}
+          <button
+            className="absolute top-2 right-2 p-2 rounded-full shadow-md transition-all duration-300 hover:scale-110"
+            style={{
+              backgroundColor: "rgba(255,255,255,0.9)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+            aria-label="Like startup"
           >
-            {startup.status}
-          </span>
-          <span className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-full">
-            {startup.categoryType}
-          </span>
+            <Heart className="text-red-500" size={18} />
+          </button>
+        </div>
+
+        {/* Founder Picture */}
+        <div className="absolute top-36 right-4 z-10">
+          <img
+            src={profilePic}
+            alt="Founder"
+            className="w-20 h-20 rounded-full border-4 border-white shadow-md object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        </div>
+
+        {/* Details */}
+        <div className="pt-10 p-4 flex flex-col flex-1">
+          <h3
+            className="font-bold text-lg truncate"
+            style={{ color: colors.textPrimary }}
+          >
+            {startup.title}
+          </h3>
+          <p className="text-sm truncate" style={{ color: colors.textSecondary }}>
+            {startup.industry}
+          </p>
+
+          <p
+            className="text-sm mt-2 line-clamp-3 group-hover:line-clamp-none transition-all duration-500"
+            style={{ color: colors.textMuted }}
+          >
+            {startup.description || ""}
+          </p>
+
+          <div
+            className="flex items-center justify-between mt-4 text-sm"
+            style={{ color: colors.textSecondary }}
+          >
+            <div className="flex items-center gap-1 group">
+              <Star
+                size={16}
+                className="text-yellow-400 transition-transform duration-300 group-hover:scale-110"
+              />
+              <span>
+                {startup.avgRating.toFixed(1)} ({startup.ratingCount})
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Users size={16} className="text-gray-500" />
+              <span className="font-semibold">
+                {startup.followers.toLocaleString()}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex justify-between mt-3">
+            <span
+              className="px-2 py-1 text-xs rounded-full font-medium"
+              style={{
+                backgroundColor: colors.bgPrimary,
+                color: colors.textPrimary,
+              }}
+            >
+              💰 Raised: $120K
+            </span>
+            <span
+              className="px-2 py-1 text-xs rounded-full"
+              style={{
+                backgroundColor: colors.bgSecondary,
+                color: colors.textPrimary,
+              }}
+            >
+              {startup.categoryType}
+            </span>
+          </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 };
 
