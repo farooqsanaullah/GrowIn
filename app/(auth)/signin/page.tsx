@@ -147,6 +147,15 @@ export default function LoginPage() {
               "Sign In"
             )}
           </Button>
+
+          {/* Separator */}
+          <div className="relative flex items-center justify-center overflow-hidden">
+            <Separator />
+            <div className="py-1.5 px-2 border rounded-full text-center bg-muted text-xs mx-1">
+              OR
+            </div>
+            <Separator />
+          </div>
           
           {/* OAuth Buttons */}
           {providers && (
@@ -158,7 +167,7 @@ export default function LoginPage() {
                     key={prov.name}
                     variant={"outline"}
                     onClick={() => signIn(prov.id)}
-                    className="w-full bg-gray-100 text-gray-800 hover:bg-gray-200 cursor-pointer"
+                    className="w-full bg-background text-foreground hover:bg-foreground hover:text-background border-border hover:border-transparent cursor-pointer"
                   >
                     Sign in with {prov.name}
                   </Button>

@@ -10,6 +10,7 @@ export {
   SelectValue 
 } from "./select";
 export { Slider } from "./slider";
+export { Separator } from "./separator";
 // export { FloatingLabelInput } from "./FloatingLabelInput"
 // export { Checkbox } from "./checkbox";
 // export { Switch } from "./switch";
@@ -21,7 +22,6 @@ export { Slider } from "./slider";
 // export { Tooltip } from "./tooltip";
 // export { Badge } from "./badge";
 // export { Tabs } from "./tabs";
-// export { Separator } from "./separator";
 // export { ScrollArea } from "./scroll-area";
 // export { SwitchGroup } from "./switch-group";
 // export { Skeleton } from "./skeleton";
