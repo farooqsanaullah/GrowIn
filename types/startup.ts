@@ -12,6 +12,9 @@ export interface Startup {
     website?: string;
     linkedin?: string;
     twitter?: string;
+    x?: string;
+    instagram?: string;
+    facebook?: string;
   };
   followers: number;
   status: string;
@@ -20,3 +23,4 @@ export interface Startup {
   equityRange: { range: string; equity: number }[];
   profilePic: string;
 }
+
