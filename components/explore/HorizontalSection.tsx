@@ -24,7 +24,7 @@ const HorizontalSection: React.FC<HorizontalSectionProps> = ({ title, startups }
   if (startups.length === 0) return null;
 
   return (
-    <div className="mb-8 relative group md:px-20 sm:px-4">
+    <div className="mb-8 relative group md:px-30 sm:px-4">
 
       <h2 className="text-xl font-semibold mb-3 px-2">{title}</h2>
 
