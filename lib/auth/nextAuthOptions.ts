@@ -1,17 +1,30 @@
 import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
+import LinkedInProvider from "next-auth/providers/linkedin";
 import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
 import { NextAuthOptions } from "next-auth";
 import { connectDB } from "@/lib/db/connect";
 import { getUserByEmail, verifyPassword } from "@/lib/auth/helpers";
 import clientPromise from "@/lib/db/mongoClient";
 
-const { NODE_ENV } = process.env;
+const { 
+  NODE_ENV, 
+  GOOGLE_CLIENT_ID, 
+  GOOGLE_CLIENT_SECRET, 
+  LINKEDIN_CLIENT_ID, 
+  LINKEDIN_CLIENT_SECRET 
+} = process.env;
 const isDev = NODE_ENV === "development";
 
 export const authOptions: NextAuthOptions = {
   adapter: MongoDBAdapter(clientPromise),
   session: {
     strategy: "jwt", // we can also use 'database' if we want DB sessions
+  },
+  pages: {
+    signIn: "/signin",      // custom sign-in page
+    // error: "/error",   // custom error page
+    error: "/signin",   // custom error page
   },
   providers: [
     CredentialsProvider({
@@ -21,7 +34,7 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        await connectDB(); // ensure DB connection
+        await connectDB();
 
         if (!credentials?.email || !credentials?.password) return null;
 
@@ -30,10 +43,7 @@ export const authOptions: NextAuthOptions = {
         const user = await getUserByEmail(credentials.email);
         if (!user) return null;
 
-        const isValid = await verifyPassword(
-          credentials.password,
-          user.password
-        );
+        const isValid = await verifyPassword(credentials.password, user.password);
         if (!isValid) return null;
 
         // Returning user object
@@ -45,8 +55,14 @@ export const authOptions: NextAuthOptions = {
         };
       },
     }),
-    // Future OAuth providers can be added here
-    // e.g., GoogleProvider({ clientId, clientSecret })
+    GoogleProvider({
+      clientId: GOOGLE_CLIENT_ID!,
+      clientSecret: GOOGLE_CLIENT_SECRET!,
+    }),
+    LinkedInProvider({
+      clientId: LINKEDIN_CLIENT_ID!,
+      clientSecret: LINKEDIN_CLIENT_SECRET!,
+    }),
   ],
   callbacks: {
     async jwt({ token, user }) {
