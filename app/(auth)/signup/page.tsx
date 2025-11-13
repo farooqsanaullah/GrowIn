@@ -174,9 +174,7 @@ export default function SignupPage() {
 
           {/* User Name */}
           <div>
-            <Label htmlFor="userName" className="text-foreground text-md">
-              User Name
-            </Label>
+            <Label htmlFor="userName" className="text-foreground text-md">Username</Label>
             <div className="relative">
               <Input
                 id="userName"
@@ -209,9 +207,7 @@ export default function SignupPage() {
 
           {/* Email */}
           <div>
-            <Label htmlFor="email" className="text-foreground text-md">
-              Email
-            </Label>
+            <Label htmlFor="email" className="text-foreground text-md">Email</Label>
             <Input
               id="email"
               type="email"
@@ -233,9 +229,7 @@ export default function SignupPage() {
 
           {/* Password */}
           <div>
-            <Label htmlFor="password" className="text-foreground text-md">
-              Password
-            </Label>
+            <Label htmlFor="password" className="text-foreground text-md">Password</Label>
             <div className="relative">
               <Input
                 id="password"
@@ -291,12 +285,7 @@ export default function SignupPage() {
 
           {/* Confirm Password */}
           <div>
-            <Label
-              htmlFor="confirmPassword"
-              className="text-foreground text-md"
-            >
-              Confirm Password
-            </Label>
+            <Label htmlFor="confirmPassword" className="text-foreground text-md">Confirm Password</Label>
             <div className="relative">
               <Input
                 id="confirmPassword"
