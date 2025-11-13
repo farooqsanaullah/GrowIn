@@ -64,7 +64,7 @@ export default function SignupPage() {
   const { lengthCheck, specialCharCheck, digitCheck } = getPasswordStrength(passwordValue);
 
   useEffect(() => {
-    if (!userNameValue) {
+    if (!userNameValue || userNameValue.length < 3 || userNameValue.length > 30) {
       setIsAvailable(null);
       return;
     }
@@ -72,7 +72,7 @@ export default function SignupPage() {
     const delayDebounceFn = setTimeout(async () => {
       try {
         setIsChecking(true);
-        const res = await fetch(`/api/auth/check-username?username=${encodeURIComponent(userNameValue)}`);
+        const res = await fetch(`/api/auth/check-username?username=${encodeURIComponent(userNameValue)}`); // uses encodedURI for special chars
         const data = await res.json();
         setIsAvailable(data.available); // expects { available: true/false }
       } catch (err) {
@@ -187,7 +187,13 @@ export default function SignupPage() {
                       ? "bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
                       : "border-border"
                   }`}
-                {...register("userName", { required: "Username is required" })}
+                {...register("userName", { 
+                  required: "Username is required",
+                  minLength: { value: 3, message: "Username must be at least 3 characters long" },
+                  maxLength: { value: 30, message: "Username must not exceed 30 characters" },
+                  // trim input on change
+                  setValueAs: (value) => value.trim(),
+                })}
               />
               {isChecking && (
                 <Loader className="animate-spin absolute right-2 top-3.5 w-5 h-5 text-muted-foreground" />
