@@ -127,7 +127,7 @@ export default function LoginPage() {
           {/* SignUp Link */}
           <p className="text-sm">
             Don't have an account? SignUp{" "}
-            <Link className="text-sm underline text-primary hover:text-primary" href={"/signup"}>
+            <Link className="text-sm underline text-foreground hover:text-primary" href={"/signup"}>
               here
             </Link>
           </p>
@@ -159,20 +159,30 @@ export default function LoginPage() {
           
           {/* OAuth Buttons */}
           {providers && (
-            <div className="flex flex-col space-y-3 mb-6">
-              {Object.values(providers)
-                .filter((prov: any) => prov.id !== "credentials")
-                .map((prov: any) => (
-                  <Button
-                    key={prov.name}
-                    variant={"outline"}
-                    onClick={() => signIn(prov.id)}
-                    className="w-full bg-background text-foreground hover:bg-foreground hover:text-background border-border hover:border-transparent cursor-pointer"
-                  >
-                    Sign in with {prov.name}
-                  </Button>
-                ))}
-            </div>
+            <>
+              <div className="flex flex-col space-y-3 mb-4">
+                {Object.values(providers)
+                  .filter((prov: any) => prov.id !== "credentials")
+                  .map((prov: any) => (
+                    <Button
+                      type="button"
+                      key={prov.name}
+                      variant={"outline"}
+                      onClick={() => signIn(prov.id)}
+                      className="w-full bg-background text-foreground hover:bg-foreground hover:text-background border-border hover:border-transparent cursor-pointer"
+                    >
+                      Sign in with {prov.name}
+                    </Button>
+                  ))}
+              </div>
+              <p className="text-sm text-foreground text-center">
+                By clicking Continue, you agree to GrowIn's
+                <Link className="text-chart-3" href={"/legal/user-agreement"}> User Agreement, </Link>
+                <Link className="text-chart-3" href={"/legal/privacy-policy"}>Privacy Policy, </Link>
+                and 
+                <Link className="text-chart-3" href={"/legal/cookie-policy"}> Cookie Policy.</Link>
+              </p>
+            </>
           )}
 
         </form>
