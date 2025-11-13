@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
 import User from "@/lib/models/user.model";
+import { EMAIL_REGEX } from "@/lib/constants/regex";
 
 // --- User helpers ---
 export async function getUserByEmail(email: string) {
@@ -16,8 +17,7 @@ export async function hashPassword(plain: string) {
 
 // --- Validation helpers ---
 export function isValidEmail(email: string) {
-  const emailRegex = /^\S+@\S+\.\S+$/;
-  return emailRegex.test(email);
+  return EMAIL_REGEX.test(email);
 }
 
 export function isValidPassword(password: string) {

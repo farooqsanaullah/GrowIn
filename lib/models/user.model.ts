@@ -1,4 +1,5 @@
 import { Schema, model, models } from "mongoose";
+import { EMAIL_REGEX } from "../auth/helpers";
 
 interface SocialLinks {
   twitter?: string;
@@ -53,7 +54,7 @@ const userSchema = new Schema<IUser>(
       unique: true,
       trim: true,
       lowercase: true,
-      match: [/^\S+@\S+\.\S+$/, "Please enter a valid email address"],
+      match: [EMAIL_REGEX, "Please enter a valid email address"],
     },
     password: {
       type: String,
