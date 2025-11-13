@@ -12,6 +12,7 @@ import {
   Label
 } from "@/components/ui";
 import Link from "next/link";
+import { EMAIL_REGEX } from "@/lib/constants/regex";
 
 type SignupForm = {
   userName: string;
@@ -56,6 +57,7 @@ export default function SignupPage() {
   });
 
   const userNameValue = watch("userName");
+  const emailValue = watch("email");
   const passwordValue = watch("password") || "";
   const confirmValue = watch("confirmPassword") || "";
   const { lengthCheck, specialCharCheck, digitCheck } = getPasswordStrength(passwordValue);
@@ -170,7 +172,7 @@ export default function SignupPage() {
                 type="text"
                 placeholder="John Doe"
                 autoComplete="new-username"
-                className={`mt-2 bg-input text-foreground pr-10 border
+                className={`mt-2 bg-input text-foreground pr-10
                   ${
                     isAvailable === true && !isChecking
                       ? "bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
@@ -203,8 +205,13 @@ export default function SignupPage() {
               id="email"
               type="email"
               placeholder="email@example.com"
-              className="mt-2 bg-input text-foreground border-border"
               {...register("email", { required: "Email is required" })}
+              className={`mt-2 bg-input text-foreground pr-10
+                ${(EMAIL_REGEX.test(emailValue))
+                    ? "bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
+                    : "border-border"
+                }
+              `}
             />
             {errors.email && (
               <p className="mt-1 text-sm text-destructive">
@@ -223,7 +230,6 @@ export default function SignupPage() {
                 id="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
-                className="mt-2 bg-input text-foreground border-border pr-10"
                 {...register("password", {
                   required: "Password is required",
                   validate: {
@@ -232,6 +238,12 @@ export default function SignupPage() {
                     hasSpecialChar: (value) => /[!@#$%^&*(),.?\":{}|<>]/.test(value),
                   },
                 })}
+                className={`mt-2 bg-input text-foreground pr-10
+                  ${(lengthCheck && specialCharCheck && digitCheck)
+                      ? "bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
+                      : "border-border"
+                  }
+                `}
               />
               {passwordValue.length > 0 && (
                 <button
@@ -245,17 +257,12 @@ export default function SignupPage() {
             </div>
 
             {passwordValue.length > 0 && (
+              // Password Guide
               <div className="mt-4 text-sm space-y-1">
-                <p
-                  className={lengthCheck ? "text-success" : "text-destructive"}
-                >
+                <p className={lengthCheck ? "text-success" : "text-destructive"}>
                   • At least 8 characters
                 </p>
-                <p
-                  className={
-                    specialCharCheck ? "text-success" : "text-destructive"
-                  }
-                >
+                <p className={specialCharCheck ? "text-success" : "text-destructive"}>
                   • 1 special character
                 </p>
                 <p className={digitCheck ? "text-success" : "text-destructive"}>
@@ -284,12 +291,17 @@ export default function SignupPage() {
                 id="confirmPassword"
                 type={showConfirm ? "text" : "password"}
                 placeholder="••••••••"
-                className="mt-2 bg-input text-foreground border-border pr-10"
                 {...register("confirmPassword", {
                   required: "Please confirm your password",
                   validate: (value) =>
                     value === watch("password") || "Passwords do not match",
                 })}
+                className={`mt-2 bg-input text-foreground pr-10
+                  ${(confirmValue.length > 0 && passwordValue === confirmValue)
+                      ? "bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
+                      : "border-border"
+                  }
+                `}
               />
               {confirmValue.length > 0 && (
                 <button
