@@ -55,7 +55,7 @@ const StartupProfilePage: React.FC = () => {
   };
 
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-white min-h-screen md:mx-20">
       <div className="flex flex-col lg:flex-row gap-6 p-4 lg:p-8">
         {/* Main Section */}
         <div className="flex-1 space-y-6 overflow-y-auto">
