@@ -1,11 +1,12 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import startupsData from "@/app/data/startups.json";
 import foundersData from "@/app/data/founders.json";
 import investmentsData from "@/app/data/investments.json";
 import { Star, Globe, Linkedin, X, Instagram, Facebook } from "lucide-react";
 import { useParams } from "next/navigation";
 import { Startup } from "@/types/startup";
+import { useHorizontalScroll } from "@/hooks/useHorizontalScroll";
 
 interface Founder {
   id: string;
@@ -26,6 +27,22 @@ const StartupProfilePage: React.FC = () => {
   const [investmentAmount, setInvestmentAmount] = useState("");
   const [showAllTeam, setShowAllTeam] = useState(false);
   const [userRating, setUserRating] = useState<number | null>(null);
+
+  const descriptionRef = useRef<HTMLDivElement>(null);
+  const teamRef = useRef<HTMLDivElement>(null);
+  const pitchRef = useRef<HTMLDivElement>(null);
+  const { scrollRef, canScrollLeft, canScrollRight, scroll } = useHorizontalScroll(600);
+ 
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const scrollToSection = (section: "description" | "team" | "pitch") => {
+    const refMap = {
+      description: descriptionRef,
+      team: teamRef,
+      pitch: pitchRef,
+    };
+    refMap[section].current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   const startup: Startup | undefined = startupsData.find((s) => s._id === id);
   if (!startup) return <div className="p-10 text-center">Startup not found</div>;
@@ -82,68 +99,97 @@ const StartupProfilePage: React.FC = () => {
             />
           </div>
 
-          {/* Social Links */}
-          <div className="flex gap-3 flex-wrap justify-start md:justify-end">
-            {startup.socialLinks?.website && (
-              <a
-                href={startup.socialLinks.website}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-3 bg-white hover:bg-gray-100 border border-gray-300 rounded-full shadow transition"
-                title="Website"
+          {/* Scroll Navigation + Social Links */}
+          <div className="sticky top-0 bg-white z-10 py-2 px-4 border-b border-gray-200 flex justify-between items-center">
+            <div className="flex gap-4">
+              <button
+                onClick={() => scrollToSection("description")}
+                className="font-semibold hover:underline"
+                style={{ color: "var(--text-secondary)" }}
               >
-                <Globe size={20} />
-              </a>
-            )}
-            {startup.socialLinks?.linkedin && (
-              <a
-                href={startup.socialLinks.linkedin}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-3 bg-white hover:bg-gray-100 border border-gray-300 rounded-full shadow transition"
-                title="LinkedIn"
+                Description
+              </button>
+              <button
+                onClick={() => scrollToSection("team")}
+                className="font-semibold hover:underline"
+                style={{ color: "var(--text-secondary)" }}
               >
-                <Linkedin size={20} />
-              </a>
-            )}
-            {startup.socialLinks?.x && (
-              <a
-                href={startup.socialLinks.x}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-3 bg-white hover:bg-gray-100 border border-gray-300 rounded-full shadow transition"
-                title="X"
-              >
-                <X size={20} />
-              </a>
-            )}
-            {startup.socialLinks?.instagram && (
-              <a
-                href={startup.socialLinks.instagram}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-3 bg-white hover:bg-gray-100 border border-gray-300 rounded-full shadow transition"
-                title="Instagram"
-              >
-                <Instagram size={20} />
-              </a>
-            )}
-            {startup.socialLinks?.facebook && (
-              <a
-                href={startup.socialLinks.facebook}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-3 bg-white hover:bg-gray-100 border border-gray-300 rounded-full shadow transition"
-                title="Facebook"
-              >
-                <Facebook size={20} />
-              </a>
-            )}
+                Team
+              </button>
+              {startup.pitch && startup.pitch.length > 0 && (
+                <button
+                  onClick={() => scrollToSection("pitch")}
+                  className="font-semibold hover:underline"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  Pitch Deck
+                </button>
+              )}
+            </div>
+
+            {/* Right: Social Links */}
+            <div className="flex gap-3 flex-wrap justify-end">
+              {startup.socialLinks?.website && (
+                <a
+                  href={startup.socialLinks.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-3 bg-white hover:bg-gray-100 border border-gray-300 rounded-full shadow transition"
+                  title="Website"
+                >
+                  <Globe size={20} />
+                </a>
+              )}
+              {startup.socialLinks?.linkedin && (
+                <a
+                  href={startup.socialLinks.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-3 bg-white hover:bg-gray-100 border border-gray-300 rounded-full shadow transition"
+                  title="LinkedIn"
+                >
+                  <Linkedin size={20} />
+                </a>
+              )}
+              {startup.socialLinks?.x && (
+                <a
+                  href={startup.socialLinks.x}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-3 bg-white hover:bg-gray-100 border border-gray-300 rounded-full shadow transition"
+                  title="X"
+                >
+                  <X size={20} />
+                </a>
+              )}
+              {startup.socialLinks?.instagram && (
+                <a
+                  href={startup.socialLinks.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-3 bg-white hover:bg-gray-100 border border-gray-300 rounded-full shadow transition"
+                  title="Instagram"
+                >
+                  <Instagram size={20} />
+                </a>
+              )}
+              {startup.socialLinks?.facebook && (
+                <a
+                  href={startup.socialLinks.facebook}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-3 bg-white hover:bg-gray-100 border border-gray-300 rounded-full shadow transition"
+                  title="Facebook"
+                >
+                  <Facebook size={20} />
+                </a>
+              )}
+            </div>
           </div>
 
           {/* Description */}
           {startup.description && (
-            <div className="bg-white rounded-2xl p-6 shadow-md">
+            <div ref={descriptionRef} className="bg-white rounded-2xl p-6 shadow-md">
               <p className="leading-relaxed" style={{ color: "var(--text-primary)" }}>
                 {startup.description}
               </p>
@@ -151,13 +197,13 @@ const StartupProfilePage: React.FC = () => {
           )}
 
           {/* Team Section */}
-          <div className="bg-white rounded-2xl p-6 shadow-md">
+          <div ref={teamRef} className="bg-white rounded-2xl p-6 shadow-md">
             <h2 className="text-2xl font-bold mb-4">Our Team</h2>
             <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory">
               {visibleTeam.map((member) => (
                 <div key={member.id} className="flex-shrink-0 w-64 snap-start">
                   <div className="flex gap-4 items-start">
-                    <div className="w-16 h-16 rounded-full overflow-hidden ring-4 ring-black-200 flex-shrink-0 ml-2 mt-2">
+                    <div className="w-16 h-16 rounded-full overflow-hidden ring-4 ring-gray-200 flex-shrink-0 ml-2 mt-2">
                       <img
                         src={member.profilePic}
                         alt={member.name}
@@ -185,17 +231,72 @@ const StartupProfilePage: React.FC = () => {
 
           {/* Pitch Deck */}
           {startup.pitch && startup.pitch.length > 0 && (
-            <div className="bg-white rounded-2xl p-6 shadow-md relative">
+            <div ref={pitchRef} className="bg-white rounded-2xl p-6 shadow-md relative scrollbar-hide">
               <h2 className="text-2xl font-bold mb-4">Pitch Deck</h2>
-              <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory">
-                {startup.pitch.map((img, i) => (
-                  <img
-                    key={i}
-                    src={img}
-                    alt={`Pitch ${i + 1}`}
-                    className="w-64 md:w-[600px] h-40 md:h-[400px] flex-shrink-0 object-cover rounded-2xl shadow-lg snap-center hover:scale-105 transition-transform duration-300"
-                  />
-                ))}
+
+              <div className="relative">
+                {/* Scroll Arrows (desktop only) */}
+                {canScrollLeft && (
+                  <button
+                    className="absolute left-0 top-1/2 -translate-y-1/2 bg-white p-2 rounded-full shadow z-10 hidden md:flex focus:outline-none"
+                    onClick={() => scroll("left")}
+                  >
+                    ◀
+                  </button>
+                )}
+                {canScrollRight && (
+                  <button
+                    className="absolute right-0 top-1/2 -translate-y-1/2 bg-white p-2 rounded-full shadow z-10 hidden md:flex"
+                    onClick={() => scroll("right")}
+                  >
+                    ▶
+                  </button>
+                )}
+
+                {/* Horizontal Scroll Container */}
+                <div
+                  ref={scrollRef}
+                  className="flex gap-4 md:gap-6 overflow-x-auto pb-4 snap-x snap-mandatory scroll-smooth touch-pan-x"
+                  onScroll={() => {
+                    const container = scrollRef.current;
+                    if (!container) return;
+                    const scrollLeft = container.scrollLeft;
+                    const children = container.children.length;
+                    const childWidth = container.scrollWidth / children;
+                    const index = Math.round(scrollLeft / childWidth);
+                    setActiveIndex(Math.min(index, startup.pitch.length - 1));
+                  }}
+                >
+                  {startup.pitch.map((img, i) => (
+                    <img
+                      key={i}
+                      src={img}
+                      alt={`Pitch ${i + 1}`}
+                      className="w-64 sm:w-72 md:w-80 lg:w-[700px] h-40 sm:h-48 md:h-60 lg:h-[500px] flex-shrink-0 object-cover rounded-2xl shadow-lg snap-center hover:scale-105 transition-transform duration-300"
+                    />
+                  ))}
+                </div>
+
+                {/* Dots */}
+                <div className="flex justify-center mt-4 gap-2">
+                  {startup.pitch.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => {
+                        if (!scrollRef.current) return;
+                        const container = scrollRef.current;
+                        const childWidth = container.scrollWidth / container.children.length;
+                        container.scrollTo({
+                          left: i * childWidth,
+                          behavior: "smooth",
+                        });
+                      }}
+                      className={`w-3 h-3 rounded-full transition-colors ${
+                        i === activeIndex ? "bg-blue-600" : "bg-gray-300"
+                      }`}
+                    ></button>
+                  ))}
+                </div>
               </div>
             </div>
           )}
