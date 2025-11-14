@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useEffect } from "react";
 
 const Header = () => {
@@ -25,11 +26,11 @@ const Header = () => {
   }, []);
 
   const navItems = [
-    { name: "Home", href: "#home" },
-    { name: "Startups", href: "#startups" },
-    { name: "Investors", href: "#investors" },
-    { name: "Competitions", href: "#competitions" },
-    { name: "About", href: "#about" },
+    { name: "Home", href: "/" },
+    { name: "Startups", href: "/startups" },
+    { name: "Investors", href: "/investors" },
+    { name: "Competitions", href: "/competitions" },
+    { name: "About", href: "/about" },
   ];
 
   return (
@@ -52,7 +53,7 @@ const Header = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             {navItems.map((item) => (
-              <a
+              <Link
                 key={item.name}
                 href={item.href}
                 className="text-sm lg:text-base font-medium transition-all duration-300 hover:scale-105 relative group"
@@ -63,13 +64,13 @@ const Header = () => {
                 onMouseLeave={(e) => {
                   e.currentTarget.style.color = colors.textSecondary;
                 }}
-              >
+               >
                 {item.name}
                 <span
                   className="absolute -bottom-1 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full"
                   style={{ backgroundColor: colors.textPrimary }}
                 ></span>
-              </a>
+              </Link>
             ))}
           </div>
 
