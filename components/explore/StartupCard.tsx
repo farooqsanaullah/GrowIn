@@ -27,7 +27,6 @@ const StartupCard: React.FC<StartupCardProps> = ({ startup }) => {
         className="group relative bg-white rounded-xl shadow-md overflow-hidden flex flex-col h-full transform transition-all duration-300 ease-out hover:-translate-y-1 hover:scale-[1.02] hover:shadow-xl cursor-pointer"
         style={{ color: colors.textPrimary }}
       >
-        {/* Cover Image */}
         <div className="relative h-48 w-full overflow-hidden">
           <img
             src={profilePic}
@@ -35,7 +34,6 @@ const StartupCard: React.FC<StartupCardProps> = ({ startup }) => {
             className="w-full h-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
           />
 
-          {/* Badges */}
           <div className="absolute top-2 left-2 flex gap-1 opacity-95">
             {startup.badges?.slice(0, 2).map((badge, i) => (
               <span
@@ -63,7 +61,6 @@ const StartupCard: React.FC<StartupCardProps> = ({ startup }) => {
             )}
           </div>
 
-          {/* Like Button */}
           <button
             className="absolute top-2 right-2 p-2 rounded-full shadow-md transition-all duration-300 hover:scale-110"
             style={{
@@ -76,7 +73,6 @@ const StartupCard: React.FC<StartupCardProps> = ({ startup }) => {
           </button>
         </div>
 
-        {/* Founder Picture */}
         <div className="absolute top-36 right-4 z-10">
           <img
             src={profilePic}
@@ -84,8 +80,6 @@ const StartupCard: React.FC<StartupCardProps> = ({ startup }) => {
             className="w-20 h-20 rounded-full border-4 border-white shadow-md object-cover transition-transform duration-300 group-hover:scale-105"
           />
         </div>
-
-        {/* Details */}
         <div className="pt-10 p-4 flex flex-col flex-1">
           <h3
             className="font-bold text-lg truncate"
@@ -103,14 +97,11 @@ const StartupCard: React.FC<StartupCardProps> = ({ startup }) => {
           >
             {startup.description || ""}
           </p>
-
-          {/* Rating + Followers */}
           <div
             className="flex items-center justify-between mt-4 text-sm"
             style={{ color: colors.textSecondary }}
           >
             <div className="flex items-center gap-1">
-              {/* ⭐ Stars according to avgRating */}
               {[...Array(5)].map((_, i) => {
                 const fill =
                   i < fullStars
@@ -138,8 +129,6 @@ const StartupCard: React.FC<StartupCardProps> = ({ startup }) => {
               </span>
             </div>
           </div>
-
-          {/* Category + Raised */}
           <div className="flex justify-between mt-3">
             <span
               className="px-2 py-1 text-xs rounded-full font-medium"

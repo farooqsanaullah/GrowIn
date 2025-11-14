@@ -51,7 +51,6 @@ const FiltersBar: React.FC<FiltersBarProps> = ({
   const scrollRef = useRef<HTMLDivElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
@@ -122,7 +121,6 @@ const FiltersBar: React.FC<FiltersBarProps> = ({
       ref={wrapperRef}
       className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 px-3 md:px-6 py-3 bg-white rounded-xl border border-gray-100 shadow-sm sticky top-0 z-20 mx-2 sm:mx-6 md:mx-20"
     >
-      {/* Industries scroll */}
       <div className="flex items-center w-full md:w-auto flex-1">
         <button
           onClick={() => scroll("left")}
@@ -165,7 +163,6 @@ const FiltersBar: React.FC<FiltersBarProps> = ({
         </button>
       </div>
 
-      {/* Dropdown filters */}
       <div className="flex items-center justify-end gap-2 sm:gap-3 w-full md:w-auto">
         <Dropdown label="Filters" options={batchFilters} filterKey="batch" />
         <Dropdown label="Popular Searches" options={categories} filterKey="category" />

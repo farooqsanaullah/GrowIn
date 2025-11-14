@@ -1,7 +1,8 @@
 "use client";
 import React, { useRef } from "react";
-import StartupCard, { Startup } from "./StartupCard";
+import StartupCard from "@/components/explore/StartupCard";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Startup } from "@/types/startup";
 
 interface HorizontalSectionProps {
   title: string;
@@ -13,7 +14,7 @@ const HorizontalSection: React.FC<HorizontalSectionProps> = ({ title, startups }
 
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {
-      const width = scrollRef.current.clientWidth; // visible width
+      const width = scrollRef.current.clientWidth;
       scrollRef.current.scrollBy({
         left: direction === "right" ? width : -width,
         behavior: "smooth",
@@ -22,6 +23,9 @@ const HorizontalSection: React.FC<HorizontalSectionProps> = ({ title, startups }
   };
 
   if (startups.length === 0) return null;
+
+  const limitedStartups = startups.slice(0, 7);
+  const hasMore = startups.length > 7;
 
   return (
     <div className="mb-8 relative group md:px-30 sm:px-4">
@@ -37,22 +41,42 @@ const HorizontalSection: React.FC<HorizontalSectionProps> = ({ title, startups }
         </button>
 
         <div
-        ref={scrollRef}
-        className="flex gap-4 overflow-x-auto px-2 pb-4 scroll-smooth scrollbar-hide"
+          ref={scrollRef}
+          className="flex gap-4 overflow-x-auto px-2 pb-4 scroll-smooth scrollbar-hide"
         >
-          {startups.map((startup) => (
+          {limitedStartups.map((startup) => (
             <div
               key={startup._id}
-              className="
-                flex-shrink-0 
-                w-full 
-                sm:w-[calc(50%-1rem)] 
-                lg:w-[calc(25%-1rem)]
-              "
+              className="flex-shrink-0 w-full sm:w-[calc(50%-1rem)] lg:w-[calc(25%-1rem)]"
             >
               <StartupCard startup={startup} />
             </div>
           ))}
+
+          {hasMore && (
+            <a
+              href={`/explore`}
+              className="
+                flex-shrink-0 
+                w-full sm:w-[calc(50%-1rem)] lg:w-[calc(25%-1rem)]
+                rounded-xl 
+                bg-gradient-to-br from-[#E3F6FF] to-[#F9FDFF]
+                border border-[#CDEEFF]
+                hover:from-[#D8F1FF] hover:to-white
+                shadow-md hover:shadow-lg
+                transition 
+                flex flex-col items-center justify-center p-8
+              "
+            >
+              <div className="text-gray-800 font-semibold text-lg tracking-wide">See More</div>
+              <div className="text-gray-500 text-sm mt-1">Explore all in {title}</div>
+
+              <div className="mt-4 w-12 h-12 rounded-full bg-white shadow flex items-center justify-center">
+                <ChevronRight size={22} className="text-gray-700" />
+              </div>
+            </a>
+
+          )}
         </div>
 
         <button

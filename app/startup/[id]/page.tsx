@@ -140,7 +140,7 @@ const StartupProfilePage: React.FC = () => {
           {/* Description */}
           {startup.description && (
             <div className="bg-white rounded-2xl p-6 shadow-md">
-              <p className="text-gray-700 leading-relaxed">{startup.description}</p>
+              <p className="leading-relaxed" style={{color: "var(--text-primary)"}}>{startup.description}</p>
             </div>
           )}
 
@@ -151,7 +151,7 @@ const StartupProfilePage: React.FC = () => {
               {visibleTeam.map((member) => (
                 <div key={member.id} className="flex-shrink-0 w-64 snap-start">
                   <div className="flex gap-4 items-start">
-                    <div className="w-16 h-16 rounded-full overflow-hidden ring-4 ring-blue-200 flex-shrink-0">
+                    <div className="w-16 h-16 rounded-full overflow-hidden ring-4 ring-bloack-200 flex-shrink-0 ml-2 mt-2">
                       <img
                         src={member.profilePic}
                         alt={member.name}
@@ -177,7 +177,6 @@ const StartupProfilePage: React.FC = () => {
             )}
           </div>
 
-          {/* Pitch Deck */}
           {startup.pitch && startup.pitch.length > 0 && (
             <div className="bg-white rounded-2xl p-6 shadow-md relative">
               <h2 className="text-2xl font-bold mb-4">Pitch Deck</h2>
@@ -204,7 +203,7 @@ const StartupProfilePage: React.FC = () => {
             <h2 className="text-2xl font-bold mb-4">Investment Opportunity</h2>
 
             <div className="space-y-3 mb-4">
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-600">Equity Range</h3>
+              <h3 className="text-sm font-semibold uppercase tracking-wide" style={{color: "var(--text-primary)"}}>Equity Range</h3>
               {startup.equityRange.map((eq, i) => (
                 <div
                   key={i}
@@ -228,23 +227,23 @@ const StartupProfilePage: React.FC = () => {
                   className="w-full border-2 border-gray-300 rounded-lg pl-7 pr-3 py-2 text-base focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none"
                 />
               </div>
-              <button className="w-full mt-3 py-2 font-semibold rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition">
+              <button className="w-full mt-3 py-2 font-semibold rounded-lg hover:bg-blue-600 transition" style={{backgroundColor: "var(--bg-primary)", color: "var(--text-primary)"}}>
                 Invest Now
               </button>
             </div>
 
             <div className="mt-4 pt-4 border-t border-gray-200 space-y-2">
-              <div className="flex justify-between text-gray-600">
+              <div className="flex justify-between" style={{color: "var(--text-primary)"}}>
                 <span>Total Raised</span>
-                <span className="font-bold text-gray-900">${totalInvestment.toLocaleString()}</span>
+                <span className="font-bold" style={{color: "var(--text-primary)"}}>${totalInvestment.toLocaleString()}</span>
               </div>
-              <div className="flex justify-between text-gray-600">
+              <div className="flex justify-between " style={{color: "var(--text-primary)"}}>
                 <span>Followers</span>
-                <span className="font-bold text-gray-900">{startup.followers.toLocaleString()}</span>
+                <span className="font-bold" style={{color: "var(--text-primary)"}}>{startup.followers.toLocaleString()}</span>
               </div>
 
-              <div className="flex justify-between items-center mt-3">
-                <span className="text-gray-600 text-sm">Rating</span>
+              <div className="flex justify-between items-center mt-3" style={{color: "var(--text-primary)"}}>
+                <span className=" text-sm">Rating</span>
                 <div className="flex items-center gap-1">
                   <Star className="text-yellow-400 fill-yellow-400" size={16} />
                   <span className="font-bold text-gray-900">{avgRating.toFixed(1)}</span>
@@ -271,7 +270,7 @@ const StartupProfilePage: React.FC = () => {
               ))}
             </div>
             {userRating && (
-              <p className="text-sm text-center text-gray-600">
+              <p className="text-sm text-center" style={{color: "var(--text-primary)"}}>
                 You rated this {userRating} star{userRating > 1 ? "s" : ""}.
               </p>
             )}
