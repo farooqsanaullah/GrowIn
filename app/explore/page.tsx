@@ -11,7 +11,7 @@ export default async function ExplorePage() {
   const active = data.filter((s) => s.status === "Active");
 
   return (
-    <div className="p-4">
+    <div className="p-4 font-montserrat">
       <h1 className="text-2xl font-bold mb-4 ml-20">Explore Startups</h1>
       <ClientExplore data={data} trending={trending} funded={funded} active={active} />
     </div>
