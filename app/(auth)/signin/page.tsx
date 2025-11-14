@@ -109,7 +109,6 @@ export default function LoginPage() {
                 placeholder="••••••••"
                 className="mt-2 bg-input text-foreground border-border pr-10"
                 {...register("password", {
-                  required: "Password is required",
                 })}
               />
               {isPassEntered && (

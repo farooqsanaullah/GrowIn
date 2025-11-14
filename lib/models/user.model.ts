@@ -3,6 +3,7 @@ import { EMAIL_REGEX } from "@/lib/constants/regex";
 
 interface SocialLinks {
   twitter?: string;
+  github?: string;
   linkedin?: string;
   website?: string;
 }
@@ -14,13 +15,14 @@ interface FundingRange {
 
 export interface IUser {
   userName: string;
-  name: string;
+  name?: string;
   email: string;
-  password: string;
-  role: "investor" | "founder" | "admin";
+  password?: string;
+  role: "investor" | "founder";
   profileImage?: string;
   bio?: string;
   socialLinks?: SocialLinks;
+  provider: "credentials" | "google" | "github";
   // Address
   city?: string;
   country?: string;
@@ -58,7 +60,6 @@ const userSchema = new Schema<IUser>(
     },
     password: {
       type: String,
-      required: [true, "Password is required"],
       minlength: [8, "Password must be at least 8 characters long"],
       select: false,
     },
@@ -69,6 +70,7 @@ const userSchema = new Schema<IUser>(
         message: "Role must be either 'investor' or 'founder'",
       },
       required: [true, "Role is required"],
+      default: "investor",
     },
     profileImage: { type: String, trim: true },
     bio: { type: String, trim: true, maxlength: [500, "Bio too long"] },
@@ -79,6 +81,14 @@ const userSchema = new Schema<IUser>(
         match: [
           /^(https?:\/\/)?(www\.)?twitter\.com\/[A-Za-z0-9_]{1,15}$/,
           "Invalid Twitter URL",
+        ],
+      },
+      github: {
+        type: String,
+        trim: true,
+        match: [
+          /^(https?:\/\/)?(www\.)?github\.com\/.*$/,
+          "Invalid Github URL",
         ],
       },
       linkedin: {
@@ -94,6 +104,11 @@ const userSchema = new Schema<IUser>(
         trim: true,
         match: [/^(https?:\/\/)?[^\s$.?#].[^\s]*$/, "Invalid website URL"],
       },
+    },
+    provider: { 
+      type: String, 
+      enum: ["credentials", "google", "github"], 
+      default: "credentials" 
     },
     // Address
     city: { type: String, trim: true },
