@@ -14,6 +14,7 @@ interface Founder {
   role: string;
   description: string;
 }
+
 interface Investment {
   startup_id: string;
   investor_id: string;
@@ -64,7 +65,10 @@ const StartupProfilePage: React.FC = () => {
               <h1 className="text-3xl font-bold mb-1">{startup.title}</h1>
               <p className="text-lg text-gray-600">{startup.industry}</p>
             </div>
-            <button className="px-5 py-2 text-sm font-semibold rounded-full shadow-md transition" style={{backgroundColor: "var(--bg-primary)", color: "var(--text-primary)"}}>
+            <button
+              className="px-5 py-2 text-sm font-semibold rounded-full shadow-md transition"
+              style={{ backgroundColor: "var(--bg-primary)", color: "var(--text-primary)" }}
+            >
               Follow
             </button>
           </div>
@@ -140,7 +144,9 @@ const StartupProfilePage: React.FC = () => {
           {/* Description */}
           {startup.description && (
             <div className="bg-white rounded-2xl p-6 shadow-md">
-              <p className="leading-relaxed" style={{color: "var(--text-primary)"}}>{startup.description}</p>
+              <p className="leading-relaxed" style={{ color: "var(--text-primary)" }}>
+                {startup.description}
+              </p>
             </div>
           )}
 
@@ -151,7 +157,7 @@ const StartupProfilePage: React.FC = () => {
               {visibleTeam.map((member) => (
                 <div key={member.id} className="flex-shrink-0 w-64 snap-start">
                   <div className="flex gap-4 items-start">
-                    <div className="w-16 h-16 rounded-full overflow-hidden ring-4 ring-bloack-200 flex-shrink-0 ml-2 mt-2">
+                    <div className="w-16 h-16 rounded-full overflow-hidden ring-4 ring-black-200 flex-shrink-0 ml-2 mt-2">
                       <img
                         src={member.profilePic}
                         alt={member.name}
@@ -177,13 +183,11 @@ const StartupProfilePage: React.FC = () => {
             )}
           </div>
 
+          {/* Pitch Deck */}
           {startup.pitch && startup.pitch.length > 0 && (
             <div className="bg-white rounded-2xl p-6 shadow-md relative">
               <h2 className="text-2xl font-bold mb-4">Pitch Deck</h2>
-              <div
-                id="pitchScroll"
-                className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory"
-              >
+              <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory">
                 {startup.pitch.map((img, i) => (
                   <img
                     key={i}
@@ -199,81 +203,90 @@ const StartupProfilePage: React.FC = () => {
 
         {/* Sidebar */}
         <div className="w-full lg:w-96 flex-shrink-0 space-y-6">
-          <div className="rounded-2xl p-6 shadow-md bg-gray-50">
-            <h2 className="text-2xl font-bold mb-4">Investment Opportunity</h2>
+          <div className="lg:sticky lg:top-20 space-y-6">
+            {/* Investment Opportunity */}
+            <div className="rounded-2xl p-6 shadow-md bg-gray-50">
+              <h2 className="text-2xl font-bold mb-4">Investment Opportunity</h2>
 
-            <div className="space-y-3 mb-4">
-              <h3 className="text-sm font-semibold uppercase tracking-wide" style={{color: "var(--text-primary)"}}>Equity Range</h3>
-              {startup.equityRange.map((eq, i) => (
-                <div
-                  key={i}
-                  className="flex justify-between items-center p-3 rounded-lg bg-white shadow-sm"
+              <div className="space-y-3 mb-4">
+                <h3 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--text-primary)" }}>
+                  Equity Range
+                </h3>
+                {startup.equityRange.map((eq, i) => (
+                  <div
+                    key={i}
+                    className="flex justify-between items-center p-3 rounded-lg bg-white shadow-sm"
+                  >
+                    <span className="text-gray-700 text-sm font-medium">{eq.range}</span>
+                    <span className="font-bold text-gray-900 text-lg">{eq.equity}%</span>
+                  </div>
+                ))}
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Investment Amount</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">$</span>
+                  <input
+                    type="text"
+                    value={investmentAmount}
+                    onChange={(e) => setInvestmentAmount(e.target.value)}
+                    placeholder="Enter amount"
+                    className="w-full border-2 border-gray-300 rounded-lg pl-7 pr-3 py-2 text-base focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none"
+                  />
+                </div>
+                <button
+                  className="w-full mt-3 py-2 font-semibold rounded-lg hover:bg-blue-600 transition"
+                  style={{ backgroundColor: "var(--bg-primary)", color: "var(--text-primary)" }}
                 >
-                  <span className="text-gray-700 text-sm font-medium">{eq.range}</span>
-                  <span className="font-bold text-gray-900 text-lg">{eq.equity}%</span>
+                  Invest Now
+                </button>
+              </div>
+
+              <div className="mt-4 pt-4 border-t border-gray-200 space-y-2">
+                <div className="flex justify-between" style={{ color: "var(--text-primary)" }}>
+                  <span>Total Raised</span>
+                  <span className="font-bold">${totalInvestment.toLocaleString()}</span>
                 </div>
-              ))}
-            </div>
+                <div className="flex justify-between" style={{ color: "var(--text-primary)" }}>
+                  <span>Followers</span>
+                  <span className="font-bold">{startup.followers.toLocaleString()}</span>
+                </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Investment Amount</label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">$</span>
-                <input
-                  type="text"
-                  value={investmentAmount}
-                  onChange={(e) => setInvestmentAmount(e.target.value)}
-                  placeholder="Enter amount"
-                  className="w-full border-2 border-gray-300 rounded-lg pl-7 pr-3 py-2 text-base focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none"
-                />
-              </div>
-              <button className="w-full mt-3 py-2 font-semibold rounded-lg hover:bg-blue-600 transition" style={{backgroundColor: "var(--bg-primary)", color: "var(--text-primary)"}}>
-                Invest Now
-              </button>
-            </div>
-
-            <div className="mt-4 pt-4 border-t border-gray-200 space-y-2">
-              <div className="flex justify-between" style={{color: "var(--text-primary)"}}>
-                <span>Total Raised</span>
-                <span className="font-bold" style={{color: "var(--text-primary)"}}>${totalInvestment.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between " style={{color: "var(--text-primary)"}}>
-                <span>Followers</span>
-                <span className="font-bold" style={{color: "var(--text-primary)"}}>{startup.followers.toLocaleString()}</span>
-              </div>
-
-              <div className="flex justify-between items-center mt-3" style={{color: "var(--text-primary)"}}>
-                <span className=" text-sm">Rating</span>
-                <div className="flex items-center gap-1">
-                  <Star className="text-yellow-400 fill-yellow-400" size={16} />
-                  <span className="font-bold text-gray-900">{avgRating.toFixed(1)}</span>
-                  <span className="text-xs text-gray-500">({ratingCount})</span>
+                <div className="flex justify-between items-center mt-3" style={{ color: "var(--text-primary)" }}>
+                  <span className="text-sm">Rating</span>
+                  <div className="flex items-center gap-1">
+                    <Star className="text-yellow-400 fill-yellow-400" size={16} />
+                    <span className="font-bold text-gray-900">{avgRating.toFixed(1)}</span>
+                    <span className="text-xs text-gray-500">({ratingCount})</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div className="rounded-2xl p-6 shadow-md bg-gray-50">
-            <h3 className="text-xl font-semibold mb-3 text-center">Leave a Review</h3>
-            <div className="flex gap-2 justify-center mb-2">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Star
-                  key={star}
-                  size={28}
-                  onClick={() => handleRating(star)}
-                  className={`cursor-pointer transition ${
-                    userRating && star <= userRating
-                      ? "fill-yellow-400 text-yellow-400"
-                      : "text-gray-300 hover:text-yellow-400"
-                  }`}
-                />
-              ))}
+            {/* Leave a Review */}
+            <div className="rounded-2xl p-6 shadow-md bg-gray-50">
+              <h3 className="text-xl font-semibold mb-3 text-center">Leave a Review</h3>
+              <div className="flex gap-2 justify-center mb-2">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star
+                    key={star}
+                    size={28}
+                    onClick={() => handleRating(star)}
+                    className={`cursor-pointer transition ${
+                      userRating && star <= userRating
+                        ? "fill-yellow-400 text-yellow-400"
+                        : "text-gray-300 hover:text-yellow-400"
+                    }`}
+                  />
+                ))}
+              </div>
+              {userRating && (
+                <p className="text-sm text-center" style={{ color: "var(--text-primary)" }}>
+                  You rated this {userRating} star{userRating > 1 ? "s" : ""}.
+                </p>
+              )}
             </div>
-            {userRating && (
-              <p className="text-sm text-center" style={{color: "var(--text-primary)"}}>
-                You rated this {userRating} star{userRating > 1 ? "s" : ""}.
-              </p>
-            )}
           </div>
         </div>
       </div>
