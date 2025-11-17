@@ -2,7 +2,7 @@
 import React from "react";
 import Link from "next/link";
 import { Heart, Star, Users } from "lucide-react";
-import { Startup } from "@/types/startup"; // ✅ Import Startup interface from types
+import { Startup } from "@/types/startup";
 
 interface StartupCardProps {
   startup: Startup;
@@ -24,21 +24,21 @@ const StartupCard: React.FC<StartupCardProps> = ({ startup }) => {
   return (
     <Link href={`/startup/${startup._id}`} className="block">
       <div
-        className="group relative bg-white rounded-xl shadow-md overflow-hidden flex flex-col h-full transform transition-all duration-300 ease-out hover:-translate-y-1 hover:scale-[1.02] hover:shadow-xl cursor-pointer"
+        className="relative bg-white shadow-md overflow-visible flex flex-col h-full cursor-pointer transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-lg md: mt-3 sm: mt-1 rounded-xl"
         style={{ color: colors.textPrimary }}
       >
-        <div className="relative h-48 w-full overflow-hidden">
+        <div className="relative h-48 w-full overflow-hidden rounded-t-xl">
           <img
             src={profilePic}
             alt={`${startup.title} cover`}
-            className="w-full h-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
+            className="w-full h-full object-cover"
           />
 
           <div className="absolute top-2 left-2 flex gap-1 opacity-95">
             {startup.badges?.slice(0, 2).map((badge, i) => (
               <span
                 key={badge}
-                className="text-xs px-2 py-1 rounded-full font-medium transition-all duration-300 group-hover:scale-105 backdrop-blur-sm"
+                className="text-xs px-2 py-1 rounded-full font-medium backdrop-blur-sm"
                 style={{
                   backgroundColor:
                     i % 2 === 0 ? colors.bgPrimary : colors.bgSecondary,
@@ -62,10 +62,8 @@ const StartupCard: React.FC<StartupCardProps> = ({ startup }) => {
           </div>
 
           <button
-            className="absolute top-2 right-2 p-2 rounded-full shadow-md transition-all duration-300 hover:scale-110"
-            style={{
-              backgroundColor: "rgba(255,255,255,0.9)",
-            }}
+            className="absolute top-2 right-2 p-2 rounded-full shadow-md"
+            style={{ backgroundColor: "rgba(255,255,255,0.9)" }}
             onClick={(e) => e.stopPropagation()}
             aria-label="Like startup"
           >
@@ -73,13 +71,18 @@ const StartupCard: React.FC<StartupCardProps> = ({ startup }) => {
           </button>
         </div>
 
+
         <div className="absolute top-36 right-4 z-10">
-          <img
-            src={profilePic}
-            alt="Founder"
-            className="w-20 h-20 rounded-full border-4 border-white shadow-md object-cover transition-transform duration-300 group-hover:scale-105"
-          />
+          <div className="relative w-20 h-20 rounded-full border-4 border-white shadow-md overflow-hidden transition-transform duration-300 ease-in-out hover:scale-105 cursor-pointer">
+            <img
+              src={profilePic}
+              alt="Founder"
+              className="w-full h-full rounded-full object-cover"
+            />
+            <span className="absolute inset-0 rounded-full border-2 border-blue-400 opacity-0 transition-opacity duration-300 hover:opacity-100"></span>
+          </div>
         </div>
+
         <div className="pt-10 p-4 flex flex-col flex-1">
           <h3
             className="font-bold text-lg truncate"
@@ -87,16 +90,20 @@ const StartupCard: React.FC<StartupCardProps> = ({ startup }) => {
           >
             {startup.title}
           </h3>
-          <p className="text-sm truncate" style={{ color: colors.textSecondary }}>
+          <p
+            className="text-sm truncate"
+            style={{ color: colors.textSecondary }}
+          >
             {startup.industry}
           </p>
 
           <p
-            className="text-sm mt-2 line-clamp-3 group-hover:line-clamp-none transition-all duration-500"
+            className="text-sm mt-2 line-clamp-3"
             style={{ color: colors.textMuted }}
           >
             {startup.description || ""}
           </p>
+
           <div
             className="flex items-center justify-between mt-4 text-sm"
             style={{ color: colors.textSecondary }}
@@ -113,7 +120,7 @@ const StartupCard: React.FC<StartupCardProps> = ({ startup }) => {
                   <Star
                     key={i}
                     size={16}
-                    className={`${fill} transition-transform duration-300 group-hover:scale-110`}
+                    className={`${fill}`}
                     fill={fill.includes("yellow") ? "currentColor" : "none"}
                   />
                 );
@@ -129,6 +136,7 @@ const StartupCard: React.FC<StartupCardProps> = ({ startup }) => {
               </span>
             </div>
           </div>
+
           <div className="flex justify-between mt-3">
             <span
               className="px-2 py-1 text-xs rounded-full font-medium"
