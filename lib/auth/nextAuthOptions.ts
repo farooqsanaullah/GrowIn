@@ -4,7 +4,6 @@ import GithubProvider from "next-auth/providers/github";
 import { NextAuthOptions } from "next-auth";
 import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
 import { RateLimiterMemory } from "rate-limiter-flexible";
-
 import { connectDB } from "@/lib/db/connect";
 import { getUserByEmail, verifyPassword } from "@/lib/auth/helpers";
 import User from "@/lib/models/user.model";
@@ -91,11 +90,11 @@ export const authOptions: NextAuthOptions = {
   // adapter: MongoDBAdapter(clientPromise),
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: 7 * 24 * 60 * 60, // 30 days
     updateAge: 24 * 60 * 60, // Update session every 24 hours
   },
   pages: {
-    // signIn: "/signin",   // custom sign-in page
+    signIn: "/signin",   // custom sign-in page
     // error: "/signin",    // redirects OAuth/sign-in errors to the same sign-in page
     // we could also have:
     // signOut: "/signout", // custom sign-out page
@@ -180,10 +179,8 @@ export const authOptions: NextAuthOptions = {
       await connectDB();
 
       try {
-        // Only for OAuth providers
-        if (!account?.provider || (account.provider !== "google" && account.provider !== "github")) {
-          return true;
-        }
+        // Only handle google/github
+        if (!["google", "github"].includes(account?.provider || "") || !account?.provider) return true;
 
         const p = profile as OAuthProfile;
 
@@ -200,57 +197,63 @@ export const authOptions: NextAuthOptions = {
         // Check if user already exists
         const existingUser = await User.findOne({ email });
 
+        // ----- If user already exists -----
         if (existingUser) {
-          // Account linking: Update provider if different or missing
-          if (!existingUser.provider || existingUser.provider !== account.provider) {
-            existingUser.provider = account.provider;
-            
-            // Update profile data if empty
-            if (!existingUser.email && sanitizedData.email)
-              existingUser.email = sanitizedData.email;
-            if (!existingUser.userName && sanitizedData.userName)
-              existingUser.userName = sanitizedData.userName || sanitizedData.email.split('@')[0].substring(0, 50);
-            if (!existingUser.name && sanitizedData.name)
-              existingUser.name = sanitizedData.name || sanitizedData.email.split('@')[0].substring(0, 100);
-            if (!existingUser.profileImage && sanitizedData.profileImage)
-              existingUser.profileImage = sanitizedData.profileImage;
-            
-            await existingUser.save();
-            isDev && console.log(`[OAuth] Linked existing user to ${account.provider}`);
+          // Link provider
+          if (!existingUser.provider || existingUser.provider !== account?.provider) {
+            existingUser.provider = account?.provider;
           }
-        } else {
-          // Create new OAuth user
-          const newUser = await User.create({
-            email: sanitizedData.email,
-            provider: account.provider,
-            name: sanitizedData.name,
-            userName: sanitizedData.userName,
-            profileImage: sanitizedData.profileImage,
-            role: "investor",
-            bio: sanitizedData.bio,
-            socialLinks: sanitizedData.socialLinks,
-            city: sanitizedData.city,
-            country: sanitizedData.country,
-          });
 
-          isDev && console.log("[OAuth] Created new OAuth user:", newUser.email);
+          // Fill missing fields only (DO NOT override user custom data)
+          existingUser.userName ||= sanitizedData.userName;
+          existingUser.name ||= sanitizedData.name;
+          existingUser.profileImage ||= sanitizedData.profileImage;
+
+          await existingUser.save();
+
+          // Attaching DB info to user object (so JWT receives it)
+          user.id = existingUser._id.toString();
+          user.role = existingUser.role;
+          
+          isDev && console.log(`[OAuth] Linked existing user to ${account.provider}`);
+
+          return true;
         }
 
+        // ----- Create new OAuth user -----
+        const newUser = await User.create({
+          email: sanitizedData.email,
+          provider: account?.provider,
+          name: sanitizedData.name,
+          userName: sanitizedData.userName,
+          profileImage: sanitizedData.profileImage,
+          role: "investor",
+          bio: sanitizedData.bio,
+          socialLinks: sanitizedData.socialLinks,
+          city: sanitizedData.city,
+          country: sanitizedData.country,
+        });
+
+        // Attaching DB fields so JWT sees them
+        user.id = newUser._id.toString();
+        user.role = newUser.role;
+
         return true;
-      } catch (error) {
-        console.error("[OAuth] SignIn callback error:", error);
+      } catch (err) {
+        console.error("[OAuth] SignIn callback error:", err);
         return false;
       }
     },
-
+    
     //  [2] JWT Callback - Handle token refresh and updates
     async jwt({ token, user, account, trigger, session }) {
       // Initial sign in
-      if (user) 
+      if (user) {
         token.id = user.id;
-        console.log("🚀 ~ [JWT] (token|user).id:", user.id)
+        console.log("🚀 ~ [JWT] (user|token).id:", user.id)
         token.role = user.role;     
-        console.log("🚀 ~ [JWT] (token|user).role:", user.role)
+        console.log("🚀 ~ [JWT] (user|token).role:", user.role)
+      }
 
       // Refresh user data on session update
       if (trigger === "update" && session) {
@@ -288,5 +291,5 @@ export const authOptions: NextAuthOptions = {
     },
   },
   secret: NEXTAUTH_SECRET!,
-  debug: isDev,
+  // debug: isDev,
 };
