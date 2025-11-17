@@ -4,7 +4,7 @@ import GithubProvider from "next-auth/providers/github";
 import { NextAuthOptions } from "next-auth";
 import { RateLimiterMemory } from "rate-limiter-flexible";
 import { connectDB } from "@/lib/db/connect";
-import { getUserByEmail, verifyPassword } from "@/lib/auth/helpers";
+import { generateUniqueUsername, getUserByEmail, verifyPassword } from "@/lib/auth/helpers";
 import User from "@/lib/models/user.model";
 
 const {
@@ -165,7 +165,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     // Redirect on success
     async redirect({ url, baseUrl }) {
-      return baseUrl + "/"; // or dashboard/home
+      return baseUrl + "/";
     },
 
     //  [1] signIn → Handle OAuth user creation/account linking
@@ -202,7 +202,7 @@ export const authOptions: NextAuthOptions = {
           }
 
           // Fill missing fields only (DO NOT override user custom data)
-          existingUser.userName ||= sanitizedData.userName;
+          existingUser.userName ||= await generateUniqueUsername(sanitizedData.userName, sanitizedData.email);
           existingUser.name ||= sanitizedData.name;
           existingUser.profileImage ||= sanitizedData.profileImage;
 
@@ -218,11 +218,12 @@ export const authOptions: NextAuthOptions = {
         }
 
         // ----- Create new OAuth user -----
+        const uniqueUserName = await generateUniqueUsername(sanitizedData.userName, sanitizedData.email);
         const newUser = await User.create({
           email: sanitizedData.email,
           provider: account?.provider,
           name: sanitizedData.name,
-          userName: sanitizedData.userName,
+          userName: uniqueUserName,
           profileImage: sanitizedData.profileImage,
           role: "investor",
           bio: sanitizedData.bio,

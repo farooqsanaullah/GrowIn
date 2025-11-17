@@ -45,3 +45,23 @@ export function isValidUserName(name: string) {
 export function isValidRole(role: string) {
   return ["investor", "founder"].includes(role);
 }
+
+export async function generateUniqueUsername(userName?: string, email?: string) {
+  let candidate = userName?.trim() || email?.split("@")[0];
+  if (!candidate) return null;
+
+  // Check if username is free
+  if (!(await User.findOne({ userName: candidate }))) return candidate.slice(0, 30);
+
+  // Fallback: email prefix (if not same as candidate)
+  if (email) {
+    const prefix = email.split("@")[0];
+    if (prefix !== candidate && !(await User.findOne({ userName: prefix }))) {
+      return prefix.slice(0, 30);
+    }
+    candidate = prefix;
+  }
+
+  // Final fallback: use MongoDB ObjectId (guaranteed unique)
+  return `${candidate}-${new Date().getTime()}`.slice(0, 30);
+};
