@@ -15,18 +15,24 @@ export async function GET(request: NextRequest) {
     await connectDB();
 
     const { searchParams } = new URL(request.url);
-    const { page, limit, skip } = parseQueryParams(searchParams);
 
-    const query: any = {};
+    const page = Number(searchParams.get("page") || 1);
+    const limit = Number(searchParams.get("limit") || 10);
+    const skip = (page - 1) * limit;
+
+    const query: Record<string, any> = {};
 
     const categoryType = searchParams.get("categoryType");
     const industry = searchParams.get("industry");
     const status = searchParams.get("status");
-    const search = searchParams.get("search");
+    const badges = searchParams.get("badges");
 
     if (categoryType) query.categoryType = categoryType;
     if (industry) query.industry = industry;
     if (status) query.status = status;
+    if (badges) query.badges = { $in: [badges] };
+
+    const search = searchParams.get("search");
     if (search) {
       query.$text = { $search: search };
     }
@@ -39,25 +45,19 @@ export async function GET(request: NextRequest) {
         .skip(skip)
         .limit(limit)
         .lean(),
+
       Startup.countDocuments(query),
     ]);
 
-    return successResponse(
-      startups,
-      "Startups retrieved successfully",
-      200,
-      {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      }
-    );
+    return successResponse(startups, "Startups retrieved successfully", 200, {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    });
+
   } catch (error: any) {
-    return errorResponse(
-      error.message || "Failed to fetch startups",
-      500
-    );
+    return errorResponse("Failed to fetch startups: " + error.message, 500);
   }
 }
 
