@@ -6,27 +6,26 @@ import { Startup } from "@/types/startup";
 import { useState, useMemo } from "react";
 
 interface ClientExploreProps {
-  data: Startup[];
   trending: Startup[];
   funded: Startup[];
   active: Startup[];
 }
 
-export default function ClientExplore({ data }: ClientExploreProps) {
+export default function ClientExplore({ active }: ClientExploreProps) {
   const [activeFilters, setActiveFilters] = useState<{ industry?: string; category?: string; batch?: string }>({});
 
-  const filteredData = useMemo(() => {
-    return data.filter((s) => {
+  const filteredactive = useMemo(() => {
+    return active.filter((s) => {
       const industryMatch = !activeFilters.industry || s.industry === activeFilters.industry;
       const categoryMatch = !activeFilters.category || s.categoryType === activeFilters.category;
       const batchMatch = !activeFilters.batch || s.badges?.includes(activeFilters.batch);
       return industryMatch && categoryMatch && batchMatch;
     });
-  }, [data, activeFilters]);
+  }, [active, activeFilters]);
 
-  const trendingFiltered = filteredData.filter((s) => s.badges?.includes("Trending"));
-  const fundedFiltered = filteredData.filter((s) => s.badges?.includes("Funded"));
-  const activeFiltered = filteredData.filter((s) => s.status === "Active");
+  const trendingFiltered = filteredactive.filter((s) => s.badges?.includes("Trending"));
+  const fundedFiltered = filteredactive.filter((s) => s.badges?.includes("Funded"));
+  const activeFiltered = filteredactive.filter((s) => s.status === "active");
 
   return (
     <div className="space-y-6">
