@@ -37,6 +37,7 @@ const HorizontalSection: React.FC<HorizontalSectionProps> = ({ title, startups }
           </button>
         )}
 
+        {/* SCROLL CONTAINER */}
         <div
           ref={scrollRef}
           className="flex gap-4 overflow-x-auto px-2 pb-4 scroll-smooth scrollbar-hide"
@@ -44,10 +45,11 @@ const HorizontalSection: React.FC<HorizontalSectionProps> = ({ title, startups }
           {limitedStartups.map((startup) => (
             <div
               key={startup._id}
-              className="flex-shrink-0 w-full sm:w-[calc(50%-1rem)] lg:w-[calc(25%-1rem)]"
+              className="flex-shrink-0 w-[280px] sm:w-[320px] lg:w-[360px]"
             >
               <StartupCard startup={startup} />
             </div>
+
           ))}
 
           {hasMore && (
@@ -55,7 +57,7 @@ const HorizontalSection: React.FC<HorizontalSectionProps> = ({ title, startups }
               href={`/explore`}
               className="
                 flex-shrink-0 
-                w-full sm:w-[calc(50%-1rem)] lg:w-[calc(25%-1rem)]
+                min-w-[80%] sm:min-w-[50%] lg:min-w-[25%]
                 rounded-xl 
                 hover:from-[#D8F1FF] hover:to-white
                 transition 
