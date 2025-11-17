@@ -2,12 +2,10 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import GithubProvider from "next-auth/providers/github";
 import { NextAuthOptions } from "next-auth";
-import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
 import { RateLimiterMemory } from "rate-limiter-flexible";
 import { connectDB } from "@/lib/db/connect";
 import { getUserByEmail, verifyPassword } from "@/lib/auth/helpers";
 import User from "@/lib/models/user.model";
-import clientPromise from "@/lib/db/mongoClient";
 
 const {
   NODE_ENV,
@@ -87,7 +85,6 @@ function sanitizeOAuthProfile(profile: OAuthProfile) {
 }
 
 export const authOptions: NextAuthOptions = {
-  // adapter: MongoDBAdapter(clientPromise),
   session: {
     strategy: "jwt",
     maxAge: 7 * 24 * 60 * 60, // 30 days
