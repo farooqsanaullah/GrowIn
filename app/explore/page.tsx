@@ -1,20 +1,31 @@
-import { Startup } from "@/types/startup";
-import startupsData from "@/app/data/startups.json";
+// app/explore/page.tsx
 import ClientExplore from "@/components/explore/ClientExplore";
+import { Startup } from "@/types/startup";
 
 export default async function ExplorePage() {
-  const data = startupsData as Startup[];
+  const baseUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/startups?limit=7`;
 
-  const trending = data.filter((s) => s.badges?.includes("Trending"));
-  const funded = data.filter((s) => s.badges?.includes("Funded"));
-  const active = data.filter((s) => s.status === "Active");
+  const [trendingRes, fundedRes, activeRes] = await Promise.all([
+    fetch(`${baseUrl}&badges=Trending`).then((res) => res.json()),
+    fetch(`${baseUrl}&badges=Funded`).then((res) => res.json()),
+    fetch(`${baseUrl}&status=active`).then((res) => res.json()),
+  ]);
+
+  const trending: Startup[] = trendingRes.data || [];
+  const funded: Startup[] = fundedRes.data || [];
+  const active: Startup[] = activeRes.data || [];
+
+  console.log("Trending Startups:", trending);
+  console.log("Funded Startups:", funded);
+  console.log("Active Startups:", active);
 
   return (
     <div className="p-4 sm:p-6 md:p-8 bg-gray-50">
       <h1 className="text-xl sm:text-xl md:text-2xl font-bold mb-4 md:mx-20 sm:mx-4 text-center sm:text-left">
         Invest in Innovation, Grow Together.
       </h1>
-      <ClientExplore data={data} trending={trending} funded={funded} active={active} />
+
+      <ClientExplore trending={trending} funded={funded} active={active} />
     </div>
   );
 }
