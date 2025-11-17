@@ -1,6 +1,16 @@
 import bcrypt from "bcrypt";
 import User from "@/lib/models/user.model";
+import jwt from "jsonwebtoken";
 import { EMAIL_REGEX } from "@/lib/constants/regex";
+
+const {
+  AUTH_SECRET,
+} = process.env;
+
+// --- JWT Utilities ---
+export function verifyToken(token: string): { userId: string } {
+  return jwt.verify(token, AUTH_SECRET!) as { userId: string };
+}
 
 // --- User helpers ---
 export async function getUserByEmail(email: string) {
