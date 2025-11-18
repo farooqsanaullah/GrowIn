@@ -1,8 +1,7 @@
 import { NextRequest } from "next/server";
 import { Resend } from "resend";
-import { getUserByEmail } from "@/lib/helpers/user";
-import { getSignedToken } from "@/lib/helpers/jwt"
-import { isValidEmail } from "@/lib/helpers/validation";
+import { getUserByEmail, getSignedToken } from "@/lib/helpers/backend";
+import { validateEmail } from "@/lib/helpers/shared" ;
 import { success, error } from "@/lib/auth/apiResponses";
 import { connectDB } from "@/lib/db/connect";
 
@@ -21,11 +20,11 @@ export async function POST(req: NextRequest) {
   try {
     const { email } = await req.json();
 
-    // const emailError = isValidEmail(email);
-    if (!isValidEmail(email)) return error("Invalid email", 422);
+    const emailError = validateEmail(email);
+    if (emailError) return error(emailError, 400);
 
     const user = await getUserByEmail(email);
-    if (!user) return error("Email not registered", 404);
+    if (!user) return error("Email not found", 404);
     if (!user.password) return error("OAuth accounts cannot reset passwords manually", 403);
 
     const resetToken = getSignedToken({ userId: user._id.toString() });

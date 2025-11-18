@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { isValidEmail } from "@/lib/helpers/validation";
+import { validateEmail } from "@/lib/helpers/shared";
 import type { FormErrors } from "@/lib/types/custom-types";
 import toast from "react-hot-toast";
 import { Loader } from "lucide-react";
@@ -19,17 +19,17 @@ export default function ForgotPassword() {
   };
 
   const handleBlur = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // const validationError = isValidEmail(e.target.value);
-    if (!isValidEmail(e.target.value)) setErrors((prev) => ({ ...prev, email: "Invalid email 1" }));
+    const validationError = validateEmail(e.target.value);
+    if (validationError) setErrors((prev) => ({ ...prev, email: validationError }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // validation again on submit not just on blur
-    // const emailError = isValidEmail(email);
-    if (!isValidEmail(email)) {
-      setErrors({ email: "Invalid email 2" });
+    const emailError = validateEmail(email);
+    if (emailError) {
+      setErrors({ email: emailError });
       return;
     }
 
