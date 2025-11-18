@@ -34,6 +34,14 @@ export function validatePassword(password: string): string | null {
   return null;
 }
 
+export function getPasswordStrength(password: string) {
+  const lengthCheck = password.length >= 8;
+  const specialCharCheck = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+  const digitCheck = /\d/.test(password);
+  
+  return { lengthCheck, specialCharCheck, digitCheck };
+}
+
 export function validateUsername(username: string): string | null {
   if (!username) 
     return "Username is required.";
