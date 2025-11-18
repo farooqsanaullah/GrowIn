@@ -1,13 +1,12 @@
 import { NextRequest } from "next/server";
 import { connectDB } from "@/lib/db/connect";
 import { 
-  isValidEmail, 
-  isValidPassword, 
-  isValidRole, 
-  isValidUserName 
-} from "@/lib/helpers/validation";
-import { getUserByEmail } from "@/lib/helpers/user";
-import { hashPassword } from "@/lib/helpers/auth";
+  validateEmail, 
+  validatePassword, 
+  validateRole, 
+  validateUsername,
+} from "@/lib/helpers/shared";
+import { hashPassword, getUserByEmail } from "@/lib/helpers/backend";
 import { success, error } from "@/lib/auth/apiResponses";
 import User from "@/lib/models/user.model";
 
@@ -24,13 +23,17 @@ export async function POST(req: NextRequest) {
     if (!userName || !email || !password || !role) return error("userName, email, password, and role are required", 400);
 
     // --- Check if user already exists ---
-    if (!isValidEmail(email)) return error("Invalid email format", 400);
-    if (await getUserByEmail(email)) return error("User already exists", 400);
+    const validationError = validateEmail(email);
+    if (validationError) return error(validationError, 400);
+    if (await getUserByEmail(email)) return error("User already exists", 409);
     
     // --- Validation ---
-    if (!isValidUserName(userName)) return error("Name must be 3-50 characters", 400);
-    if (!isValidPassword(password)) return error("Password must be at least 8 chars, include 1 digit and 1 special char", 400);
-    if (!isValidRole(role)) return error("Invalid role", 400);
+    const userNameError = validateUsername(userName);
+    if (userNameError) return error(userNameError, 400);
+    const passwordError = validatePassword(userName);
+    if (passwordError) return error(passwordError, 400);
+    const roleError = validateRole(userName);
+    if (roleError) return error(roleError, 400);
 
     const hashedPassword = await hashPassword(password);
 
