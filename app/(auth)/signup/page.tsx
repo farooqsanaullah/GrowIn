@@ -20,7 +20,7 @@ type SignupForm = {
   email: string;
   password: string;
   confirmPassword: string;
-  role: "investor" | "founder" | "admin";
+  role: "investor" | "founder";
 };
 
 const isDev = process.env.NODE_ENV === "development";
