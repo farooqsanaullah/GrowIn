@@ -83,7 +83,7 @@ export default function ResetPasswordPage() {
       <ChangePasswordModal
         isOpen={isOpen}
         onClose={handleClose}
-        isResetPasswordFlow={true}
+        isForgotPasswordFlow={true}
         token={token}
       />
     </div>
