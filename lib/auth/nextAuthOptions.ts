@@ -4,8 +4,7 @@ import GithubProvider from "next-auth/providers/github";
 import { NextAuthOptions } from "next-auth";
 import { RateLimiterMemory } from "rate-limiter-flexible";
 import { connectDB } from "@/lib/db/connect";
-import { generateUniqueUsername, verifyPassword } from "@/lib/helpers/auth";
-import { getUserByEmail } from "@/lib/helpers/user"
+import { generateUniqueUsername, verifyPassword, getUserByEmail } from "@/lib/helpers/backend"
 import User from "@/lib/models/user.model";
 
 const {
