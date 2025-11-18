@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import User from "@/lib/models/user.model";
 import { getToken } from "next-auth/jwt";
 import { NextRequest } from "next/server";
-import { verifyToken } from "@/lib/helpers/jwt";
+import { verifyToken } from "@/lib/helpers/backend";
 import { getUserById } from "./user";
 
 const { NODE_ENV } = process.env;
