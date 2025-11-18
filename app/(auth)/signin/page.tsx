@@ -17,7 +17,7 @@ type LoginForm = {
 
 const isDev = process.env.NODE_ENV === "development";
 
-export default function LoginPage() {
+export default function SigninPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -127,12 +127,19 @@ export default function LoginPage() {
           </div>
 
           {/* SignUp Link */}
-          <p className="text-sm">
-            Don't have an account? SignUp{" "}
-            <Link className="text-sm underline text-foreground hover:text-primary" href={"/signup"}>
-              here
-            </Link>
-          </p>
+          <div className="flex justify-between text-sm">
+            <p>
+              Don't have an account? SignUp {" "}
+              <Link className="text-sm underline text-foreground hover:text-primary" href={"/signup"}>
+                here
+              </Link>
+            </p>
+            <p>
+              <Link className="text-sm underline text-foreground hover:text-primary" href={"/forgot-password"}>
+                Forgot password?
+              </Link>
+            </p>
+          </div>
 
           {/* SignIn Button */}
           <Button
