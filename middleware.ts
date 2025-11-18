@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyToken } from "@/lib/auth/helpers";
+import { verifyToken } from "@/lib/helpers/jwt";
 import { getToken } from "next-auth/jwt";
 
 const { NODE_ENV, NEXTAUTH_SECRET } = process.env;

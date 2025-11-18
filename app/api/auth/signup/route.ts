@@ -1,13 +1,13 @@
 import { NextRequest } from "next/server";
 import { connectDB } from "@/lib/db/connect";
 import { 
-  getUserByEmail, 
-  hashPassword, 
   isValidEmail, 
   isValidPassword, 
   isValidRole, 
   isValidUserName 
-} from "@/lib/auth/helpers";
+} from "@/lib/helpers/validation";
+import { getUserByEmail } from "@/lib/helpers/user";
+import { hashPassword } from "@/lib/helpers/auth";
 import { success, error } from "@/lib/auth/apiResponses";
 import User from "@/lib/models/user.model";
 
