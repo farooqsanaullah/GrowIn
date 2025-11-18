@@ -12,8 +12,11 @@ import {
   DialogTitle,
   DialogFooter,
   Button,
+  Label,
+  Input,
 } from "@/components/ui";
 import toast from "react-hot-toast";
+import { getPasswordStrength } from "@/lib/helpers/shared";
 
 export type ChangePasswordModalProps = {
   isOpen: boolean;
@@ -53,7 +56,10 @@ export default function ChangePasswordModal({
     },
   });
 
+  const currentPasswordValue = watch("currentPassword");
   const newPasswordValue = watch("newPassword");
+  const confirmPasswordValue = watch("confirmPassword");
+  const { lengthCheck, specialCharCheck, digitCheck } = getPasswordStrength(newPasswordValue);
 
   const onSubmit = async (data: FormValues) => {
     const { currentPassword, newPassword, confirmPassword } = data;
@@ -131,28 +137,35 @@ export default function ChangePasswordModal({
             <div>
               <label>Current Password</label>
               <div className="relative">
-                <input
+                <Input
                   type={showCurrentPassword ? "text" : "password"}
                   placeholder="Current password"
                   autoComplete="current-password"
-                className="w-full rounded px-3 py-2 pr-10 outline focus:outline-none focus:ring-2 focus:ring-ring"
                   {...register("currentPassword", {
                     validate: (value) =>
                       isForgotPasswordFlow
                         ? true
                         : validatePassword(value || "") || true,
                   })}
+                  className={`bg-input text-foreground pr-10
+                  ${(currentPasswordValue && currentPasswordValue.length >= 8)
+                      ? "bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
+                      : "border-border"
+                  }
+                `}
                 />
+                {currentPasswordValue && currentPasswordValue.length > 0 && (
                 <button
                   type="button"
-                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                  className="absolute inset-y-0 right-3 flex items-center cursor-pointer"
+                  onClick={() => setShowCurrentPassword((prev) => !prev)}
+                  className="absolute right-2 inset-y-0 flex items-center text-muted-foreground cursor-pointer"
                 >
                   {showCurrentPassword ? <EyeClosedIcon /> : <Eye />}
                 </button>
+                )}
               </div>
               {errors.currentPassword && (
-                <p className="text-red-500 text-sm">
+                <p className="text-destructive text-sm">
                   {errors.currentPassword.message}
                 </p>
               )}
@@ -161,27 +174,51 @@ export default function ChangePasswordModal({
 
           {/* NEW PASSWORD */}
           <div>
-            <label>New Password</label>
-            <div className="relative">
-              <input
+            <Label htmlFor="newPassword" className="text-foreground text-md">New Password</Label>
+            <div className="mt-2 relative">
+              <Input
+                id="newPassword"
                 type={showNewPassword ? "text" : "password"}
-                placeholder="New password"
+                placeholder="••••••••"
                 autoComplete="new-password"
-                className="w-full rounded px-3 py-2 pr-10 outline focus:outline-none focus:ring-2 focus:ring-ring"
                 {...register("newPassword", {
                   validate: (value) => validatePassword(value) || true,
                 })}
+                className={`bg-input text-foreground pr-10
+                  ${(lengthCheck && specialCharCheck && digitCheck)
+                      ? "bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
+                      : "border-border"
+                  }
+                `}
               />
-              <button
-                type="button"
-                onClick={() => setShowNewPassword(!showNewPassword)}
-                className="absolute inset-y-0 right-3 flex items-center cursor-pointer"
-              >
-                {showNewPassword ? <EyeClosedIcon /> : <Eye />}
-              </button>
+              {newPasswordValue && newPasswordValue.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword((prev) => !prev)}
+                  className="absolute right-2 inset-y-0 flex items-center text-muted-foreground cursor-pointer"
+                >
+                  {showNewPassword ? <EyeClosedIcon /> : <Eye />}
+                </button>
+              )}
             </div>
+
+            {newPasswordValue.length > 0 && (
+              // Password Guide
+              <div className="mt-4 text-sm space-y-1">
+                <p className={lengthCheck ? "text-success" : "text-destructive"}>
+                  • At least 8 characters
+                </p>
+                <p className={specialCharCheck ? "text-success" : "text-destructive"}>
+                  • 1 special character
+                </p>
+                <p className={digitCheck ? "text-success" : "text-destructive"}>
+                  • 1 digit
+                </p>
+              </div>
+            )}
+
             {errors.newPassword && (
-              <p className="text-red-500 text-sm">{errors.newPassword.message}</p>
+              <p className="text-destructive text-sm">{errors.newPassword.message}</p>
             )}
           </div>
 
@@ -189,11 +226,10 @@ export default function ChangePasswordModal({
           <div>
             <label>Confirm New Password</label>
             <div className="relative">
-              <input
+              <Input
                 type={showConfirmPassword ? "text" : "password"}
-                placeholder="Confirm password"
+                placeholder="••••••••"
                 autoComplete="new-password"
-                className="w-full rounded px-3 py-2 pr-10 outline focus:outline-none focus:ring-2 focus:ring-ring"
                 {...register("confirmPassword", {
                   validate: (value) => {
                     const err = validatePassword(value);
@@ -202,22 +238,30 @@ export default function ChangePasswordModal({
                     return true;
                   },
                 })}
+                className={`bg-input text-foreground pr-10
+                  ${(confirmPasswordValue.length > 0 && newPasswordValue === confirmPasswordValue)
+                      ? "bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
+                      : "border-border"
+                  }
+                `}
               />
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute inset-y-0 right-3 flex items-center cursor-pointer"
-              >
-                {showConfirmPassword ? <EyeClosedIcon /> : <Eye />}
-              </button>
+              {confirmPasswordValue && confirmPasswordValue.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword((prev) => !prev)}
+                  className="absolute right-2 inset-y-0 flex items-center text-muted-foreground cursor-pointer"
+                >
+                  {showConfirmPassword ? <EyeClosedIcon /> : <Eye />}
+                </button>
+              )}
             </div>
             {errors.confirmPassword && (
-              <p className="text-red-500 text-sm">{errors.confirmPassword.message}</p>
+              <p className="text-destructive text-sm">{errors.confirmPassword.message}</p>
             )}
           </div>
 
           {errors.root && (
-            <p className="text-red-500 text-sm">{errors.root.message}</p>
+            <p className="text-destructive text-sm">{errors.root.message}</p>
           )}
 
           <DialogFooter className="flex flex-col gap-2 mt-8">
@@ -225,15 +269,15 @@ export default function ChangePasswordModal({
               variant="outline"
               onClick={handleCancel}
               disabled={isSubmitting}
-              className="flex-1"
+              className="flex-1 cursor-pointer"
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              variant="outline"
+              variant="default"
               disabled={isSubmitting}
-              className="flex-1"
+              className="flex-1 cursor-pointer"
             >
               {isSubmitting ? (
                 <>
