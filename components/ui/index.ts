@@ -11,13 +11,24 @@ export {
 } from "./select";
 export { Slider } from "./slider";
 export { Separator } from "./separator";
+export {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogOverlay,
+  DialogPortal,
+  DialogTitle,
+  DialogTrigger,
+} from "./dialog";
 // export { FloatingLabelInput } from "./FloatingLabelInput"
 // export { Checkbox } from "./checkbox";
 // export { Switch } from "./switch";
 // export { RadioGroup } from "./radio-group";
 // export { Avatar } from "./avatar";
 // export { Card } from "./card";
-// export { Dialog } from "./dialog";
 // export { Popover } from "./popover";
 // export { Tooltip } from "./tooltip";
 // export { Badge } from "./badge";
