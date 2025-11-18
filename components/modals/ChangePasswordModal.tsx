@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { isValidPassword } from "@/lib/helpers/validation";
-// import { FaEyeSlash, FaEye } from "react-icons/fa";
+import { validatePassword } from "@/lib/helpers/shared";
 import { Eye, EyeClosedIcon, Loader } from "lucide-react";
 import { FormErrors } from "@/lib/types/custom-types";
 
@@ -49,15 +48,15 @@ export default function ChangePasswordModal({ isOpen, onClose, isResetPasswordFl
     else if(name === "confirmPassword")  setConfirmPassword(value);
 
     // Re-validate and clear error if valid
-    // const validationError = isValidPassword(value);
-    setErrors((prev) => ({...prev, [name]: "validationError"}));
+    const validationError = validatePassword(value);
+    setErrors((prev) => ({...prev, [name]: validationError }));
   }
 
   const handleBlur = (e:React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
 
-    // const validationError = isValidPassword(value); //calling strict check for new password
-    setErrors((prev) => ({...prev, [name]: "validationError"}));
+    const validationError = validatePassword(value);
+    setErrors((prev) => ({...prev, [name]: validationError }));
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -65,9 +64,9 @@ export default function ChangePasswordModal({ isOpen, onClose, isResetPasswordFl
 
     // validation again on submit not just on blur
     let currentPasswordError = null;
-    if(!isResetPasswordFlow) currentPasswordError = isValidPassword(currentPassword);
-    const newPasswordError = isValidPassword(newPassword);
-    const confirmPasswordError = isValidPassword(confirmPassword);
+    if(!isResetPasswordFlow) currentPasswordError = validatePassword(currentPassword);
+    const newPasswordError = validatePassword(newPassword);
+    const confirmPasswordError = validatePassword(confirmPassword);
 
     if(currentPasswordError || newPasswordError || confirmPasswordError) {
       setErrors({

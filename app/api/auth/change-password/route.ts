@@ -1,7 +1,11 @@
 import { NextRequest } from "next/server";
-import { verifyPassword, updatePassword, getAuthenticatedUser} from "@/lib/helpers/auth";
-import { destroySession } from "@/lib/helpers/session"
-import { isValidPassword } from "@/lib/helpers/validation";
+import { 
+  verifyPassword, 
+  updatePassword, 
+  getAuthenticatedUser, 
+  destroySession 
+} from "@/lib/helpers/backend"
+import { validatePassword } from "@/lib/helpers/shared";
 import { success, error } from "@/lib/auth/apiResponses";
 
 export async function POST(req: NextRequest) {
@@ -16,13 +20,13 @@ export async function POST(req: NextRequest) {
 
     // Disallow OAuth users from changing password
     if (!user.password)
-      return error("Password change not allowed for Google/GitHub users", 403);
+      return error("Password change not allowed for OAuth users", 403);
 
     const isMatch = await verifyPassword(currentPassword, user.password);
     if (!isMatch) return error("Incorrect current password", 400);
 
-    // const passwordError = isValidPassword(newPassword);
-    if (!isValidPassword(newPassword)) return error("Invalid password", 400);
+    const passwordError = validatePassword(newPassword);
+    if (passwordError) return error("Invalid new password", 400);
 
     await updatePassword(user._id.toString(), newPassword);
 
