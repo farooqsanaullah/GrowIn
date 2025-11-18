@@ -19,7 +19,7 @@ export default function ResetPasswordPage() {
 
         // show message for 3s, then redirect
         setTimeout(() => {
-          router.push("/login");
+          router.push("/signin");
         }, 3000);
       });
       return;
