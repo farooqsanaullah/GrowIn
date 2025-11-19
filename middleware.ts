@@ -83,8 +83,9 @@ export const config = {
     "/Profile/:userName",
     "/founder/:username",
     "/investor/:username",
-    "/api/auth/forgot-password/:path*", 
-    "/api/auth/reset-password/:path*", 
-    "/api/auth/change-password/:path*",
+    "/api/auth/forgot-password", 
+    "/api/auth/reset-password", 
+    "/api/auth/change-password",
   ],
+  runtime: "nodejs",
 };
