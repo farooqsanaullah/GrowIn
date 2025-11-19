@@ -2,8 +2,11 @@ import { NextRequest } from "next/server";
 import { verifyToken, getUserById, updatePassword } from "@/lib/helpers/backend";
 import { validatePassword } from "@/lib/helpers/shared";
 import { success, error } from "@/lib/auth/apiResponses";
+import { connectDB } from "@/lib/db/connect";
 
 export async function POST(req: NextRequest) {
+  await connectDB();
+  
   const isDev = process.env.NODE_ENV === "development";
 
   try {
