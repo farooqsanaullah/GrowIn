@@ -32,13 +32,13 @@ export default function ClientExplore({ active }: ClientExploreProps) {
       <FiltersBar activeFilters={activeFilters} setActiveFilters={setActiveFilters} />
 
       {trendingFiltered.length > 0 && (
-        <HorizontalSection title="Trending Startups" startups={trendingFiltered} />
+        <HorizontalSection title="Trending Startups" startups={trendingFiltered} badge="Trending"/>
       )}
       {fundedFiltered.length > 0 && (
-        <HorizontalSection title="Funded Startups" startups={fundedFiltered} />
+        <HorizontalSection title="Funded Startups" startups={fundedFiltered} badge="Funded"/>
       )}
       {activeFiltered.length > 0 && (
-        <HorizontalSection title="All Active Startups" startups={activeFiltered} />
+        <HorizontalSection title="All Active Startups" startups={activeFiltered} badge="Active"/>
       )}
     </div>
   );
