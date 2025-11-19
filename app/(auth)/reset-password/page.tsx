@@ -1,4 +1,5 @@
 "use client"
+
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import ChangePasswordModal from "@/components/modals/ChangePasswordModal";
@@ -6,7 +7,7 @@ import {jwtDecode} from "jwt-decode";
 
 export default function ResetPasswordPage() {
   const searchParams = useSearchParams();
-  const token = searchParams.get("token"); // get ?token=... from URL
+  const token = searchParams.get("token");
   const [isOpen, setIsOpen] = useState(false);
   const[errorMsg, setErrorMsg] = useState("");
   const router = useRouter();

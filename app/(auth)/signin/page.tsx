@@ -45,17 +45,14 @@ export default function SigninPage() {
 
       if (!res?.ok) {
         toast.error("Invalid email or password");
-        alert("Invalid email or password");
         return;
       }
 
       toast.success("Login successful");
-      alert("Login successful");
       router.push("/"); // redirect after login
     } catch (error) {
       isDev && console.error("Login error:", error);
       toast.error("Something went wrong");
-      alert("Something went wrong");
     } finally {
       setIsLoading(false);
     }

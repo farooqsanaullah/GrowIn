@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import "./globals.css";
-
+import { Toaster } from "react-hot-toast";
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -23,6 +23,7 @@ export default function RootLayout({
       <body
         className={` ${montserrat.variable} antialiased`}
       >
+        <Toaster position="top-right" />
         {children}
       </body>
     </html>
