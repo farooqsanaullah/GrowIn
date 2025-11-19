@@ -16,7 +16,7 @@ export interface Startup {
     instagram?: string;
     facebook?: string;
   };
-  followers: number;
+  followers: string[];
   status: string;
   ratingCount: number;
   avgRating: number;
