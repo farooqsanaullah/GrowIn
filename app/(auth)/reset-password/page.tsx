@@ -1,76 +1,46 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import ChangePasswordModal from "@/components/modals/ChangePasswordModal";
-import {jwtDecode} from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 
 export default function ResetPasswordPage() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
   const [isOpen, setIsOpen] = useState(false);
-  const[errorMsg, setErrorMsg] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
   const router = useRouter();
 
-  useEffect(() => {
-    if(!token) {
-      setTimeout(() => {
-        setErrorMsg("Invalid or missing password reset link.");
-        setIsOpen(false);
+  const showErrorAndRedirect = useCallback((msg: string) => {
+    setErrorMsg(msg);
+    setIsOpen(false);
+    setTimeout(() => router.push("/signin"), 3000);
+  }, [router]);
 
-        // show message for 3s, then redirect
-        setTimeout(() => {
-          router.push("/signin");
-        }, 3000);
-      });
-      return;
-    } else {
-      setIsOpen(true);
-    }
+  useEffect(() => {
+    if (!token) return showErrorAndRedirect("Invalid or missing password reset link.");
 
     try {
-      // decode token to get expiry timestamp
       const decodedToken = jwtDecode<{ exp: number }>(token);
       const timeLeft = decodedToken.exp * 1000 - Date.now();
 
-      if (timeLeft <= 0) {
-        setTimeout(() => {
-          setErrorMsg("Invalid or missing password reset link.");
-          setIsOpen(false);
+      if (timeLeft <= 0) return showErrorAndRedirect("Password reset link has expired.");
 
-          // show message for 3s, then redirect
-          setTimeout(() => {
-            router.push("/signin");
-          }, 3000);
-        });
-        return;
-      }
-
-      // open modal if token valid
+      // Token valid → open modal
       setIsOpen(true);
 
-      const timer = setTimeout(() => {
-        setErrorMsg("Password reset link has expired.");
-        setIsOpen(false);
-
-        // show message for 3s, then redirect
-        setTimeout(() => {
-          router.push("/signin");
-        }, 3000);
-      }, timeLeft);
-
+      const timer = setTimeout(() => showErrorAndRedirect("Password reset link has expired."), timeLeft);
       return () => clearTimeout(timer);
-
-    } catch (err) {
-      setErrorMsg("Invalid password reset token.");
-      setIsOpen(false);
+    } catch (err: any) {
+      showErrorAndRedirect("Invalid password reset token.");
     }
-  }, [token]);
+  }, [token, showErrorAndRedirect]);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setIsOpen(false);
     router.push("/signin");
-  }
+  }, [router]);
 
   return (
     <div>
@@ -81,6 +51,7 @@ export default function ResetPasswordPage() {
           </div>
         </div>
       )}
+
       <ChangePasswordModal
         isOpen={isOpen}
         onClose={handleClose}
@@ -88,5 +59,5 @@ export default function ResetPasswordPage() {
         token={token}
       />
     </div>
-  )
+  );
 }
