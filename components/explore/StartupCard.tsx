@@ -61,14 +61,6 @@ const StartupCard: React.FC<StartupCardProps> = ({ startup }) => {
             )}
           </div>
 
-          <button
-            className="absolute top-2 right-2 p-2 rounded-full shadow-md"
-            style={{ backgroundColor: "rgba(255,255,255,0.9)" }}
-            onClick={(e) => e.stopPropagation()}
-            aria-label="Like startup"
-          >
-            <Heart className="text-red-500" size={18} />
-          </button>
         </div>
 
 
@@ -132,7 +124,7 @@ const StartupCard: React.FC<StartupCardProps> = ({ startup }) => {
             <div className="flex items-center gap-1">
               <Users size={16} className="text-gray-500" />
               <span className="font-semibold">
-                {startup.followers.toLocaleString()}
+                {startup.followers.length.toLocaleString()}
               </span>
             </div>
           </div>
