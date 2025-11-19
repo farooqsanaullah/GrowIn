@@ -127,15 +127,15 @@ export default function ChangePasswordModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-lg font-semibold text-center">
+          <DialogTitle className="text-xl font-semibold text-center">
             Change Password
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-2">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 mt-2">
           {!isForgotPasswordFlow && (
             <div>
-              <label>Current Password</label>
+              <Label htmlFor="currentPassword" className="text-foreground text-md">Current Password</Label>
               <div className="relative">
                 <Input
                   type={showCurrentPassword ? "text" : "password"}
@@ -224,8 +224,8 @@ export default function ChangePasswordModal({
 
           {/* CONFIRM PASSWORD */}
           <div>
-            <label>Confirm New Password</label>
-            <div className="relative">
+            <Label htmlFor="confirmPassword" className="text-foreground text-md">Confirm New Password</Label>
+            <div className="mt-2 relative">
               <Input
                 type={showConfirmPassword ? "text" : "password"}
                 placeholder="••••••••"
