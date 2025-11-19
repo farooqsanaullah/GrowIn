@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 interface HorizontalSectionProps {
   title: string;
   startups: Startup[];
-  badge?: "Trending" | "Funded" | "Active"; // optional category info
+  badge: "Trending" | "Funded" | "Active"; // optional category info
 }
 
 const HorizontalSection: React.FC<HorizontalSectionProps> = ({ title, startups, badge }) => {
@@ -20,13 +20,14 @@ const HorizontalSection: React.FC<HorizontalSectionProps> = ({ title, startups, 
   if (startups.length === 0) return null;
 
   const handleSeeMore = () => {
-    let category = "";
-    if (badge === "Trending") category = "trending";
-    else if (badge === "Funded") category = "funded";
-    else if (badge === "Active") category = "active";
+  let category = "";
+  if (badge === "Trending") category = "Trending";
+  else if (badge === "Funded") category = "Funded";
+  else if (badge === "Active") category = "active";
 
-    router.push(`/explore/${category}?page=1`);
-  };
+  router.push(`/category/${category}`);
+};
+
 
   return (
     <div className="mb-8 relative md:px-20 sm:px-4">
@@ -52,7 +53,6 @@ const HorizontalSection: React.FC<HorizontalSectionProps> = ({ title, startups, 
           className="flex gap-4 overflow-x-auto px-2 pb-4 scroll-smooth scrollbar-hide"
         >
           {startups.map((startup) => (
-            console.log("Rendering Startup in HorizontalSection:", startup._id),
             <div key={startup._id} className="flex-shrink-0 w-[280px] sm:w-[320px] lg:w-[360px]">
               <StartupCard startup={startup} />
             </div>
@@ -61,7 +61,7 @@ const HorizontalSection: React.FC<HorizontalSectionProps> = ({ title, startups, 
           
             <div
               onClick={handleSeeMore}
-              className="flex-shrink-0 min-w-[80%] sm:min-w-[50%] lg:min-w-[25%] rounded-xl cursor-pointer hover:from-[#D8F1FF] hover:to-white transition flex flex-col items-center justify-center p-8 bg-white shadow"
+              className="flex-shrink-0 min-w-[80%] sm:min-w-[50%] lg:min-w-[25%] cursor-pointer hover:from-[#D8F1FF] hover:to-white transition flex flex-col items-center justify-center p-8"
             >
               <div className="text-gray-800 font-semibold text-lg tracking-wide">See More</div>
               <div className="text-gray-500 text-sm mt-1">Explore all in {title}</div>
