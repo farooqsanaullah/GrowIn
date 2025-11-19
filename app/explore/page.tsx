@@ -15,10 +15,6 @@ export default async function ExplorePage() {
   const funded: Startup[] = fundedRes.data || [];
   const active: Startup[] = activeRes.data || [];
 
-  console.log("Trending Startups:", trending);
-  console.log("Funded Startups:", funded);
-  console.log("Active Startups:", active);
-
   return (
     <div className="p-4 sm:p-6 md:p-8 bg-gray-50">
       <h1 className="text-xl sm:text-xl md:text-2xl font-bold mb-4 md:mx-20 sm:mx-4 text-center sm:text-left">
