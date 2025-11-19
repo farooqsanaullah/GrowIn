@@ -61,18 +61,17 @@ export async function middleware(req: NextRequest) {
   }
 
   // --- PROTECTED API ROUTES ---
-  // Example template: uncomment and add your private APIs
-  // if (pathname.startsWith("/api/private/")) {
-  //   if (!manualToken && !nextAuthToken) {
-  //     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  //   }
-  //   try {
-  //     if (manualToken) verifyToken(manualToken);
-  //     return NextResponse.next();
-  //   } catch {
-  //     return NextResponse.json({ message: "Invalid or expired token" }, { status: 401 });
-  //   }
-  // }
+  if (pathname.startsWith("/api/auth/")) {
+    if (!manualToken && !nextAuthToken) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+    try {
+      if (manualToken) verifyToken(manualToken);
+      return NextResponse.next();
+    } catch {
+      return NextResponse.json({ message: "Invalid or expired token" }, { status: 401 });
+    }
+  }
 
   // Default fallback (public pages)
   return NextResponse.next();
@@ -84,7 +83,8 @@ export const config = {
     "/Profile/:userName",
     "/founder/:username",
     "/investor/:username",
-    // API protection
-    // "/api/private/:path*",
+    "/api/auth/forgot-password/:path*", 
+    "/api/auth/reset-password/:path*", 
+    "/api/auth/change-password/:path*",
   ],
 };
