@@ -73,7 +73,10 @@ export default function ForgotPasswordDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md"
+        onInteractOutside={(event) => event.preventDefault()} // Prevent click outside
+        onEscapeKeyDown={(event) => event.preventDefault()}   // Prevent Esc
+      >
         <DialogHeader>
           <DialogTitle className="text-xl text-center">Forgot Password</DialogTitle>
         </DialogHeader>
@@ -101,10 +104,10 @@ export default function ForgotPasswordDialog() {
 
           {formError && <p className="text-destructive text-sm">{formError}</p>}
 
-          <DialogFooter>
+          <DialogFooter className="mt-8">
             <div className="w-full">
               {/* Buttons */}
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <Button
                   type="button"
                   variant="outline"

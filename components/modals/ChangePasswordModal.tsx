@@ -125,12 +125,16 @@ export default function ChangePasswordModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md"
+        onInteractOutside={(event) => event.preventDefault()} // Prevent click outside
+        onEscapeKeyDown={(event) => event.preventDefault()}   // Prevent Esc
+      >
         <DialogHeader>
           <DialogTitle className="text-xl text-center">Change Password</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 mt-2">
+          {/* CURRENT PASSWORD */}
           {!isForgotPasswordFlow && (
             <div>
               <Label htmlFor="currentPassword" className="text-foreground text-md">Current Password</Label>
