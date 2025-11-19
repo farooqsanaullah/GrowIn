@@ -2,57 +2,69 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
 import { validateEmail } from "@/lib/helpers/shared";
-import type { FormErrors } from "@/lib/types/custom-types";
 import toast from "react-hot-toast";
 import { Loader } from "lucide-react";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogFooter 
+} from "@/components/ui/dialog";
+import { 
+  Input,
+  Button,
+  Label 
+} from "@/components/ui";
 
-export default function ForgotPassword() {
-  const [email, setEmail] = useState("");
+type ForgotPasswordFormValues = {
+  email: string;
+};
+
+export default function ForgotPasswordDialog() {
+  const [open, setOpen] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<FormErrors>({});
   const [success, setSuccess] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const router = useRouter();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value);
-  };
-
-  const handleBlur = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const validationError = validateEmail(e.target.value);
-    if (validationError) setErrors((prev) => ({ ...prev, email: validationError }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // validation again on submit not just on blur
-    const emailError = validateEmail(email);
-    if (emailError) {
-      setErrors({ email: emailError });
-      return;
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<ForgotPasswordFormValues>({
+    defaultValues: {
+      email: "",
     }
+  });
 
-    setErrors({});
+  const emailValue = watch("email");
+
+  const onSubmit = async (data: ForgotPasswordFormValues) => {
+    setFormError(null);
     setSuccess(false);
 
     try {
       setLoading(true);
+
       const response = await fetch("/api/auth/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email: data.email }),
       });
 
       if (!response.ok) {
         const errData = await response.json();
-        throw new Error(errData.error || "Invalid email 3");
+        throw new Error(errData.error || "Failed to send reset link");
       }
 
       setSuccess(true);
       toast.success("Password reset link sent to your email!");
     } catch (err: any) {
-      setErrors((prev) => ({ ...prev, formError: err.message }));
+      setFormError(err.message);
       toast.error(err.message || "Failed to send reset link");
     } finally {
       setLoading(false);
@@ -60,61 +72,74 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm">
-        <h2 className="text-xl text-center font-semibold mb-4">Forgot Password</h2>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="text-xl text-center">Forgot Password</DialogTitle>
+        </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <label>Enter your Email</label>
-          <input
-            name="email"
-            type="email"
-            value={email}
-            placeholder="Email"
-            autoComplete="email"
-            required
-            onChange={handleChange}
-            onBlur={handleBlur}
-            className="w-full border border-gray-300 rounded px-3 py-2 focus-visible:ring-gray-900"
-          />
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          <div>
+            <Label htmlFor="email" className="text-foreground text-md">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="Enter your email"
+              autoComplete="email"
+              {...register("email", {
+                required: "Email is required.",
+                validate: (value) => validateEmail(value) || true,
+              })}
+              className={`mt-2 bg-input text-foreground pr-10
+                ${(!validateEmail(emailValue))
+                    ? "bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
+                    : "border-border"
+                }
+              `}            />
+            {errors.email && <p className="text-destructive text-sm mt-1">{errors.email.message}</p>}
+          </div>
 
-          {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
+          {formError && <p className="text-destructive text-sm">{formError}</p>}
 
-          <button
-            type="button"
-            onClick={router.back}
-            className="w-full bg-gray-400 text-white rounded py-2 font-semibold cursor-pointer hover:bg-gray-600 transition"
-          >
-            Cancel
-          </button>
+          <DialogFooter>
+            <div className="w-full">
+              {/* Buttons */}
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => router.back()}
+                  className="flex-1 cursor-pointer"
+                  >
+                  Cancel
+                </Button>
 
-          <button
-            type="submit"
-            disabled={loading || Boolean(errors.email)}
-            className={`w-full bg-blue-600 text-white rounded py-2 font-semibold flex justify-center items-center gap-2
-              ${loading ? "opacity-75 cursor-not-allowed" : "cursor-pointer hover:bg-blue-700 transition"}`}
-          >
-            {loading ? (
-              <>
-                Sending
-                <Loader className="animate-spin ml-2" />
-              </>
-            ) : (
-              "Send Code Link"
-            )}
-          </button>
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 cursor-pointer"
+                >
+                  {loading ? (
+                    <>Sending<Loader className="animate-spin" /></>
+                  ) : (
+                    "Send Reset Link"
+                  )}
+                </Button>
+              </div>
 
-          {errors.formError && <p className="text-red-500 text-sm">{errors.formError}</p>}
-          
-          {success && (
-            <div className="border border-gray-200 mt-3 pt-3 bg-green-50 p-2 rounded">
-              <p className="text-green-700 text-sm text-center">
-                A password reset link has been sent to your email. Please check your inbox.
-              </p>
+              {/* Success Msg */}
+              {success && (
+                <div className="mt-4 bg-success/10 p-2 rounded text-center">
+                  <p className="text-success text-sm">
+                    A password reset link has been sent to your email. Please check your inbox/spam.
+                  </p>
+                </div>
+              )}
             </div>
-          )}
+          </DialogFooter>
+
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
