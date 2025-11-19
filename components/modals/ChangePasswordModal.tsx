@@ -127,16 +127,14 @@ export default function ChangePasswordModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-center">
-            Change Password
-          </DialogTitle>
+          <DialogTitle className="text-xl text-center">Change Password</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 mt-2">
           {!isForgotPasswordFlow && (
             <div>
               <Label htmlFor="currentPassword" className="text-foreground text-md">Current Password</Label>
-              <div className="relative">
+              <div className="mt-2 relative">
                 <Input
                   type={showCurrentPassword ? "text" : "password"}
                   placeholder="Current password"
@@ -165,7 +163,7 @@ export default function ChangePasswordModal({
                 )}
               </div>
               {errors.currentPassword && (
-                <p className="text-destructive text-sm">
+                <p className="text-destructive text-sm mt-1">
                   {errors.currentPassword.message}
                 </p>
               )}
@@ -218,7 +216,7 @@ export default function ChangePasswordModal({
             )}
 
             {errors.newPassword && (
-              <p className="text-destructive text-sm">{errors.newPassword.message}</p>
+              <p className="text-destructive text-sm mt-1">{errors.newPassword.message}</p>
             )}
           </div>
 
@@ -256,7 +254,7 @@ export default function ChangePasswordModal({
               )}
             </div>
             {errors.confirmPassword && (
-              <p className="text-destructive text-sm">{errors.confirmPassword.message}</p>
+              <p className="text-destructive text-sm mt-1">{errors.confirmPassword.message}</p>
             )}
           </div>
 
@@ -280,9 +278,7 @@ export default function ChangePasswordModal({
               className="flex-1 cursor-pointer"
             >
               {isSubmitting ? (
-                <>
-                  Changing <Loader className="animate-spin ml-2" />
-                </>
+                <>Changing<Loader className="animate-spin" /></>
               ) : (
                 "Change Password"
               )}
