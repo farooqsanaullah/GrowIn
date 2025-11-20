@@ -22,5 +22,6 @@ export interface Startup {
   avgRating: number;
   equityRange: { range: string; equity: number }[];
   profilePic: string;
+  totalRaised?: number;
 }
 
