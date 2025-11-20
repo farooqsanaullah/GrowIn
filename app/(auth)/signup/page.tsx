@@ -12,7 +12,7 @@ import {
   Label
 } from "@/components/ui";
 import Link from "next/link";
-import { EMAIL_REGEX } from "@/lib/constants/regex";
+import { EMAIL_REGEX } from "@/lib/constants";
 import Image from "next/image";
 import { getPasswordStrength } from "@/lib/helpers/shared";
 

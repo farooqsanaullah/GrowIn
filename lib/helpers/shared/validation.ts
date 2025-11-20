@@ -1,9 +1,10 @@
-import { EMAIL_REGEX } from "@/lib/constants/regex";
-
-export const PASSWORD_MIN_LENGTH = 8;
-export const USERNAME_MIN_LENGTH = 3;
-export const USERNAME_MAX_LENGTH = 30;
-const ALLOWED_ROLES = ["investor", "founder"] as const;
+import { 
+  ALLOWED_ROLES, 
+  PASSWORD_MIN_LENGTH, 
+  USERNAME_MAX_LENGTH, 
+  USERNAME_MIN_LENGTH, 
+  EMAIL_REGEX 
+} from "@/lib/constants";
 
 export function validateEmail(email: string): string | null {
   if (!email) 
