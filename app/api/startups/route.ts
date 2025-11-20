@@ -1,6 +1,8 @@
 import { NextRequest } from "next/server";
 import { connectDB } from "@/lib/db/connect";
 import Startup from "@/lib/models/startup.model";
+import Investment from "@/lib/models/investment.model";
+import { Types } from "mongoose";
 import User from "@/lib/models/user.model";
 import { successResponse, errorResponse } from "@/lib/utils/apiResponse";
 import {
@@ -37,6 +39,7 @@ export async function GET(request: NextRequest) {
       query.$text = { $search: search };
     }
 
+    // Fetch startups with pagination
     const [startups, total] = await Promise.all([
       Startup.find(query)
         .populate("founders", "userName name profileImage email")
@@ -49,7 +52,28 @@ export async function GET(request: NextRequest) {
       Startup.countDocuments(query),
     ]);
 
-    return successResponse(startups, "Startups retrieved successfully", 200, {
+    // Convert startup._id to ObjectId to satisfy TypeScript
+    const startupIds = startups.map(s => new Types.ObjectId(s._id as any));
+
+    // Aggregate total raised for all these startups in a single query
+    const investmentTotals = await Investment.aggregate([
+      { $match: { startupId: { $in: startupIds } } },
+      { $group: { _id: "$startupId", totalRaised: { $sum: "$amount" } } },
+    ]);
+
+    // Map totals by startupId for easy lookup
+    const totalsMap = investmentTotals.reduce((acc, item) => {
+      acc[item._id.toString()] = item.totalRaised;
+      return acc;
+    }, {} as Record<string, number>);
+
+    // Attach totalRaised to each startup
+    const startupsWithTotal = startups.map(startup => ({
+      ...startup,
+      totalRaised: totalsMap[(startup._id as Types.ObjectId).toString()] || 0,
+    }));
+
+    return successResponse(startupsWithTotal, "Startups retrieved successfully", 200, {
       total,
       page,
       limit,
@@ -60,6 +84,7 @@ export async function GET(request: NextRequest) {
     return errorResponse("Failed to fetch startups: " + error.message, 500);
   }
 }
+
 
 export async function POST(request: NextRequest) {
   try {
