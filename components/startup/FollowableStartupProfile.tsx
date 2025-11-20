@@ -25,32 +25,18 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
 
   const { scrollRef, canScrollLeft, canScrollRight, scroll } = useHorizontalScroll(600);
   const [activeIndex, setActiveIndex] = useState(0);
+  const formatAmount = (amount: number) => {
+  if (amount >= 1_000_000) return `$${(amount / 1_000_000).toFixed(1)}M`;
+  if (amount >= 1_000) return `$${(amount / 1_000).toFixed(0)}K`;
+  return `$${amount}`;
+};
 
-  /** Set isFollowed on load */
   useEffect(() => {
     if (session?.user?.id && Array.isArray(startup.followers)) {
       setIsFollowed(startup.followers.includes(session.user.id));
     }
   }, [session, startup.followers]);
 
-  /** Fetch totalRaised from backend */
-  // useEffect(() => {
-  //   const fetchTotalRaised = async () => {
-  //     try {
-  //       const res = await fetch(`/api/investments/total?startupId=${startup._id}`);
-  //       const data = await res.json();
-  //       if (data.success) {
-  //         setStartup(prev => prev ? { ...prev, totalRaised: data.totalRaised } : prev);
-  //       }
-  //     } catch (err) {
-  //       console.error("Failed to fetch total raised", err);
-  //     }
-  //   };
-
-  //   fetchTotalRaised();
-  // }, [startup._id]);
-
-  /** Toggle follow/unfollow */
   const toggleFollow = async () => {
     if (!session?.user?.id) return alert("Please login first");
 
@@ -73,13 +59,11 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
     }
   };
 
-  /** Scroll to section */
   const scrollToSection = (section: "description" | "team" | "pitch") => {
     const refMap = { description: descriptionRef, team: teamRef, pitch: pitchRef };
     refMap[section].current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  /** Handle star rating */
   const handleRating = (rating: number) => {
     const newCount = startup.ratingCount + 1;
     const newAvg = (startup.avgRating * startup.ratingCount + rating) / newCount;
@@ -87,7 +71,6 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
     setStartup({ ...startup, avgRating: newAvg, ratingCount: newCount });
   };
 
-  /** Handle investment */
   const handleInvest = async () => {
     if (!session?.user?.id) return alert("Please login first");
 
@@ -113,12 +96,6 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
         alert(`Successfully invested $${amountNum}`);
         setInvestmentAmount("");
 
-        // // Refetch totalRaised to stay accurate
-        // const res2 = await fetch(`/api/investments/total?startupId=${startup._id}`);
-        // const totalData = await res2.json();
-        // if (totalData.success) {
-        //   setStartup(prev => prev ? { ...prev, totalRaised: totalData.totalRaised } : prev);
-        // }
       } else {
         alert(data.message || "Investment failed");
       }
@@ -135,10 +112,8 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:mx-20 lg:p-8 flex flex-col lg:flex-row gap-6">
 
-      {/* Left Section */}
       <div className="flex-1 space-y-6 overflow-y-auto">
 
-        {/* Header */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold mb-1">{startup.title}</h1>
@@ -154,12 +129,10 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
           </button>
         </div>
 
-        {/* Profile Image */}
         <div className="relative w-full rounded-3xl overflow-hidden shadow-lg h-64 md:h-96">
           <img src={profilePic} alt={startup.title} className="w-full h-full object-cover" />
         </div>
 
-        {/* Sticky Tabs */}
         <div className="sticky top-0 bg-white z-10 py-2 px-4 border-b border-gray-200 flex justify-between items-center">
           <div className="flex gap-4">
             <button onClick={() => scrollToSection("description")} className="font-semibold hover:underline text-gray-700">Description</button>
@@ -170,14 +143,12 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
           </div>
         </div>
 
-        {/* Description */}
         {startup.description && (
           <div ref={descriptionRef} className="bg-white rounded-2xl p-6 shadow-md">
             <p className="leading-relaxed text-gray-800">{startup.description}</p>
           </div>
         )}
 
-        {/* Team */}
         {startup.founders?.length > 0 && (
           <div ref={teamRef} className="bg-white rounded-2xl p-6 shadow-md">
             <h2 className="text-2xl font-bold mb-4">Our Team</h2>
@@ -200,7 +171,6 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
           </div>
         )}
 
-        {/* Pitch Deck */}
         {startup.pitch?.length > 0 && (
           <div ref={pitchRef} className="bg-white rounded-2xl p-6 shadow-md relative scrollbar-hide">
             <h2 className="text-2xl font-bold mb-4">Pitch Deck</h2>
@@ -249,24 +219,31 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
 
       </div>
 
-      {/* Right Sidebar */}
       <div className="w-full lg:w-96 flex-shrink-0 space-y-6">
         <div className="lg:sticky lg:top-20 space-y-6">
 
-          {/* Investment Opportunity */}
           {startup.equityRange?.length > 0 && (
             <div className="rounded-2xl p-6 shadow-md bg-gray-50">
-              <h2 className="text-2xl font-bold mb-4">Investment Opportunity</h2>
+              <h2 className="text-2xl font-bold mb-6">Investment Opportunity</h2>
 
-              {startup.equityRange.map((eq, i) => (
-                <div key={i} className="flex justify-between items-center p-3 rounded-lg bg-white shadow-sm mb-2">
-                  <span className="text-gray-700 text-sm font-medium">{eq.range}</span>
-                  <span className="font-bold text-gray-900 text-lg">{eq.equity}%</span>
-                </div>
-              ))}
+              {/* Equity Ranges */}
+              <div className="space-y-2 mb-6">
+                {startup.equityRange.map((eq, i) => (
+                  <div
+                    key={i}
+                    className="flex justify-between items-center p-3 rounded-lg bg-white shadow-sm"
+                  >
+                    <span className="text-gray-700 text-sm font-medium">{eq.range}</span>
+                    <span className="font-bold text-gray-900 text-lg">{eq.equity}%</span>
+                  </div>
+                ))}
+              </div>
 
-              <div className="mt-4">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Investment Amount</label>
+              {/* Investment Input */}
+              <div className="mb-6">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Investment Amount
+                </label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">$</span>
                   <input
@@ -288,15 +265,26 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
                 </button>
               </div>
 
-              <div className="mt-4 pt-4 border-t border-gray-200 space-y-2">
-                <div className="flex justify-between">
-                  <span>Total Raised</span>
-                  {/* <span className="font-bold">${startup.totalRaised?.toLocaleString() || 0}</span> */}
+              {/* Stats Section */}
+              <div className="mt-6 pt-4 border-t border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Total Raised */}
+                <div className="flex items-center justify-between rounded-lg p-4 shadow-sm" style={{backgroundColor: 'var(--bg-primary)'}}>
+                  <div className="flex items-center gap-2">
+                    <span className="text-green-600 text-lg font-bold">💰</span>
+                    <span className="text-gray-800 font-semibold">Raised</span>
+                  </div>
+                  <span className="text-gray-900 font-bold text-lg">
+                    {formatAmount(startup.totalRaised ?? 0)}
+                  </span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Rating</span>
+
+                {/* Rating */}
+                <div className="flex items-center justify-between rounded-lg p-4 shadow-sm" style={{backgroundColor: 'var(--bg-secondary)'}}>
+                  <div className="flex items-center gap-2">
+                    <Star className="text-yellow-400 fill-yellow-400" size={20} />
+                    <span className="text-gray-800 font-semibold">Rating</span>
+                  </div>
                   <div className="flex items-center gap-1">
-                    <Star className="text-yellow-400 fill-yellow-400" size={16} />
                     <span className="font-bold">{startup.avgRating?.toFixed(1)}</span>
                     <span className="text-xs text-gray-500">({startup.ratingCount})</span>
                   </div>
@@ -305,13 +293,12 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
             </div>
           )}
 
-          {/* Followers */}
+
           <div className="rounded-2xl p-6 shadow-md bg-gray-50">
             <h2 className="text-2xl font-bold mb-4">Followers</h2>
             <p className="font-bold text-lg">{Array.isArray(startup.followers) ? startup.followers.length : 0}</p>
           </div>
 
-          {/* Leave a Review */}
           <div className="rounded-2xl p-6 shadow-md bg-gray-50">
             <h3 className="text-xl font-semibold mb-3 text-center">Leave a Review</h3>
             <div className="flex gap-2 justify-center mb-2">
