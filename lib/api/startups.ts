@@ -9,13 +9,7 @@ import type {
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '/api';
 
-// ============================================================================
-// HELPER FUNCTIONS
-// ============================================================================
 
-/**
- * Generic fetch wrapper with error handling
- */
 const fetchAPI = async <T>(
   url: string,
   options: RequestInit = {}
@@ -67,9 +61,6 @@ const buildUrl = (
   return query ? `${baseUrl}?${query}` : baseUrl;
 };
 
-// ============================================================================
-// API SERVICE
-// ============================================================================
 
 export const startupsApi = {
   /**
