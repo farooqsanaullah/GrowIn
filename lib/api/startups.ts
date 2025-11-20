@@ -1,190 +1,132 @@
-interface ApiResponse<T> {
-  success: boolean;
-  data: T;
-  message?: string;
-  pagination?: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
-}
-interface ErrorResponse {
-  success: false;
-  message: string;
-  errors?: any;
-}
+import type {
+  ApiResponse,
+  Startup,
+  CreateStartupData,
+  StartupFilters,
+  StartupListResponse,
+  StartupResponse,
+} from '@/types/api';
 
-export interface Startup {
-  _id: string;
-  title: string;
-  description: string;
-  pitch: string[];
-  founders: Array<{
-    _id: string;
-    userName: string;
-    name: string;
-    profileImage?: string;
-    email: string;
-  }>;
-  investors: Array<{
-    _id: string;
-    userName: string;
-    name: string;
-    profileImage?: string;
-    email: string;
-  }>;
-  badges: string[];
-  categoryType: string;
-  industry: string;
-  socialLinks: {
-    website?: string;
-    linkedin?: string;
-    twitter?: string;
-    x?: string;
-    instagram?: string;
-    facebook?: string;
-  };
-  followers: number;
-  status: "active" | "inactive" | "pending" | "closed";
-  ratingCount: number;
-  avgRating: number;
-  equityRange: Array<{
-    range: string;
-    equity: number;
-  }>;
-  profilePic?: string;
-  createdAt: string;
-  updatedAt: string;
-}
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '/api';
 
-export interface CreateStartupData {
-  title: string;
-  description: string;
-  pitch?: string[];
-  badges?: string[];
-  categoryType: string;
-  industry: string;
-  socialLinks?: {
-    website?: string;
-    linkedin?: string;
-    twitter?: string;
-    x?: string;
-    instagram?: string;
-    facebook?: string;
-  };
-  equityRange?: Array<{
-    range: string;
-    equity: number;
-  }>;
-  profilePic?: string;
-}
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
 
-export interface StartupFilters {
-  page?: number;
-  limit?: number;
-  categoryType?: string;
-  industry?: string;
-  status?: string;
-  search?: string;
-}
+/**
+ * Generic fetch wrapper with error handling
+ */
+const fetchAPI = async <T>(
+  url: string,
+  options: RequestInit = {}
+): Promise<T> => {
+  const response = await fetch(url, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+    ...options,
+  });
 
-const API_BASE_URL = '/api';
+  if (!response.ok) {
+    const errorData = (await response.json().catch(() => ({}))) as ApiResponse<null>;
+    throw new Error(errorData.message || `HTTP ${response.status}`);
+  }
+
+  return response.json();
+};
+
+/**
+ * Build query params from object, only include defined values
+ */
+const buildQueryParams = <T extends Record<string, any>>(
+  filters: T
+): string => {
+  const params = new URLSearchParams();
+
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      params.set(key, String(value));
+    }
+  });
+
+  return params.toString();
+};
+
+/**
+ * Construct URL with query params
+ */
+const buildUrl = (
+  baseUrl: string,
+  filters?: Record<string, any>
+): string => {
+  if (!filters || Object.keys(filters).length === 0) {
+    return baseUrl;
+  }
+  const query = buildQueryParams(filters);
+  return query ? `${baseUrl}?${query}` : baseUrl;
+};
+
+// ============================================================================
+// API SERVICE
+// ============================================================================
 
 export const startupsApi = {
-  // Get all startups with filters and pagination
-  getAll: async (filters: StartupFilters = {}): Promise<ApiResponse<Startup[]>> => {
-    const params = new URLSearchParams();
-    
-    if (filters.page) params.set('page', filters.page.toString());
-    if (filters.limit) params.set('limit', filters.limit.toString());
-    if (filters.categoryType) params.set('categoryType', filters.categoryType);
-    if (filters.industry) params.set('industry', filters.industry);
-    if (filters.status) params.set('status', filters.status);
-    if (filters.search) params.set('search', filters.search);
-
-    const response = await fetch(`${API_BASE_URL}/startups?${params.toString()}`);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    return response.json();
+  /**
+   * Get all startups with optional filters and pagination
+   */
+  getAll: async (filters: StartupFilters = {}): Promise<StartupListResponse> => {
+    const url = buildUrl(`${API_BASE_URL}/startups`, filters);
+    return fetchAPI<StartupListResponse>(url);
   },
 
-  // Get single startup by ID
-  getById: async (id: string): Promise<ApiResponse<Startup>> => {
-    const response = await fetch(`${API_BASE_URL}/startups/${id}`);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    return response.json();
+  /**
+   * Get single startup by ID
+   */
+  getById: async (id: string): Promise<StartupResponse> => {
+    return fetchAPI<StartupResponse>(`${API_BASE_URL}/startups/${id}`);
   },
 
-  // Get startups by founder ID
-  getByFounder: async (founderId: string, filters: Omit<StartupFilters, 'categoryType' | 'industry' | 'status' | 'search'> = {}): Promise<ApiResponse<Startup[]>> => {
-    const params = new URLSearchParams();
-    
-    if (filters.page) params.set('page', filters.page.toString());
-    if (filters.limit) params.set('limit', filters.limit.toString());
-    const response = await fetch(`${API_BASE_URL}/startups/founder/${founderId}?${params.toString()}`);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    return response.json();
+  /**
+   * Get startups by founder ID
+   */
+  getByFounder: async (
+    founderId: string,
+    filters: Pick<StartupFilters, 'page' | 'limit'> = {}
+  ): Promise<StartupListResponse> => {
+    const url = buildUrl(`${API_BASE_URL}/startups/founder/${founderId}`, filters);
+    return fetchAPI<StartupListResponse>(url);
   },
 
-  // Create new startup
-  create: async (data: CreateStartupData): Promise<ApiResponse<Startup>> => {
-    const response = await fetch(`${API_BASE_URL}/startups`, {
+  /**
+   * Create new startup
+   */
+  create: async (data: CreateStartupData): Promise<StartupResponse> => {
+    return fetchAPI<StartupResponse>(`${API_BASE_URL}/startups`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify(data),
     });
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-    }
-    
-    return response.json();
   },
 
-  // Update startup
-  update: async (id: string, data: Partial<CreateStartupData>): Promise<ApiResponse<Startup>> => {
-    const response = await fetch(`${API_BASE_URL}/startups/${id}`, {
+  /**
+   * Update startup by ID
+   */
+  update: async (
+    id: string,
+    data: Partial<CreateStartupData>
+  ): Promise<StartupResponse> => {
+    return fetchAPI<StartupResponse>(`${API_BASE_URL}/startups/${id}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify(data),
     });
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-    }
-    
-    return response.json();
   },
 
-  // Delete startup
+  /**
+   * Delete startup by ID
+   */
   delete: async (id: string): Promise<ApiResponse<{ id: string }>> => {
-    const response = await fetch(`${API_BASE_URL}/startups/${id}`, {
+    return fetchAPI<ApiResponse<{ id: string }>>(`${API_BASE_URL}/startups/${id}`, {
       method: 'DELETE',
     });
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-    }
-    
-    return response.json();
   },
 };
