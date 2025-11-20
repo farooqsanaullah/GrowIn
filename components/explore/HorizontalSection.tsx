@@ -25,7 +25,7 @@ const HorizontalSection: React.FC<HorizontalSectionProps> = ({ title, startups, 
   else if (badge === "Funded") category = "Funded";
   else if (badge === "Active") category = "active";
 
-  router.push(`/category/${category}`);
+  router.push(`category/badges/${category}`);
 };
 
 
