@@ -20,6 +20,12 @@ const StartupCard: React.FC<StartupCardProps> = ({ startup }) => {
   const profilePic = startup.profilePic || "/fallback-image.png";
   const fullStars = Math.floor(startup.avgRating);
   const hasHalfStar = startup.avgRating % 1 >= 0.5;
+  const formatAmount = (amount: number) => {
+  if (amount >= 1_000_000) return `$${(amount / 1_000_000).toFixed(1)}M`;
+  if (amount >= 1_000) return `$${(amount / 1_000).toFixed(0)}K`;
+  return `$${amount}`;
+};
+
 
   return (
     <Link href={`/startup/${startup._id}`} className="block">
@@ -124,7 +130,7 @@ const StartupCard: React.FC<StartupCardProps> = ({ startup }) => {
             <div className="flex items-center gap-1">
               <Users size={16} className="text-gray-500" />
               <span className="font-semibold">
-                {startup.followers.length.toLocaleString()}
+                {(startup.followers?.length ?? 0).toLocaleString()}
               </span>
             </div>
           </div>
@@ -137,8 +143,9 @@ const StartupCard: React.FC<StartupCardProps> = ({ startup }) => {
                 color: colors.textPrimary,
               }}
             >
-              💰 Raised: $120K
+              💰 Raised: {formatAmount(startup.totalRaised || 0)}
             </span>
+
             <span
               className="px-2 py-1 text-xs rounded-full"
               style={{
