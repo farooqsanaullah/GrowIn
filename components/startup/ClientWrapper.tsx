@@ -3,7 +3,7 @@
 import React from "react";
 import { SessionProvider } from "next-auth/react";
 import FollowableStartupProfile from "./FollowableStartupProfile";
-import { Startup } from "@/types/startup";
+import { Startup } from "@/lib/types/startup";
 
 interface Props {
   startup: Startup;

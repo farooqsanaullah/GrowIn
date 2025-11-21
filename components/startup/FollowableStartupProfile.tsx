@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { Star } from "lucide-react";
-import { Startup } from "@/types/startup";
+import { Startup } from "@/lib/types/startup";
 import { useHorizontalScroll } from "@/hooks/useHorizontalScroll";
 
 interface Props {

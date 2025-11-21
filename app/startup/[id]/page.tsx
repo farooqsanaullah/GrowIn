@@ -1,4 +1,4 @@
-import { Startup } from "@/types/startup";
+import { Startup } from "@/lib/types/startup";
 import ClientWrapper from "@/components/startup/ClientWrapper";
 import { notFound } from "next/navigation";
 
@@ -8,7 +8,6 @@ type Props = {
 
 const StartupProfilePage = async ({ params }: Props) => {
   const { id } = await params;
-  console.log('00')
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/startups/${id}`, {
     cache: "no-store",
   });

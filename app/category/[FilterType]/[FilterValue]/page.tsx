@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import StartupCard from "@/components/explore/StartupCard";
 import FiltersBar from "@/components/explore/FiltersBar";
-import { Startup } from "@/types/startup";
+import { Startup } from "@/lib/types/startup";
 
 const PAGE_SIZE = 6;
 

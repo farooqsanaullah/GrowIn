@@ -1,6 +1,6 @@
 import FiltersBar from "@/components/explore/FiltersBar";
 import HorizontalSection from "@/components/explore/HorizontalSection";
-import { Startup } from "@/types/startup";
+import { Startup } from "@/lib/types/startup";
 
 interface ClientExploreProps {
   trending: Startup[];

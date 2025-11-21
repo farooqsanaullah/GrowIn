@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import StartupCard from "@/components/explore/StartupCard";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Startup } from "@/types/startup";
+import { Startup } from "@/lib/types/startup";
 import { useHorizontalScroll } from "@/hooks/useHorizontalScroll";
 import { useRouter } from "next/navigation";
 

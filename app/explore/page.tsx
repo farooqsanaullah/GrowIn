@@ -1,6 +1,6 @@
 // app/explore/page.tsx
 import ClientExplore from "@/components/explore/ClientExplore";
-import { Startup } from "@/types/startup";
+import { Startup } from "@/lib/types/startup";
 
 export default async function ExplorePage() {
   const baseUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/startups?limit=7`;

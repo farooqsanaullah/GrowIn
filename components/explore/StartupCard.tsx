@@ -2,7 +2,7 @@
 import React from "react";
 import Link from "next/link";
 import { Heart, Star, Users } from "lucide-react";
-import { Startup } from "@/types/startup";
+import { Startup } from "@/lib/types/startup";
 
 interface StartupCardProps {
   startup: Startup;
