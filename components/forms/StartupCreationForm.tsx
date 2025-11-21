@@ -35,21 +35,25 @@ import {
   STATUS_OPTIONS
 } from '@/lib/validations/startup';
 import { startupsApi } from '@/lib/api/startups';
-import type { CreateStartupData } from '@/types/api';
+import type { CreateStartupData, Startup } from '@/types/api';
 
 interface StartupCreationFormProps {
   onSuccess?: () => void;
+  isEdit?: boolean;
+  initialData?: Startup;
 }
 
-export function StartupCreationForm({ onSuccess }: StartupCreationFormProps) {
+export function StartupCreationForm({ onSuccess, isEdit = false, initialData }: StartupCreationFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
-  const [pitchFileUrl, setPitchFileUrl] = useState<string>('');
+  const [pitchFileUrl, setPitchFileUrl] = useState<string>(initialData?.pitch?.[0] || '');
   const [pitchFileName, setPitchFileName] = useState<string>('');
-  const [equityRanges, setEquityRanges] = useState<Array<{ range: string; equity: number }>>([]);
+  const [equityRanges, setEquityRanges] = useState<Array<{ range: string; equity: number }>>(
+    initialData?.equityRange || []
+  );
   const [uploadingProfilePic, setUploadingProfilePic] = useState(false);
-  const [profilePicUrl, setProfilePicUrl] = useState<string>('');
+  const [profilePicUrl, setProfilePicUrl] = useState<string>(initialData?.profilePic || '');
 
   const {
     register,
@@ -59,18 +63,18 @@ export function StartupCreationForm({ onSuccess }: StartupCreationFormProps) {
     formState: { errors },
   } = useForm({
     defaultValues: {
-      title: '',
-      description: '',
-      categoryType: '',
-      industry: '',
-      status: 'active',
+      title: initialData?.title || '',
+      description: initialData?.description || '',
+      categoryType: initialData?.categoryType || '',
+      industry: initialData?.industry || '',
+      status: initialData?.status || 'active',
       socialLinks: {
-        website: '',
-        linkedin: '',
-        twitter: '',
-        x: '',
-        instagram: '',
-        facebook: '',
+        website: initialData?.socialLinks?.website || '',
+        linkedin: initialData?.socialLinks?.linkedin || '',
+        twitter: initialData?.socialLinks?.twitter || '',
+        x: initialData?.socialLinks?.x || '',
+        instagram: initialData?.socialLinks?.instagram || '',
+        facebook: initialData?.socialLinks?.facebook || '',
       },
     },
   });
@@ -153,7 +157,9 @@ export function StartupCreationForm({ onSuccess }: StartupCreationFormProps) {
         ),
       };
 
-      const response = await startupsApi.create(submissionData);
+      const response = isEdit && initialData?._id 
+        ? await startupsApi.update(initialData._id, submissionData)
+        : await startupsApi.create(submissionData);
 
       if (response.success) {
         if (onSuccess) {
@@ -162,11 +168,11 @@ export function StartupCreationForm({ onSuccess }: StartupCreationFormProps) {
           router.push('/founder/startups');
         }
       } else {
-        alert(response.message || 'Failed to create startup');
+        alert(response.message || `Failed to ${isEdit ? 'update' : 'create'} startup`);
       }
     } catch (error) {
       console.error('Submission error:', error);
-      alert('Failed to create startup');
+      alert(`Failed to ${isEdit ? 'update' : 'create'} startup`);
     } finally {
       setIsSubmitting(false);
     }
@@ -563,12 +569,12 @@ export function StartupCreationForm({ onSuccess }: StartupCreationFormProps) {
           {isSubmitting ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
-              Creating Startup...
+              {isEdit ? 'Updating Startup...' : 'Creating Startup...'}
             </>
           ) : (
             <>
               <Building2 className="h-4 w-4" />
-              Create Startup
+              {isEdit ? 'Update Startup' : 'Create Startup'}
             </>
           )}
         </Button>
