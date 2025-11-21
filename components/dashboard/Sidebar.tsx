@@ -30,11 +30,6 @@ const sidebarItems = [
     icon: Building2,
   },
   {
-    title: "Analytics",
-    href: "/founder/analytics",
-    icon: BarChart3,
-  },
-  {
     title: "Investors",
     href: "/founder/investors",
     icon: Users,
