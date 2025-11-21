@@ -1,61 +1,58 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import Investment from "@/lib/models/investment.model";
 import { connectDB } from "@/lib/db/connect";
-import mongoose from "mongoose";
-import { investmentSchema } from "@/lib/models/investschema.zod";
+import mongoose, { Document } from "mongoose";
+import { investmentSchema, type InvestmentBody } from "@/lib/models/investschema.zod";
+import { successResponse, errorResponse } from "@/lib/utils/apiResponse";
+
+export interface IInvestment {
+  investorId: mongoose.Types.ObjectId;
+  startupId: mongoose.Types.ObjectId;
+  amount: number;
+}
 
 export async function POST(req: NextRequest) {
   await connectDB();
 
   try {
-    const body = await req.json();
+    let body: InvestmentBody;
 
-    // validate here
+    try {
+      body = await req.json();
+    } catch {
+      return errorResponse("Invalid JSON format", 400);
+    }
+
     const parsed = investmentSchema.safeParse(body);
-
     if (!parsed.success) {
-      return NextResponse.json(
-        { success: false, message: parsed.error.issues[0].message },
-        { status: 400 }
-      );
+      return errorResponse(parsed.error.issues[0].message, 400);
     }
 
     const { investorId, startupId, amount } = parsed.data;
 
-    // Rest of your logic stays same...
-    const existingInvestment = await Investment.findOne({
-      investorId: new mongoose.Types.ObjectId(investorId),
-      startupId: new mongoose.Types.ObjectId(startupId),
-    });
+    const existingInvestment: (IInvestment & Document) | null =
+      await Investment.findOne({
+        investorId: new mongoose.Types.ObjectId(investorId),
+        startupId: new mongoose.Types.ObjectId(startupId),
+      });
 
     if (existingInvestment) {
       existingInvestment.amount += amount;
       await existingInvestment.save();
 
-      return NextResponse.json({
-        success: true,
-        investment: existingInvestment,
-        message: "Investment updated",
-      });
+      return successResponse(existingInvestment, "Investment updated");
     }
 
-    const investment = await Investment.create({
+    const investment: IInvestment & Document = await Investment.create({
       investorId: new mongoose.Types.ObjectId(investorId),
       startupId: new mongoose.Types.ObjectId(startupId),
       amount,
     });
 
-    return NextResponse.json({
-      success: true,
-      investment,
-      message: "Investment created",
-    });
-
-  } catch (err: any) {
-    console.error("Investment POST error:", err);
-    return NextResponse.json(
-      { success: false, message: err.message },
-      { status: 500 }
-    );
+    return successResponse(investment, "Investment created");
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    console.error("Investment POST error:", message);
+    return errorResponse(message, 500);
   }
 }
