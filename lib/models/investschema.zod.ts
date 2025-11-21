@@ -11,5 +11,4 @@ export const investmentSchema = z.object({
   }),
 });
 
-// Optional: export type for TypeScript
-export type InvestmentInput = z.infer<typeof investmentSchema>;
+export type InvestmentBody = z.infer<typeof investmentSchema>;
