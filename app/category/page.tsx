@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import StartupCard from "@/components/explore/StartupCard";
 import { Startup } from "@/lib/types/startup";
@@ -8,7 +8,7 @@ import FiltersBar from "@/components/explore/FiltersBar";
 
 const PAGE_SIZE = 6;
 
-export default function ExplorePage() {
+function ExploreContent() {
   const searchParamsHook = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
@@ -17,11 +17,9 @@ export default function ExplorePage() {
   const [totalStartups, setTotalStartups] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  // Convert searchParams to a stable object/string for useEffect
   const [paramsString, setParamsString] = useState(searchParamsHook?.toString() || "");
 
   useEffect(() => {
-    // Whenever pathname or search params change, update paramsString
     setParamsString(searchParamsHook?.toString() || "");
   }, [pathname, searchParamsHook?.toString()]);
 
@@ -29,7 +27,6 @@ export default function ExplorePage() {
   const skip = (page - 1) * PAGE_SIZE;
 
   useEffect(() => {
-    // Fetch whenever paramsString changes
     const params = new URLSearchParams(paramsString);
 
     if (skip) params.set("skip", skip.toString());
@@ -59,13 +56,17 @@ export default function ExplorePage() {
   const goToPage = (p: number) => {
     const params = new URLSearchParams(searchParamsHook?.toString() || "");
     params.set("page", p.toString());
-    router.push(`/explore?${params.toString()}`);
+    router.push(`/category?${params.toString()}`);
   };
 
   return (
     <div className="p-4 md:px-20 space-y-6">
-        <FiltersBar />
-      {loading ? <p>Loading...</p> : startups.length === 0 ? <p>No startups found</p> : (
+      <FiltersBar />
+      {loading ? (
+        <p>Loading...</p>
+      ) : startups.length === 0 ? (
+        <p>No startups found</p>
+      ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {startups.map(s => <StartupCard key={s._id} startup={s} />)}
@@ -73,12 +74,34 @@ export default function ExplorePage() {
 
           {totalPages > 1 && (
             <div className="flex justify-center mt-8 gap-4">
-              {page > 1 && <button onClick={() => goToPage(page - 1)} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Previous</button>}
-              {page < totalPages && <button onClick={() => goToPage(page + 1)} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Next</button>}
+              {page > 1 && (
+                <button 
+                  onClick={() => goToPage(page - 1)} 
+                  className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                >
+                  Previous
+                </button>
+              )}
+              {page < totalPages && (
+                <button 
+                  onClick={() => goToPage(page + 1)} 
+                  className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                >
+                  Next
+                </button>
+              )}
             </div>
           )}
         </>
       )}
     </div>
+  );
+}
+
+export default function ExplorePage() {
+  return (
+    <Suspense fallback={<div className="p-4 md:px-20">Loading...</div>}>
+      <ExploreContent />
+    </Suspense>
   );
 }
