@@ -1,16 +1,16 @@
-export { Button } from "./button";
-export { Input } from "./input";
-export { Label } from "./label";
-export { Textarea } from "./textarea";
+export { Button } from "@/components/ui/button";
+export { Input } from "@/components/ui/input";
+export { Label } from "@/components/ui/label";
+export { Textarea } from "@/components/ui/textarea";
 export { 
   Select, 
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue 
-} from "./select";
-export { Slider } from "./slider";
-export { Separator } from "./separator";
+} from "@/components/ui/select";
+export { Slider } from "@/components/ui/slider";
+export { Separator } from "@/components/ui/separator";
 export {
   Dialog,
   DialogClose,
@@ -23,6 +23,7 @@ export {
   DialogTitle,
   DialogTrigger,
 } from "./dialog";
+export { DualRangeSlider } from "@/components/ui/dual-range-slider"
 // export { FloatingLabelInput } from "./FloatingLabelInput"
 // export { Checkbox } from "./checkbox";
 // export { Switch } from "./switch";
