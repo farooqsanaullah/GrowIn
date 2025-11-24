@@ -1,5 +1,5 @@
 import { Schema, model, models } from "mongoose";
-import { EMAIL_REGEX } from "@/lib/constants/regex";
+import { EMAIL_REGEX } from "@/lib/constants";
 
 interface SocialLinks {
   twitter?: string;
