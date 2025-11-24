@@ -23,7 +23,8 @@ export {
   DialogTitle,
   DialogTrigger,
 } from "./dialog";
-export { DualRangeSlider } from "@/components/ui/dual-range-slider"
+export { DualRangeSlider } from "@/components/ui/dual-range-slider";
+export { SkillsInput } from "@/components/ui/custom/skillsinput";
 // export { FloatingLabelInput } from "./FloatingLabelInput"
 // export { Checkbox } from "./checkbox";
 // export { Switch } from "./switch";
