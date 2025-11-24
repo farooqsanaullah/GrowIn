@@ -11,7 +11,6 @@ import {
 } from "@/lib/utils/validation";
 
 const STATIC_FOUNDER_ID = "673615f87cdf80bbbb5d7cd7";
-
 export async function GET(request: NextRequest) {
   try {
     await connectDB();
@@ -24,20 +23,26 @@ export async function GET(request: NextRequest) {
 
     const query: Record<string, any> = {};
 
-    const categoryType = searchParams.get("categoryType");
-    const industry = searchParams.get("industry");
-    const status = searchParams.get("status");
-    const badges = searchParams.get("badges");
+    // Helper to convert CSV → array or return undefined
+    const parseList = (param: string | null) => {
+      if (!param) return undefined;
+      return param.split(",").map((v) => v.trim());
+    };
 
-    if (categoryType) query.categoryType = categoryType;
-    if (industry) query.industry = industry;
-    if (status) query.status = status;
-    if (badges) query.badges = { $in: [badges] };
+    // Multi-select params
+    const categoryTypes = parseList(searchParams.get("categoryType"));
+    const industries = parseList(searchParams.get("industry"));
+    const statuses = parseList(searchParams.get("status"));
+    const badges = parseList(searchParams.get("badges"));
 
+    if (categoryTypes) query.categoryType = { $in: categoryTypes };
+    if (industries) query.industry = { $in: industries };
+    if (statuses) query.status = { $in: statuses };
+    if (badges) query.badges = { $in: badges };
+
+    // Text search
     const search = searchParams.get("search");
-    if (search) {
-      query.$text = { $search: search };
-    }
+    if (search) query.$text = { $search: search };
 
     // Fetch startups with pagination
     const [startups, total] = await Promise.all([
@@ -52,23 +57,19 @@ export async function GET(request: NextRequest) {
       Startup.countDocuments(query),
     ]);
 
-    // Convert startup._id to ObjectId to satisfy TypeScript
-    const startupIds = startups.map(s => new Types.ObjectId(s._id as any));
+    const startupIds = startups.map((s) => new Types.ObjectId(s._id as any));
 
-    // Aggregate total raised for all these startups in a single query
     const investmentTotals = await Investment.aggregate([
       { $match: { startupId: { $in: startupIds } } },
       { $group: { _id: "$startupId", totalRaised: { $sum: "$amount" } } },
     ]);
 
-    // Map totals by startupId for easy lookup
     const totalsMap = investmentTotals.reduce((acc, item) => {
       acc[item._id.toString()] = item.totalRaised;
       return acc;
     }, {} as Record<string, number>);
 
-    // Attach totalRaised to each startup
-    const startupsWithTotal = startups.map(startup => ({
+    const startupsWithTotal = startups.map((startup) => ({
       ...startup,
       totalRaised: totalsMap[(startup._id as Types.ObjectId).toString()] || 0,
     }));
