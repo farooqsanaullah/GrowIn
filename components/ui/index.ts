@@ -26,6 +26,11 @@ export {
 export { DualRangeSlider } from "@/components/ui/dual-range-slider";
 export { SkillsInput } from "@/components/ui/custom/skillsinput";
 export { DateRangePicker } from "@/components/ui/custom/date-rangepicker";
+export { 
+  FloatingInput, 
+  FloatingLabel, 
+  FloatingLabelInput 
+} from "@/components/ui/custom/floating-inputlabel"
 // export { FloatingLabelInput } from "./FloatingLabelInput"
 // export { Checkbox } from "./checkbox";
 // export { Switch } from "./switch";
