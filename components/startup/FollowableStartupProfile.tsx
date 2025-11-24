@@ -225,8 +225,6 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
           {startup.equityRange?.length > 0 && (
             <div className="rounded-2xl p-6 shadow-md bg-gray-50">
               <h2 className="text-2xl font-bold mb-6">Investment Opportunity</h2>
-
-              {/* Equity Ranges */}
               <div className="space-y-2 mb-6">
                 {startup.equityRange.map((eq, i) => (
                   <div
@@ -239,7 +237,6 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
                 ))}
               </div>
 
-              {/* Investment Input */}
               <div className="mb-6">
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Investment Amount
@@ -265,9 +262,7 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
                 </button>
               </div>
 
-              {/* Stats Section */}
               <div className="mt-6 pt-4 border-t border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Total Raised */}
                 <div className="flex items-center justify-between rounded-lg p-4 shadow-sm" style={{backgroundColor: 'var(--bg-primary)'}}>
                   <div className="flex items-center gap-2">
                     <span className="text-green-600 text-lg font-bold">💰</span>
@@ -278,7 +273,6 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
                   </span>
                 </div>
 
-                {/* Rating */}
                 <div className="flex items-center justify-between rounded-lg p-4 shadow-sm" style={{backgroundColor: 'var(--bg-secondary)'}}>
                   <div className="flex items-center gap-2">
                     <Star className="text-yellow-400 fill-yellow-400" size={20} />
