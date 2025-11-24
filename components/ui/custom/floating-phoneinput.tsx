@@ -11,7 +11,7 @@ interface Props {
   onChange: (val: string) => void;
 }
 
-export const FloatingPhoneInput: React.FC<Props> = ({ label, value, onChange }) => {
+const FloatingPhoneInput: React.FC<Props> = ({ label, value, onChange }) => {
   const [focused, setFocused] = React.useState(false);
 
   return (
@@ -33,3 +33,5 @@ export const FloatingPhoneInput: React.FC<Props> = ({ label, value, onChange }) 
     </div>
   );
 };
+
+export { FloatingPhoneInput };

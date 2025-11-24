@@ -11,7 +11,7 @@ interface Props {
   onChange: (val: string) => void;
 }
 
-export const FloatingCountryInput: React.FC<Props> = ({ label, value, onChange }) => {
+const FloatingCountryInput: React.FC<Props> = ({ label, value, onChange }) => {
   const [focused, setFocused] = React.useState(false);
 
   return (
@@ -32,3 +32,5 @@ export const FloatingCountryInput: React.FC<Props> = ({ label, value, onChange }
     </div>
   );
 };
+
+export { FloatingCountryInput };

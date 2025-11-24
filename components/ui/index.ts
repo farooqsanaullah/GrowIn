@@ -30,7 +30,10 @@ export {
   FloatingInput, 
   FloatingLabel, 
   FloatingLabelInput 
-} from "@/components/ui/custom/floating-inputlabel"
+} from "@/components/ui/custom/floating-labelinput";
+export { FloatingPhoneInput } from "@/components/ui/custom/floating-phoneinput";
+export { FloatingCountryInput } from "@/components/ui/custom/floating-country";
+export { FloatingRegionInput } from "@/components/ui/custom/floating-region";
 // export { FloatingLabelInput } from "./FloatingLabelInput"
 // export { Checkbox } from "./checkbox";
 // export { Switch } from "./switch";
