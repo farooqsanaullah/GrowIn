@@ -4,6 +4,8 @@ import Startup from "@/lib/models/startup.model";
 import User from "@/lib/models/user.model";
 import { successResponse, errorResponse } from "@/lib/utils/apiResponse";
 import { isValidObjectId, sanitizeStartupData } from "@/lib/utils/validation";
+import Investment from "@/lib/models/investment.model";
+import { Types } from "mongoose";
 
 // Define RouteParams type
 interface RouteParams {
@@ -21,6 +23,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       return errorResponse("Invalid startup ID", 400);
     }
 
+    // Fetch startup
     const startup = await Startup.findById(id)
       .populate("founders", "userName name profileImage email bio")
       .populate("investors", "userName name profileImage email bio")
@@ -30,11 +33,31 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       return errorResponse("Startup not found", 404);
     }
 
-    return successResponse(startup, "Startup retrieved successfully");
+    // --- Get total invested amount for this startup ---
+    const investmentTotal = await Investment.aggregate([
+      { $match: { startupId: new Types.ObjectId(id) } },
+      { $group: { _id: null, totalRaised: { $sum: "$amount" } } },
+    ]);
+
+    const totalRaised =
+      investmentTotal.length > 0 ? investmentTotal[0].totalRaised : 0;
+
+    // Attach to response
+    const startupWithTotal = {
+      ...startup,
+      totalRaised,
+    };
+
+    return successResponse(
+      startupWithTotal,
+      "Startup retrieved successfully"
+    );
+
   } catch (error: any) {
     return errorResponse(error.message || "Failed to fetch startup", 500);
   }
 }
+
 
 // PUT / update startup by ID
 export async function PUT(request: NextRequest, { params }: RouteParams) {
