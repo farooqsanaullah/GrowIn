@@ -17,7 +17,12 @@ export async function connectDB() {
 
   const MONGODB_URI = process.env.MONGODB_URI; 
 
+  // Skip connection during build time if no MONGODB_URI is provided
   if (!MONGODB_URI) {
+    if (process.env.NODE_ENV === "production" && !process.env.MONGODB_URI) {
+      console.warn("MongoDB connection skipped during build time");
+      return null;
+    }
     throw new Error("Please define the MONGODB_URI environment variable");
   }
 
