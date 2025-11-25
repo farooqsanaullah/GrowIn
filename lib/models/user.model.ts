@@ -17,6 +17,7 @@ export interface IUser {
   userName: string;
   name?: string;
   email: string;
+  phone?: string;
   password?: string;
   role: "investor" | "founder";
   profileImage?: string;
@@ -57,6 +58,11 @@ const userSchema = new Schema<IUser>(
       trim: true,
       lowercase: true,
       match: [EMAIL_REGEX, "Please enter a valid email address"],
+    },
+    phone: {
+      type: String,
+      trim: true,
+      match: [/^\+?[0-9\s()-]{7,20}$/, "Invalid phone number"],
     },
     password: {
       type: String,
