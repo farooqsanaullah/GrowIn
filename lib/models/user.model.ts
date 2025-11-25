@@ -1,5 +1,6 @@
 import { Schema, model, models } from "mongoose";
 import { EMAIL_REGEX } from "@/lib/constants";
+import { isValidNumber } from "libphonenumber-js";
 
 interface SocialLinks {
   twitter?: string;
@@ -60,10 +61,20 @@ const userSchema = new Schema<IUser>(
       match: [EMAIL_REGEX, "Please enter a valid email address"],
     },
     phone: {
-      type: String,
-      trim: true,
-      match: [/^\+?[0-9\s()-]{7,20}$/, "Invalid phone number"],
-    },
+        type: String,
+        trim: true,
+        validate: {
+          validator: (value: string) => {
+            if (!value) return true; // allow empty
+            try {
+              return isValidNumber(value);
+            } catch {
+              return false;
+            }
+          },
+          message: "Invalid phone number",
+        },
+      },
     password: {
       type: String,
       minlength: [8, "Password must be at least 8 characters long"],
