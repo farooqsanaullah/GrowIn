@@ -14,9 +14,13 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
   const { data: session } = useSession();
 
   const [startup, setStartup] = useState(initialStartup);
+  const [investmentAmount, setInvestmentAmount] = useState("");
   const [isFollowed, setIsFollowed] = useState(false);
   const [userRating, setUserRating] = useState<number | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [avgRating, setAvgRating] = useState(startup.avgRating || 0);
+  const [ratingCount, setRatingCount] = useState(startup.ratingCount || 0);
+  const [isInvesting, setIsInvesting] = useState(false);
+  const [isRatingSubmitting, setIsRatingSubmitting] = useState(false);
 
   const descriptionRef = useRef<HTMLDivElement>(null);
   const teamRef = useRef<HTMLDivElement>(null);
@@ -31,17 +35,22 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
     return `$${amount}`;
   };
 
+  // Initialize follow state
   useEffect(() => {
     if (session?.user?.id && Array.isArray(startup.followers)) {
       setIsFollowed(startup.followers.includes(session.user.id));
     }
+  }, [session, startup.followers]);
 
-    // Fetch user's existing review
-    const fetchUserReview = async () => {
-      if (!session?.user?.id) return;
+  // Fetch current user's rating
+  useEffect(() => {
+    if (!session?.user?.id) return;
+
+    const fetchUserRating = async () => {
       try {
         const res = await fetch(`/api/startups/${startup._id}/rate`);
         if (!res.ok) throw new Error("Failed to fetch review");
+
         const data = await res.json();
         if (data.success && data.review?.rating) {
           setUserRating(data.review.rating);
@@ -51,14 +60,19 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
       }
     };
 
-    fetchUserReview();
-  }, [session, startup.followers, startup._id]);
+    fetchUserRating();
+  }, [session?.user?.id, startup._id]);
 
   const toggleFollow = async () => {
     if (!session?.user?.id) return alert("Please login first");
+
     try {
-      const res = await fetch(`/api/startups/${startup._id}/follow`, { method: "POST" });
+      const res = await fetch(`/api/startups/${startup._id}/follow`, {
+        method: "POST",
+      });
+
       const data = await res.json();
+
       if (data.success) {
         setIsFollowed(data.isFollowed);
         setStartup(prev => prev ? { ...prev, followers: data.followers } : prev);
@@ -75,33 +89,65 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
   };
 
   const handleRating = async (rating: number) => {
-    if (!session?.user?.id) return alert("Please login first");
+    if (!session?.user?.id) return alert("Please login to rate");
 
-    setIsSubmitting(true);
+    setIsRatingSubmitting(true);
 
     try {
-      const res = await fetch(`/api/startups/${startup._id}/review`, {
+      const res = await fetch(`/api/startups/${startup._id}/rate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ rating }),
       });
 
       if (!res.ok) throw new Error("Failed to submit rating");
-      const data = await res.json();
 
+      const data = await res.json();
       if (data.success) {
         setUserRating(rating);
-        setStartup(prev =>
-          prev ? { ...prev, avgRating: data.avgRating, ratingCount: data.ratingCount } : prev
-        );
-      } else {
-        alert(data.message || "Failed to submit rating");
+        setAvgRating(data.avgRating);
+        setRatingCount(data.ratingCount);
       }
     } catch (err) {
       console.error(err);
       alert("Something went wrong while submitting your rating");
     } finally {
-      setIsSubmitting(false);
+      setIsRatingSubmitting(false);
+    }
+  };
+
+  const handleInvest = async () => {
+    if (!session?.user?.id) return alert("Please login first");
+
+    const amountNum = parseFloat(investmentAmount);
+    if (isNaN(amountNum) || amountNum <= 0) return alert("Enter a valid amount");
+
+    setIsInvesting(true);
+
+    try {
+      const res = await fetch("/api/investment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          investorId: session.user.id,
+          startupId: startup._id,
+          amount: amountNum,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        alert(`Successfully invested $${amountNum}`);
+        setInvestmentAmount("");
+      } else {
+        alert(data.message || "Investment failed");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong while investing");
+    } finally {
+      setIsInvesting(false);
     }
   };
 
@@ -132,7 +178,7 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
           <img src={profilePic} alt={startup.title} className="w-full h-full object-cover" />
         </div>
 
-        {/* Navigation Tabs */}
+        {/* Sticky navigation */}
         <div className="sticky top-0 bg-white z-10 py-2 px-4 border-b border-gray-200 flex justify-between items-center">
           <div className="flex gap-4">
             <button onClick={() => scrollToSection("description")} className="font-semibold hover:underline text-gray-700">Description</button>
@@ -150,7 +196,6 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
           </div>
         )}
 
-        {/* Team */}
         {startup.founders?.length > 0 && (
           <div ref={teamRef} className="bg-white rounded-2xl p-6 shadow-md">
             <h2 className="text-2xl font-bold mb-4">Our Team</h2>
@@ -173,7 +218,6 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
           </div>
         )}
 
-        {/* Pitch */}
         {startup.pitch?.length > 0 && (
           <div ref={pitchRef} className="bg-white rounded-2xl p-6 shadow-md relative scrollbar-hide">
             <h2 className="text-2xl font-bold mb-4">Pitch Deck</h2>
@@ -219,14 +263,13 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
             </div>
           </div>
         )}
-
       </div>
 
       {/* Sidebar */}
       <div className="w-full lg:w-96 flex-shrink-0 space-y-6">
         <div className="lg:sticky lg:top-20 space-y-6">
 
-          {/* Investment & Stats */}
+          {/* Investment */}
           {startup.equityRange?.length > 0 && (
             <div className="rounded-2xl p-6 shadow-md bg-gray-50">
               <h2 className="text-2xl font-bold mb-6">Investment Opportunity</h2>
@@ -237,6 +280,29 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
                     <span className="font-bold text-gray-900 text-lg">{eq.equity}%</span>
                   </div>
                 ))}
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Investment Amount</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">$</span>
+                  <input
+                    type="text"
+                    value={investmentAmount}
+                    onChange={(e) => setInvestmentAmount(e.target.value)}
+                    placeholder="Enter amount"
+                    className="w-full border-2 border-gray-300 rounded-lg pl-7 pr-3 py-2 text-base focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none"
+                  />
+                </div>
+                <button
+                  onClick={handleInvest}
+                  disabled={isInvesting}
+                  className={`w-full mt-3 py-2 font-semibold rounded-lg transition ${
+                    isInvesting ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600 text-white"
+                  }`}
+                >
+                  {isInvesting ? "Investing..." : "Invest Now"}
+                </button>
               </div>
 
               <div className="mt-6 pt-4 border-t border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -256,8 +322,8 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
                     <span className="text-gray-800 font-semibold">Rating</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <span className="font-bold">{startup.avgRating?.toFixed(1)}</span>
-                    <span className="text-xs text-gray-500">({startup.ratingCount})</span>
+                    <span className="font-bold">{avgRating.toFixed(1)}</span>
+                    <span className="text-xs text-gray-500">({ratingCount})</span>
                   </div>
                 </div>
               </div>
@@ -266,32 +332,31 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
 
           {/* Followers */}
           <div className="rounded-2xl p-6 shadow-md bg-gray-50">
-            <h2 className="text-2xl font-bold mb-4">Followers</h2>
-            <p className="font-bold text-lg">{Array.isArray(startup.followers) ? startup.followers.length : 0}</p>
+            <h3 className="text-xl font-semibold mb-3 text-center">Followers</h3>
+            <p className="font-bold text-lg text-center">{Array.isArray(startup.followers) ? startup.followers.length : 0}</p>
           </div>
 
           {/* Star Rating */}
-          <div className="rounded-2xl p-6 shadow-md bg-gray-50">
-            <h3 className="text-xl font-semibold mb-3 text-center">Rate this Startup</h3>
+          <div className="rounded-2xl p-6 shadow-md bg-gray-50 text-center">
+            <h3 className="text-xl font-semibold mb-2">Rate this Startup</h3>
             <div className="flex gap-2 justify-center mb-2">
-              {[1, 2, 3, 4, 5].map((star) => (
+              {[1,2,3,4,5].map(star => (
                 <Star
                   key={star}
                   size={28}
-                  onClick={() => !isSubmitting && handleRating(star)}
+                  onClick={() => handleRating(star)}
                   className={`cursor-pointer transition ${
                     userRating && star <= userRating
                       ? "fill-yellow-400 text-yellow-400"
                       : "text-gray-300 hover:text-yellow-400"
-                  }`}
+                  } ${isRatingSubmitting ? "pointer-events-none opacity-50" : ""}`}
                 />
               ))}
             </div>
-            {userRating && (
-              <p className="text-sm text-center">
-                You rated this {userRating} star{userRating > 1 ? "s" : ""}.
-              </p>
-            )}
+            {userRating && <p className="text-sm mb-2">You rated this {userRating} star{userRating>1?"s":""}.</p>}
+            <p className="text-gray-700 font-medium">
+              Average Rating: {avgRating.toFixed(1)} ({ratingCount} {ratingCount===1?"review":"reviews"})
+            </p>
           </div>
 
         </div>

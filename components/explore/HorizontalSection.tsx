@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 interface HorizontalSectionProps {
   title: string;
   startups: Startup[];
-  badge: "Trending" | "Funded" | "Active"; // optional category info
+  badge: "Trending" | "Funded" | "Active";
 }
 
 const HorizontalSection: React.FC<HorizontalSectionProps> = ({ title, startups, badge }) => {
@@ -20,12 +20,13 @@ const HorizontalSection: React.FC<HorizontalSectionProps> = ({ title, startups, 
   if (startups.length === 0) return null;
 
   const handleSeeMore = () => {
-  let category = "";
-  if (badge === "Trending") category = "Trending";
-  else if (badge === "Funded") category = "Funded";
-  else if (badge === "Active") category = "active";
+  const params = new URLSearchParams();
+  if (badge === "Trending") params.set("badges", "Trending");
+  else if (badge === "Funded") params.set("badges", "Funded");
+  else if (badge === "Active") params.set("status", "active");
+  params.delete("page");
 
-  router.push(`category/badges/${category}`);
+  router.push(`/category?${params.toString()}`);
 };
 
 
