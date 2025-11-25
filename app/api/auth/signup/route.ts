@@ -3,7 +3,7 @@ import { connectDB } from "@/lib/db/connect";
 import { hashPassword, getUserByEmail } from "@/lib/helpers/backend";
 import { success, error } from "@/lib/auth/apiResponses";
 import User from "@/lib/models/user.model";
-import { signupSchema } from "@/lib/auth/zodValidationSchema";
+import { signupSchema } from "@/lib/auth/zodValidation/userSchemas";
 
 const isDev = process.env.NODE_ENV === "development";
 
