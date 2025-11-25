@@ -47,10 +47,22 @@ export const passwordSchema = z
   .refine((val) => /\d/.test(val), "Password must contain at least one number.")
   .optional();
 
+const experienceSchema = z.object({
+  designation: z.string().min(1),
+  company: z.string().min(1),
+  experienceDesc: z.string().max(500).optional(),
+  expStart: z.date(),
+  expEnd: z.date(),
+}).refine(data => data.expEnd >= data.expStart, {
+  message: "End date must be after start date",
+  path: ["expEnd"],
+});
+
 // User update schema
 export const updateUserSchema = z.object({
   userName: z.string().min(3, "Username too short").max(30, "Username too long").optional(),
   name: z.string().max(50, "Name too long").optional(),
+  email: z.string().email("Invalid email").optional(),
   phone: phoneSchema,
   password: passwordSchema,
   role: z.enum(["investor", "founder"]).optional(),
@@ -59,7 +71,7 @@ export const updateUserSchema = z.object({
   socialLinks: socialLinksSchema,
   city: z.string().optional(),
   country: z.string().optional(),
-  experience: z.string().optional(),
+  experiences: z.array(experienceSchema).optional(),
   skills: z.array(z.string()).optional(),
   fundingRange: fundingRangeSchema,
   isVerified: z.boolean().optional(),
