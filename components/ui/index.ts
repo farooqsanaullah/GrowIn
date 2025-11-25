@@ -25,7 +25,6 @@ export {
 } from "./dialog";
 export { DualRangeSlider } from "@/components/ui/dual-range-slider";
 export { SkillsInput } from "@/components/ui/custom/skillsinput";
-export { DateRangePicker } from "@/components/ui/custom/date-rangepicker";
 export { 
   FloatingInput, 
   FloatingLabel, 
@@ -34,7 +33,6 @@ export {
 export { FloatingPhoneInput } from "@/components/ui/custom/floating-phoneinput";
 export { FloatingCountryInput } from "@/components/ui/custom/floating-country";
 export { FloatingRegionInput } from "@/components/ui/custom/floating-region";
-// export { FloatingLabelInput } from "./FloatingLabelInput"
 // export { Checkbox } from "./checkbox";
 // export { Switch } from "./switch";
 // export { RadioGroup } from "./radio-group";

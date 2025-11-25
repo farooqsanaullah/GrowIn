@@ -8,11 +8,12 @@ import {
   SkillsInput,
   Label,
   FloatingLabelInput,
-  DateRangePicker,
   FloatingCountryInput,
   FloatingRegionInput,
   FloatingPhoneInput,
 } from "@/components/ui";
+import Datepicker from "react-tailwindcss-datepicker";
+import "flowbite/dist/flowbite.css";
 
 export default function EditProfilePage() {
   // BASIC INFO
@@ -36,8 +37,8 @@ export default function EditProfilePage() {
     designation: "Software Engineer",
     company: "Amrood Labs",
     experienceDesc: "Optional experience description",
-    expStart: "01/01/2001",
-    expEnd: "01/01/2001",
+    expStart: new Date("2001-01-01"),
+    expEnd: new Date("2001-01-01"),
     skills: [] as string[],
   });
 
@@ -169,20 +170,23 @@ export default function EditProfilePage() {
           }
         />
 
-        <div className="space-y-2">
-          <h3 className="text-md font-medium text-foreground">
-            Experience Duration
-          </h3>
-
-          <DateRangePicker
-            value={{ start: founder.expStart, end: founder.expEnd }}
-            onChange={(range) =>
+        <div className="space-y-2 relative z-[9999]">
+          <h3 className="text-md font-medium text-foreground">Experience Duration</h3>
+          <Datepicker
+            value={{
+              startDate: founder.expStart,
+              endDate: founder.expEnd,
+            }}
+            onChange={(range) => {
               setFounder({
                 ...founder,
-                expStart: range.start,
-                expEnd: range.end,
-              })
-            }
+                expStart: range?.startDate || new Date(),
+                expEnd: range?.endDate || new Date(),
+              });
+            }}
+            displayFormat="MM/DD/YYYY"
+            separator="-"
+            startFrom={founder.expStart}
           />
         </div>
 
