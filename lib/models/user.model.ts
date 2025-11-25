@@ -1,6 +1,6 @@
 import { Schema, model, models } from "mongoose";
 import { EMAIL_REGEX } from "@/lib/constants";
-import { isValidNumber } from "libphonenumber-js";
+import { isValidNumber, parsePhoneNumberFromString } from "libphonenumber-js";
 
 interface SocialLinks {
   twitter?: string;
@@ -25,15 +25,18 @@ export interface IUser {
   bio?: string;
   socialLinks?: SocialLinks;
   provider: "credentials" | "google" | "github";
-  // Address
+
+  // Location
   city?: string;
   country?: string;
+
   // Founder specific
   experience?: string;
   skills?: string[];
+
   // Investor specific
   fundingRange?: FundingRange;
-  // Optional extras
+
   isVerified?: boolean;
 }
 
@@ -144,6 +147,16 @@ const userSchema = new Schema<IUser>(
     timestamps: true, // adds createdAt & updatedAt
   }
 );
+
+userSchema.pre("save", function (next) {
+  if (this.phone) {
+    const parsed = parsePhoneNumberFromString(this.phone);
+    if (parsed) {
+      this.phone = parsed.format("E.164"); // e.g., +14155552671
+    }
+  }
+  next();
+});
 
 // Prevent model overwrite upon hot reload in development
 const User = models.User || model<IUser>("User", userSchema);
