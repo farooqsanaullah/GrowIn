@@ -15,38 +15,94 @@ import {
 } from "@/components/ui";
 import Datepicker from "react-tailwindcss-datepicker";
 import "flowbite/dist/flowbite.css";
+import { useParams } from "next/navigation";
 
 export default function EditProfilePage() {
+  const params = useParams();
+  const userName = params.userName;
+  const [user, setUser] = useState<any>(null);
+
   // BASIC INFO
-  const [basic, setBasic] = useState({
-    userName: "hafiz_dev",
-    name: "Hafiz Mateen",
-    email: "hafiz@example.com",
+  const [basicInfo, setBasicInfo] = useState({
+    userName: "",
+    name: "",
+    email: "",
     profileImage: "",
-    bio: "Software engineer at Amrood Labs",
+    bio: "",
     phone: "",
   });
 
   // LOCATION
   const [location, setLocation] = useState({
-    country: "United States",
-    city: "Alabama",
+    country: "",
+    city: "",
   });
 
   // FOUNDER INFO
   const [founder, setFounder] = useState({
-    designation: "Software Engineer",
-    company: "Amrood Labs",
-    experienceDesc: "Optional experience description",
-    expStart: new Date("2001-01-01"),
-    expEnd: new Date("2001-01-01"),
+    designation: "",
+    company: "",
+    experienceDesc: "",
+    expStart: new Date(),
+    expEnd: new Date(),
     skills: [] as string[],
   });
 
   // INVESTOR INFO
-  const [fundingRange, setFundingRange] = useState([10, 70]);
-  const [manual, setManual] = useState({ min: 10, max: 70 });
+  const [fundingRange, setFundingRange] = useState([0, 0]);
+  const [manual, setManual] = useState({ min: 0, max: 0 });
 
+  // Fetching User From API
+  useEffect(() => {
+    async function fetchUser() {
+      const res = await fetch(`/api/profile/${userName}`);
+      if (!res.ok) return;
+
+      const data = await res.json();
+      setUser(data.user);
+    }
+    fetchUser();
+  }, [userName]);
+
+  // Applying user data to all fields
+  useEffect(() => {
+    if (!user) return;
+
+    // BASIC INFO
+    setBasicInfo({
+      userName: user.userName ?? "",
+      name: user.name ?? "",
+      email: user.email ?? "",
+      profileImage: user.profileImage ?? "",
+      bio: user.bio ?? "",
+      phone: user.phone ?? "",
+    });
+
+    // LOCATION
+    setLocation({
+      country: user.country ?? "",
+      city: user.city ?? "",
+    });
+
+    // FOUNDER INFO
+    setFounder({
+      designation: user.designation ?? "",
+      company: user.company ?? "",
+      experienceDesc: user.experienceDesc ?? "",
+      expStart: user.expStart ? new Date(user.expStart) : new Date(),
+      expEnd: user.expEnd ? new Date(user.expEnd) : new Date(),
+      skills: user.skills ?? [],
+    });
+
+    // INVESTOR INFO
+    const min = user.fundingMin ?? 10;
+    const max = user.fundingMax ?? 70;
+
+    setFundingRange([min, max]);
+    setManual({ min, max });
+  }, [user]);
+
+  // Keeping manual input synced
   useEffect(() => {
     setManual({
       min: fundingRange[0],
@@ -72,9 +128,9 @@ export default function EditProfilePage() {
 
       {/* PROFILE IMAGE */}
       <div className="flex items-center gap-6">
-        {basic.profileImage ? (
+        {basicInfo.profileImage ? (
           <Image
-            src={basic.profileImage}
+            src={basicInfo.profileImage}
             alt="Profile"
             width={90}
             height={90}
@@ -85,7 +141,7 @@ export default function EditProfilePage() {
             className="w-20 h-20 rounded-full flex items-center justify-center text-white text-3xl font-bold"
             style={{ backgroundColor: "#4F46E5" }}
           >
-            {basic.userName.charAt(0).toUpperCase()}
+            {basicInfo.userName.charAt(0).toUpperCase()}
           </div>
         )}
 
@@ -102,34 +158,29 @@ export default function EditProfilePage() {
           <FloatingLabelInput
             id="username"
             label="Username"
-            type="text"
-            value={basic.userName}
-            onChange={(e) =>
-              setBasic({ ...basic, userName: e.target.value })
-            }
+            value={basicInfo.userName}
+            onChange={(e) => setBasicInfo({ ...basicInfo, userName: e.target.value })}
           />
 
           <FloatingLabelInput
             id="fullName"
             label="Full Name"
-            type="text"
-            value={basic.name}
-            onChange={(e) => setBasic({ ...basic, name: e.target.value })}
+            value={basicInfo.name}
+            onChange={(e) => setBasicInfo({ ...basicInfo, name: e.target.value })}
           />
 
           <FloatingLabelInput
             id="email"
             label="Email"
-            type="email"
             disabled
-            value={basic.email}
+            value={basicInfo.email}
             className="bg-muted opacity-70"
           />
 
           <FloatingPhoneInput
             label="Phone"
-            value={basic.phone}
-            onChange={(val) => setBasic({ ...basic, phone: val })}
+            value={basicInfo.phone}
+            onChange={(val) => setBasicInfo({ ...basicInfo, phone: val })}
           />
 
           <FloatingCountryInput
@@ -149,18 +200,14 @@ export default function EditProfilePage() {
         <FloatingLabelInput
           id="bio"
           label="Bio"
-          type="text"
-          value={basic.bio}
-          onChange={(e) => setBasic({ ...basic, bio: e.target.value })}
-          className="w-full"
+          value={basicInfo.bio}
+          onChange={(e) => setBasicInfo({ ...basicInfo, bio: e.target.value })}
         />
       </section>
 
       {/* FOUNDER INFO */}
       <section className="space-y-6">
-        <h2 className="text-xl font-bold text-foreground">
-          Founder Information
-        </h2>
+        <h2 className="text-xl font-bold text-foreground">Founder Information</h2>
 
         <FloatingLabelInput
           id="designation"
