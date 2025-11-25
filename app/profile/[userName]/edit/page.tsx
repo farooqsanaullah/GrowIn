@@ -11,6 +11,7 @@ import {
   FloatingCountryInput,
   FloatingRegionInput,
   FloatingPhoneInput,
+  FloatingLabel,
 } from "@/components/ui";
 import Datepicker from "react-tailwindcss-datepicker";
 import "flowbite/dist/flowbite.css";
@@ -171,23 +172,26 @@ export default function EditProfilePage() {
         />
 
         <div className="space-y-2 relative z-[9999]">
-          <h3 className="text-md font-medium text-foreground">Experience Duration</h3>
           <Datepicker
-            value={{
-              startDate: founder.expStart,
-              endDate: founder.expEnd,
-            }}
-            onChange={(range) => {
+            value={{ startDate: founder.expStart, endDate: founder.expEnd }}
+            onChange={(range) =>
               setFounder({
                 ...founder,
                 expStart: range?.startDate || new Date(),
                 expEnd: range?.endDate || new Date(),
-              });
-            }}
+              })
+            }
             displayFormat="MM/DD/YYYY"
             separator="-"
             startFrom={founder.expStart}
+            inputClassName="peer w-full border rounded-md p-2 placeholder-transparent"
           />
+          <FloatingLabel
+            htmlFor="experience"
+            className="absolute left-2 top-2 text-gray-500 text-sm pointer-events-none"
+          >
+            Experience Duration
+          </FloatingLabel>
         </div>
 
         <FloatingLabelInput
