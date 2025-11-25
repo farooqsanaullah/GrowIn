@@ -14,6 +14,14 @@ interface FundingRange {
   max?: number;
 }
 
+interface Experience {
+  designation: string;
+  startDate: Date;
+  endDate: Date;
+  company: string;
+  description?: string;
+}
+
 export interface IUser {
   userName: string;
   name?: string;
@@ -31,7 +39,7 @@ export interface IUser {
   country?: string;
 
   // Founder specific
-  experience?: string;
+  experiences?: Experience[];
   skills?: string[];
 
   // Investor specific
@@ -130,12 +138,23 @@ const userSchema = new Schema<IUser>(
       enum: ["credentials", "google", "github"], 
       default: "credentials" 
     },
-    // Address
+
+    // Location
     city: { type: String, trim: true },
     country: { type: String, trim: true },
+
     // Founder specific
-    experience: { type: String, trim: true },
+    experiences: [
+      {
+        designation: { type: String, trim: true },
+        startDate: { type: Date },
+        endDate: { type: Date },
+        company: { type: String, trim: true },
+        description: { type: String, trim: true, maxlength: [500, "Description too long"] },
+      },
+    ],
     skills: [{ type: String, trim: true }],
+
     // Investor specific
     fundingRange: {
       min: { type: Number, min: [0, "Minimum funding must be positive"] },
