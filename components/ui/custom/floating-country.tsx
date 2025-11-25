@@ -19,7 +19,7 @@ const FloatingCountryInput: React.FC<Props> = ({ label, value, onChange }) => {
       <CountryDropdown
         value={value}
         onChange={onChange}
-        className="w-full border rounded-md p-2 peer"
+        className="w-full rounded-md peer cursor-pointer"
         onFocus={() => setFocused(true)}
         // onBlur={() => setFocused(false)}
       />
