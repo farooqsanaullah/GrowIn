@@ -1,22 +1,24 @@
-// models/Rating.ts
-import mongoose, { Schema, Model } from "mongoose";
+// lib/models/rating.model.ts
+import mongoose, { Schema, model, models } from "mongoose";
 
-interface IRating {
-  userId: string;
-  startupId: string;
+interface IReview {
+  startupId: mongoose.Types.ObjectId;
+  userId: mongoose.Types.ObjectId;
   rating: number;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-const RatingSchema = new Schema<IRating>(
+const reviewSchema = new Schema<IReview>(
   {
-    userId: {
-      type: String,
+    startupId: {
+      type: Schema.Types.ObjectId,
+      ref: "Startup",
       required: true,
     },
-    startupId: {
-      type: String,
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
     rating: {
@@ -26,15 +28,8 @@ const RatingSchema = new Schema<IRating>(
       max: 5,
     },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
-// Compound index to ensure one rating per user per startup
-RatingSchema.index({ userId: 1, startupId: 1 }, { unique: true });
-
-const Rating: Model<IRating> =
-  mongoose.models.Rating || mongoose.model<IRating>("Rating", RatingSchema);
-
-export default Rating;
+const Review = models.Review || model<IReview>("Review", reviewSchema);
+export default Review;

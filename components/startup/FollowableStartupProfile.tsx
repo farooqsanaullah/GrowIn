@@ -14,10 +14,9 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
   const { data: session } = useSession();
 
   const [startup, setStartup] = useState(initialStartup);
-  const [investmentAmount, setInvestmentAmount] = useState("");
   const [isFollowed, setIsFollowed] = useState(false);
   const [userRating, setUserRating] = useState<number | null>(null);
-  const [isInvesting, setIsInvesting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const descriptionRef = useRef<HTMLDivElement>(null);
   const teamRef = useRef<HTMLDivElement>(null);
@@ -25,33 +24,44 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
 
   const { scrollRef, canScrollLeft, canScrollRight, scroll } = useHorizontalScroll(600);
   const [activeIndex, setActiveIndex] = useState(0);
+
   const formatAmount = (amount: number) => {
-  if (amount >= 1_000_000) return `$${(amount / 1_000_000).toFixed(1)}M`;
-  if (amount >= 1_000) return `$${(amount / 1_000).toFixed(0)}K`;
-  return `$${amount}`;
-};
+    if (amount >= 1_000_000) return `$${(amount / 1_000_000).toFixed(1)}M`;
+    if (amount >= 1_000) return `$${(amount / 1_000).toFixed(0)}K`;
+    return `$${amount}`;
+  };
 
   useEffect(() => {
     if (session?.user?.id && Array.isArray(startup.followers)) {
       setIsFollowed(startup.followers.includes(session.user.id));
     }
-  }, [session, startup.followers]);
+
+    // Fetch user's existing review
+    const fetchUserReview = async () => {
+      if (!session?.user?.id) return;
+      try {
+        const res = await fetch(`/api/startups/${startup._id}/rate`);
+        if (!res.ok) throw new Error("Failed to fetch review");
+        const data = await res.json();
+        if (data.success && data.review?.rating) {
+          setUserRating(data.review.rating);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchUserReview();
+  }, [session, startup.followers, startup._id]);
 
   const toggleFollow = async () => {
     if (!session?.user?.id) return alert("Please login first");
-
     try {
-      const res = await fetch(`/api/startups/${startup._id}/follow`, {
-        method: "POST",
-      });
-
+      const res = await fetch(`/api/startups/${startup._id}/follow`, { method: "POST" });
       const data = await res.json();
-
       if (data.success) {
         setIsFollowed(data.isFollowed);
-        setStartup(prev =>
-          prev ? { ...prev, followers: data.followers } : prev
-        );
+        setStartup(prev => prev ? { ...prev, followers: data.followers } : prev);
       }
     } catch (err) {
       console.error(err);
@@ -64,46 +74,34 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
     refMap[section].current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  const handleRating = (rating: number) => {
-    const newCount = startup.ratingCount + 1;
-    const newAvg = (startup.avgRating * startup.ratingCount + rating) / newCount;
-    setUserRating(rating);
-    setStartup({ ...startup, avgRating: newAvg, ratingCount: newCount });
-  };
-
-  const handleInvest = async () => {
+  const handleRating = async (rating: number) => {
     if (!session?.user?.id) return alert("Please login first");
 
-    const amountNum = parseFloat(investmentAmount);
-    if (isNaN(amountNum) || amountNum <= 0) return alert("Enter a valid amount");
-
-    setIsInvesting(true);
+    setIsSubmitting(true);
 
     try {
-      const res = await fetch("/api/investment", {
+      const res = await fetch(`/api/startups/${startup._id}/review`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          investorId: session.user.id,
-          startupId: startup._id,
-          amount: amountNum,
-        }),
+        body: JSON.stringify({ rating }),
       });
 
+      if (!res.ok) throw new Error("Failed to submit rating");
       const data = await res.json();
 
       if (data.success) {
-        alert(`Successfully invested $${amountNum}`);
-        setInvestmentAmount("");
-
+        setUserRating(rating);
+        setStartup(prev =>
+          prev ? { ...prev, avgRating: data.avgRating, ratingCount: data.ratingCount } : prev
+        );
       } else {
-        alert(data.message || "Investment failed");
+        alert(data.message || "Failed to submit rating");
       }
     } catch (err) {
       console.error(err);
-      alert("Something went wrong while investing");
+      alert("Something went wrong while submitting your rating");
     } finally {
-      setIsInvesting(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -111,9 +109,9 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:mx-20 lg:p-8 flex flex-col lg:flex-row gap-6">
-
       <div className="flex-1 space-y-6 overflow-y-auto">
 
+        {/* Header */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold mb-1">{startup.title}</h1>
@@ -129,10 +127,12 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
           </button>
         </div>
 
+        {/* Profile Image */}
         <div className="relative w-full rounded-3xl overflow-hidden shadow-lg h-64 md:h-96">
           <img src={profilePic} alt={startup.title} className="w-full h-full object-cover" />
         </div>
 
+        {/* Navigation Tabs */}
         <div className="sticky top-0 bg-white z-10 py-2 px-4 border-b border-gray-200 flex justify-between items-center">
           <div className="flex gap-4">
             <button onClick={() => scrollToSection("description")} className="font-semibold hover:underline text-gray-700">Description</button>
@@ -143,12 +143,14 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
           </div>
         </div>
 
+        {/* Description */}
         {startup.description && (
           <div ref={descriptionRef} className="bg-white rounded-2xl p-6 shadow-md">
             <p className="leading-relaxed text-gray-800">{startup.description}</p>
           </div>
         )}
 
+        {/* Team */}
         {startup.founders?.length > 0 && (
           <div ref={teamRef} className="bg-white rounded-2xl p-6 shadow-md">
             <h2 className="text-2xl font-bold mb-4">Our Team</h2>
@@ -171,6 +173,7 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
           </div>
         )}
 
+        {/* Pitch */}
         {startup.pitch?.length > 0 && (
           <div ref={pitchRef} className="bg-white rounded-2xl p-6 shadow-md relative scrollbar-hide">
             <h2 className="text-2xl font-bold mb-4">Pitch Deck</h2>
@@ -219,47 +222,21 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
 
       </div>
 
+      {/* Sidebar */}
       <div className="w-full lg:w-96 flex-shrink-0 space-y-6">
         <div className="lg:sticky lg:top-20 space-y-6">
 
+          {/* Investment & Stats */}
           {startup.equityRange?.length > 0 && (
             <div className="rounded-2xl p-6 shadow-md bg-gray-50">
               <h2 className="text-2xl font-bold mb-6">Investment Opportunity</h2>
               <div className="space-y-2 mb-6">
                 {startup.equityRange.map((eq, i) => (
-                  <div
-                    key={i}
-                    className="flex justify-between items-center p-3 rounded-lg bg-white shadow-sm"
-                  >
+                  <div key={i} className="flex justify-between items-center p-3 rounded-lg bg-white shadow-sm">
                     <span className="text-gray-700 text-sm font-medium">{eq.range}</span>
                     <span className="font-bold text-gray-900 text-lg">{eq.equity}%</span>
                   </div>
                 ))}
-              </div>
-
-              <div className="mb-6">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Investment Amount
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">$</span>
-                  <input
-                    type="text"
-                    value={investmentAmount}
-                    onChange={(e) => setInvestmentAmount(e.target.value)}
-                    placeholder="Enter amount"
-                    className="w-full border-2 border-gray-300 rounded-lg pl-7 pr-3 py-2 text-base focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none"
-                  />
-                </div>
-                <button
-                  onClick={handleInvest}
-                  disabled={isInvesting}
-                  className={`w-full mt-3 py-2 font-semibold rounded-lg transition ${
-                    isInvesting ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600 text-white"
-                  }`}
-                >
-                  {isInvesting ? "Investing..." : "Invest Now"}
-                </button>
               </div>
 
               <div className="mt-6 pt-4 border-t border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -287,20 +264,21 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
             </div>
           )}
 
-
+          {/* Followers */}
           <div className="rounded-2xl p-6 shadow-md bg-gray-50">
             <h2 className="text-2xl font-bold mb-4">Followers</h2>
             <p className="font-bold text-lg">{Array.isArray(startup.followers) ? startup.followers.length : 0}</p>
           </div>
 
+          {/* Star Rating */}
           <div className="rounded-2xl p-6 shadow-md bg-gray-50">
-            <h3 className="text-xl font-semibold mb-3 text-center">Leave a Review</h3>
+            <h3 className="text-xl font-semibold mb-3 text-center">Rate this Startup</h3>
             <div className="flex gap-2 justify-center mb-2">
-              {[1, 2, 3, 4, 5].map(star => (
+              {[1, 2, 3, 4, 5].map((star) => (
                 <Star
                   key={star}
                   size={28}
-                  onClick={() => handleRating(star)}
+                  onClick={() => !isSubmitting && handleRating(star)}
                   className={`cursor-pointer transition ${
                     userRating && star <= userRating
                       ? "fill-yellow-400 text-yellow-400"
@@ -309,7 +287,11 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
                 />
               ))}
             </div>
-            {userRating && <p className="text-sm text-center">You rated this {userRating} star{userRating > 1 ? "s" : ""}.</p>}
+            {userRating && (
+              <p className="text-sm text-center">
+                You rated this {userRating} star{userRating > 1 ? "s" : ""}.
+              </p>
+            )}
           </div>
 
         </div>
