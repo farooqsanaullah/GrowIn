@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Building2, Users, Eye, TrendingUp } from "lucide-react";
+import { Building2, Users, Eye, TrendingUp, Target } from "lucide-react";
 import { StatsCard } from "./StatsCard";
 import { startupsApi } from "@/lib/api/startups";
 import type { Startup } from "@/types/api";
@@ -11,6 +11,7 @@ interface DashboardStatsData {
   totalFollowers: number;
   activeStartups: number;
   avgRating: number;
+  totalViews: number;
 }
 
 export function DashboardStats() {
@@ -19,6 +20,7 @@ export function DashboardStats() {
     totalFollowers: 0,
     activeStartups: 0,
     avgRating: 0,
+    totalViews: 0,
   });
   const [loading, setLoading] = useState(true);
 
@@ -33,17 +35,20 @@ export function DashboardStats() {
           const startups = response.data;
           
           const totalFollowers = startups.reduce((acc, startup) => acc + startup.followers.length, 0);
-          console.log('Total Followers:', totalFollowers);
           const activeStartups = startups.filter(startup => startup.status === 'active').length;
           const avgRating = startups.length > 0 
             ? startups.reduce((acc, startup) => acc + startup.avgRating, 0) / startups.length 
             : 0;
+          
+          // Mock total views calculation (in a real app, this would come from analytics)
+          const totalViews = startups.reduce((acc, startup) => acc + (startup.followers.length * 12), 0);
 
           setStats({
             totalStartups: startups.length,
             totalFollowers,
             activeStartups,
             avgRating,
+            totalViews,
           });
         }
       } catch (error) {
@@ -58,8 +63,8 @@ export function DashboardStats() {
 
   if (loading) {
     return (
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {[...Array(4)].map((_, i) => (
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
+        {[...Array(5)].map((_, i) => (
           <div key={i} className="bg-card rounded-lg border border-border p-6 shadow-sm animate-pulse">
             <div className="h-4 bg-muted rounded w-1/2 mb-2"></div>
             <div className="h-8 bg-muted rounded w-1/3 mb-2"></div>
@@ -71,7 +76,7 @@ export function DashboardStats() {
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
       <StatsCard
         title="Total Startups"
         value={stats.totalStartups.toString()}
@@ -81,9 +86,17 @@ export function DashboardStats() {
       />
       
       <StatsCard
+        title="Total Views"
+        value={stats.totalViews.toLocaleString()}
+        change={`Across all startups`}
+        changeType="neutral"
+        icon={<Eye className="h-6 w-6 text-primary" />}
+      />
+      
+      <StatsCard
         title="Total Followers"
         value={stats.totalFollowers.toLocaleString()}
-        change={`Across ${stats.totalStartups} startups`}
+        change={`${Math.round(stats.totalFollowers / Math.max(stats.totalStartups, 1))} avg per startup`}
         changeType="neutral"
         icon={<Users className="h-6 w-6 text-primary" />}
       />
@@ -91,9 +104,9 @@ export function DashboardStats() {
       <StatsCard
         title="Active Startups"
         value={stats.activeStartups.toString()}
-        change={`${stats.activeStartups} of ${stats.totalStartups} active`}
+        change={`${Math.round((stats.activeStartups / Math.max(stats.totalStartups, 1)) * 100)}% active`}
         changeType={stats.activeStartups > 0 ? "positive" : "neutral"}
-        icon={<Eye className="h-6 w-6 text-primary" />}
+        icon={<Target className="h-6 w-6 text-primary" />}
       />
       
       <StatsCard
