@@ -7,11 +7,11 @@ import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
 
 interface RouteParams {
-  params: { id: string };
+  params: Promise<{ id: string }>; // Changed to Promise
 }
 
 export async function POST(req: NextRequest, { params }: RouteParams) {
-  const { id: startupId } = params;
+  const { id: startupId } = await params; // Added await
 
   try {
     await connectDB();
@@ -88,7 +88,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
 }
 
 export async function GET(req: NextRequest, { params }: RouteParams) {
-  const { id: startupId } = params;
+  const { id: startupId } = await params; // Added await
 
   try {
     await connectDB();
