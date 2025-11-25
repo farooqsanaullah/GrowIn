@@ -4,6 +4,7 @@ import {
   USERNAME_MAX_LENGTH, 
   USERNAME_MIN_LENGTH,
   ALLOWED_ROLES,
+  PASSWORD_SPECIAL_CHAR_REGEX,
 } from "@/lib/constants";
 
 export const userNameSchema = z
@@ -29,7 +30,7 @@ export const passwordSchema = z
     PASSWORD_MIN_LENGTH,
     `Password must be at least ${PASSWORD_MIN_LENGTH} characters long.`
   )
-  .refine((val) => /[!@#$%^&*(),.?":{}|<>]/.test(val), "Password must contain at least one special character.")
+  .refine((val) => PASSWORD_SPECIAL_CHAR_REGEX.test(val), "Password must contain at least one special character.")
   .refine((val) => /\d/.test(val), "Password must contain at least one number.");
 
 export const loginSchema = z.object({
