@@ -67,11 +67,8 @@ export function Sidebar({ className }: SidebarProps) {
       >
         <div className="flex h-full flex-col">
           <div className="flex h-16 items-center justify-between px-6 border-b border-sidebar-border">
-            <Link href="/founder/dashboard" className="flex items-center space-x-2">
-              <div className="flex items-center justify-center w-8 h-8 bg-primary rounded-lg">
-                <TrendingUp className="h-5 w-5 text-primary-foreground" />
-              </div>
-              <span className="text-xl font-bold text-sidebar-foreground">GrowIn</span>
+            <Link href="/founder/dashboard" className="flex items-center space-x-2 ">
+            <img src="/logo.png" alt="GrowIn Logo" className="h-30 w-auto" />
             </Link>
             
             <Button
