@@ -87,7 +87,7 @@ function sanitizeOAuthProfile(profile: OAuthProfile) {
     city,
     country,
     profileImage,
-    socialLinks,
+    socialLinks: Object.keys(socialLinks).length > 0 ? socialLinks : undefined,
   };
 }
 
