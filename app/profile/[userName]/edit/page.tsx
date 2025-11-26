@@ -34,6 +34,7 @@ export default function EditProfilePage() {
     profileImage: "",
     bio: "",
     phone: "",
+    role: "",
   });
 
   // LOCATION
@@ -84,6 +85,7 @@ export default function EditProfilePage() {
       profileImage: user.profileImage ?? "",
       bio: user.bio ?? "",
       phone: user.phone ?? "",
+      role: user.role ?? "investor",
     });
 
     // LOCATION
@@ -228,7 +230,7 @@ export default function EditProfilePage() {
 
       {/* BASIC INFO */}
       <section className="space-y-6">
-        <h2 className="text-xl font-bold text-foreground">Basic Information</h2>
+        <h2 className="text-xl font-semibold text-foreground">Basic Information</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FloatingLabelInput
@@ -282,121 +284,122 @@ export default function EditProfilePage() {
       </section>
 
       {/* FOUNDER INFO */}
-      <section className="space-y-6">
-        <h2 className="text-xl font-bold text-foreground">Founder Information</h2>
+      {user?.role === "founder" && 
+        <section className="space-y-6">
+          <h2 className="text-xl font-bold text-foreground">Experiences</h2>
 
-        {/* Experience Taker */}
-        {founder.experiences.map((exp, index) => (
-          <div key={index} className="space-y-4">
-              <FloatingLabelInput
-              id={`designation-${index}`}
-              label="Designation"
-              value={exp.designation}
-              onChange={(e) => {
-                const newExps = [...founder.experiences];
-                newExps[index].designation = e.target.value;
-                setFounder({ ...founder, experiences: newExps });
-              }}
-            />
-
-            <div className="space-y-2 relative z-[9999]">
-              <Datepicker
-                value={{ startDate: exp.expStart, endDate: exp.expEnd }}
-                onChange={(range) => {
+          {/* Experiences field */}
+          {founder.experiences.map((exp, index) => (
+            <div key={index} className="space-y-4">
+                <FloatingLabelInput
+                id={`designation-${index}`}
+                label="Designation"
+                value={exp.designation}
+                onChange={(e) => {
                   const newExps = [...founder.experiences];
-                  newExps[index].expStart = range?.startDate || new Date();
-                  newExps[index].expEnd = range?.endDate || new Date();
+                  newExps[index].designation = e.target.value;
                   setFounder({ ...founder, experiences: newExps });
                 }}
-                displayFormat="MM/DD/YYYY"
-                separator="-"
-                startFrom={exp.expStart}
-                inputClassName="peer w-full border rounded-md p-2 placeholder-transparent"
               />
-              <FloatingLabel
-                htmlFor="experiences"
-                className="absolute left-2 top-2 text-gray-500 text-sm pointer-events-none"
-              >
-                Experience Duration
-              </FloatingLabel>
+
+              <div className="space-y-2 relative z-[9999]">
+                <Datepicker
+                  value={{ startDate: exp.expStart, endDate: exp.expEnd }}
+                  onChange={(range) => {
+                    const newExps = [...founder.experiences];
+                    newExps[index].expStart = range?.startDate || new Date();
+                    newExps[index].expEnd = range?.endDate || new Date();
+                    setFounder({ ...founder, experiences: newExps });
+                  }}
+                  displayFormat="MM/DD/YYYY"
+                  separator="-"
+                  startFrom={exp.expStart}
+                  inputClassName="peer w-full border rounded-md p-2 placeholder-transparent"
+                />
+                <FloatingLabel
+                  htmlFor="experiences"
+                  className="absolute left-2 top-2 text-gray-500 text-sm pointer-events-none"
+                >
+                  Experience Duration
+                </FloatingLabel>
+              </div>
+
+              <FloatingLabelInput
+                id={`company-${index}`}
+                label="Company Name"
+                value={exp.company}
+                onChange={(e) => {
+                  const newExps = [...founder.experiences];
+                  newExps[index].company = e.target.value;
+                  setFounder({ ...founder, experiences: newExps });
+                }}
+              />
+
+              <FloatingLabelInput
+                id={`desc-${index}`}
+                label="Experience Description"
+                value={exp.experienceDesc}
+                onChange={(e) => {
+                  const newExps = [...founder.experiences];
+                  newExps[index].experienceDesc = e.target.value;
+                  setFounder({ ...founder, experiences: newExps });
+                }}
+              />
             </div>
+          ))}
+          <Button
+            type="button"
+            className="cursor-pointer"
+            onClick={handleAddExperience}
+          >
+            Add More
+          </Button>
 
-            <FloatingLabelInput
-              id={`company-${index}`}
-              label="Company Name"
-              value={exp.company}
-              onChange={(e) => {
-                const newExps = [...founder.experiences];
-                newExps[index].company = e.target.value;
-                setFounder({ ...founder, experiences: newExps });
-              }}
-            />
-
-            <FloatingLabelInput
-              id={`desc-${index}`}
-              label="Experience Description"
-              value={exp.experienceDesc}
-              onChange={(e) => {
-                const newExps = [...founder.experiences];
-                newExps[index].experienceDesc = e.target.value;
-                setFounder({ ...founder, experiences: newExps });
-              }}
-            />
-          </div>
-        ))}
-        <Button
-          type="button"
-          className="cursor-pointer"
-          onClick={handleAddExperience}
-        >
-          Add More
-        </Button>
-
-        <SkillsInput
-          skills={founder.skills}
-          setSkills={(val) => setFounder({ ...founder, skills: val })}
-        />
-      </section>
+          <SkillsInput
+            skills={founder.skills}
+            setSkills={(val) => setFounder({ ...founder, skills: val })}
+          />
+        </section>
+      }
 
       {/* INVESTOR INFO */}
-      <section className="space-y-6">
-        <h2 className="text-xl font-bold text-foreground">
-          Investor Information
-        </h2>
-
-        <Label>Funding Range</Label>
-
-        <div className="flex gap-4 items-end">
-          <DualRangeSlider
-            label={(val) => `$${val}k`}
-            value={fundingRange}
-            onValueChange={setFundingRange}
-            min={0}
-            max={500}
-            step={5}
-          />
+      {user?.role === "investor" && 
+        <section className="space-y-6">
+          <h2 className="text-xl font-bold text-foreground">Funding Range</h2>
 
           <div className="flex gap-4 items-end">
-            <FloatingLabelInput
-              id="funding-min"
-              label="Min"
-              type="number"
-              value={manual.min}
-              onChange={(e) => handleMinChange(Number(e.target.value))}
-              className="w-24"
+            <DualRangeSlider
+              label={(val) => `$${val}k`}
+              value={fundingRange}
+              onValueChange={setFundingRange}
+              min={0}
+              max={500}
+              step={5}
+              className="cursor-pointer"
             />
 
-            <FloatingLabelInput
-              id="funding-max"
-              label="Max"
-              type="number"
-              value={manual.max}
-              onChange={(e) => handleMaxChange(Number(e.target.value))}
-              className="w-24"
-            />
+            <div className="flex gap-4 items-end">
+              <FloatingLabelInput
+                id="funding-min"
+                label="Min"
+                type="number"
+                value={manual.min}
+                onChange={(e) => handleMinChange(Number(e.target.value))}
+                className="w-24"
+              />
+
+              <FloatingLabelInput
+                id="funding-max"
+                label="Max"
+                type="number"
+                value={manual.max}
+                onChange={(e) => handleMaxChange(Number(e.target.value))}
+                className="w-24"
+              />
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      }
 
       {/* Update Button */}
       <Button
