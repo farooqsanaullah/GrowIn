@@ -11,8 +11,16 @@ const {
   RESEND_API_KEY,
 } = process.env;
 
-const resend = new Resend(RESEND_API_KEY!);
 const isDev = NODE_ENV! === "development";
+
+// Lazy initialize Resend to avoid build errors when API key is missing
+let resend: Resend | null = null;
+function getResendClient() {
+  if (!resend && RESEND_API_KEY) {
+    resend = new Resend(RESEND_API_KEY);
+  }
+  return resend;
+}
 
 export async function POST(req: NextRequest) {
   await connectDB();
@@ -30,7 +38,12 @@ export async function POST(req: NextRequest) {
     const resetToken = getSignedToken({ userId: user._id.toString() });
     const resetUrl = `${NEXTAUTH_URL!}/reset-password?token=${resetToken}`;
 
-    await resend.emails.send({
+    const resendClient = getResendClient();
+    if (!resendClient) {
+      return error("Email service is not configured", 500);
+    }
+
+    await resendClient.emails.send({
       from: "Acme <onboarding@resend.dev>",
       to: email,
       subject: "Password Reset Request",

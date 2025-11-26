@@ -7,7 +7,7 @@ const isDev = process.env.NODE_ENV === "development";
 
 type API_Props = {
   params: Promise<{ userName: string }>;
-}
+};
 
 // GET single user
 export async function GET(_: NextRequest, context: API_Props) {
@@ -20,14 +20,10 @@ export async function GET(_: NextRequest, context: API_Props) {
     const user = await User.findOne({ userName }).select("-password");
 
     if (!user) {
-      return NextResponse.json(
-        { message: "User not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
     return NextResponse.json({ user }, { status: 200 });
-
   } catch (error) {
     isDev && console.error("[GET API] user fetch error:", error);
     return NextResponse.json(
@@ -38,13 +34,16 @@ export async function GET(_: NextRequest, context: API_Props) {
 }
 
 // PUT (Update single user)
-export async function PUT(req: NextRequest, context: { params: { userName: string } }) {
+export async function PUT(req: NextRequest, context: API_Props) {
   try {
     await connectDB();
 
-    const { userName } = context.params;
+    const { userName } = await context.params;
     if (!userName) {
-      return NextResponse.json({ message: "Missing userName in URL" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Missing userName in URL" },
+        { status: 400 }
+      );
     }
 
     const body = await req.json();
@@ -75,6 +74,9 @@ export async function PUT(req: NextRequest, context: { params: { userName: strin
     return NextResponse.json({ user: updatedUser }, { status: 200 });
   } catch (error) {
     isDev && console.error("[PUT API] user update error:", error);
-    return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }
