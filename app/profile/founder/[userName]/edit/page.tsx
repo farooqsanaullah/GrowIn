@@ -178,6 +178,13 @@ export default function EditProfilePage() {
     }));
   };
 
+  const handleRemoveExperience = (indexToRemove: number) => {
+    setFounder((prev) => ({
+      ...prev,
+      experiences: prev.experiences.filter((_, i) => i !== indexToRemove),
+    }));
+  };
+
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-10">
       <h1 className="text-3xl font-semibold text-primary">Edit Profile</h1>
@@ -267,12 +274,26 @@ export default function EditProfilePage() {
         {/* Ribbon for previous experiences */}
         <div className="space-y-2">
           {previousExperiences.map((exp, index) => (
-            <div key={index} className="p-3 rounded bg-gray-100 border">
-              <p className="font-semibold">{exp.designation}</p>
-              <p>{exp.company}</p>
-              <p>
-                {exp.startDate?.toString().slice(0, 15)} - {exp.endDate?.toString().slice(0, 15)}
-              </p>
+            <div
+              key={index}
+              className="p-3 rounded bg-gray-100 border flex justify-between items-start"
+            >
+              <div>
+                <p className="font-semibold">{exp.designation}</p>
+                <p>{exp.company}</p>
+                <p>
+                  {exp.startDate?.toString().slice(0, 15)} - {exp.endDate?.toString().slice(0, 15)}
+                </p>
+              </div>
+              {/* Remove button */}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => handleRemoveExperience(index)}
+                className="border-none hover:text-background hover:bg-destructive/60 cursor-pointer"
+              >
+                Remove
+              </Button>
             </div>
           ))}
         </div>
