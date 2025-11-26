@@ -63,14 +63,21 @@ function sanitizeOAuthProfile(profile: OAuthProfile) {
     country = loc[1]?.substring(0, 50);
   }
 
-  const profileImage = ('picture' in profile && profile.picture) 
+  const profileImage = ('picture' in profile && profile.picture)
     || ('avatar_url' in profile && profile.avatar_url)
     || undefined;
-  const socialLinks = {
-    github: 'html_url' in profile ? profile.html_url : '',
-    twitter: 'twitter_username' in profile ? `https://twitter.com/${profile.twitter_username}` : '',
-    website: 'blog' in profile ? profile.blog : '',
-  };
+
+  // Only include social links if they exist (avoid empty strings for validation)
+  const socialLinks: Partial<{github: string; twitter: string; website: string}> = {};
+  if ('html_url' in profile && profile.html_url) {
+    socialLinks.github = profile.html_url;
+  }
+  if ('twitter_username' in profile && profile.twitter_username) {
+    socialLinks.twitter = `https://twitter.com/${profile.twitter_username}`;
+  }
+  if ('blog' in profile && profile.blog) {
+    socialLinks.website = profile.blog;
+  }
 
   return {
     email,
