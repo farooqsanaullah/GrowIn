@@ -20,6 +20,7 @@ import { Loader } from "lucide-react";
 import { updateUserSchema } from "@/lib/auth/zodValidation/updateUserSchema";
 import toast from "react-hot-toast";
 import { isExperienceEmpty } from "@/lib/helpers/shared";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function EditProfilePage() {
   const [isUpdating, setIsUpdating] = useState(false);
@@ -197,15 +198,11 @@ export default function EditProfilePage() {
             alt="Profile"
             width={90}
             height={90}
-            className="rounded-full border"
+            className="rounded-full border transition-opacity duration-300 opacity-0"
+            onLoadingComplete={(img) => (img.style.opacity = "1")}
           />
         ) : (
-          <div
-            className="w-20 h-20 rounded-full flex items-center justify-center text-white text-3xl font-bold"
-            style={{ backgroundColor: "#4F46E5" }}
-          >
-            {basicInfo.userName.charAt(0).toUpperCase()}
-          </div>
+          <Skeleton className="w-[90px] h-[90px] rounded-full" />
         )}
 
         <Button className="cursor-pointer" variant="outline">
