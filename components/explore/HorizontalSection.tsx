@@ -2,22 +2,33 @@
 import React, { useState } from "react";
 import StartupCard from "@/components/explore/StartupCard";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Startup } from "@/types/startup";
+import { Startup } from "@/lib/types/startup";
 import { useHorizontalScroll } from "@/hooks/useHorizontalScroll";
+import { useRouter } from "next/navigation";
 
 interface HorizontalSectionProps {
   title: string;
   startups: Startup[];
+  badge: "Trending" | "Funded" | "Active";
 }
 
-const HorizontalSection: React.FC<HorizontalSectionProps> = ({ title, startups }) => {
+const HorizontalSection: React.FC<HorizontalSectionProps> = ({ title, startups, badge }) => {
   const { scrollRef, scroll, canScrollLeft, canScrollRight } = useHorizontalScroll(900);
   const [hovering, setHovering] = useState(false);
+  const router = useRouter();
 
   if (startups.length === 0) return null;
 
-  const limitedStartups = startups.slice(0, 7);
-  const hasMore = startups.length > 7;
+  const handleSeeMore = () => {
+  const params = new URLSearchParams();
+  if (badge === "Trending") params.set("badges", "Trending");
+  else if (badge === "Funded") params.set("badges", "Funded");
+  else if (badge === "Active") params.set("status", "active");
+  params.delete("page");
+
+  router.push(`/category?${params.toString()}`);
+};
+
 
   return (
     <div className="mb-8 relative md:px-20 sm:px-4">
@@ -42,36 +53,24 @@ const HorizontalSection: React.FC<HorizontalSectionProps> = ({ title, startups }
           ref={scrollRef}
           className="flex gap-4 overflow-x-auto px-2 pb-4 scroll-smooth scrollbar-hide"
         >
-          {limitedStartups.map((startup) => (
-            <div
-              key={startup._id}
-              className="flex-shrink-0 w-[280px] sm:w-[320px] lg:w-[360px]"
-            >
+          {startups.map((startup) => (
+            <div key={startup._id} className="flex-shrink-0 w-[280px] sm:w-[320px] lg:w-[360px]">
               <StartupCard startup={startup} />
             </div>
-
           ))}
 
-          {hasMore && (
-            <a
-              href={`/explore`}
-              className="
-                flex-shrink-0 
-                min-w-[80%] sm:min-w-[50%] lg:min-w-[25%]
-                rounded-xl 
-                hover:from-[#D8F1FF] hover:to-white
-                transition 
-                flex flex-col items-center justify-center p-8
-              "
+          
+            <div
+              onClick={handleSeeMore}
+              className="flex-shrink-0 min-w-[80%] sm:min-w-[50%] lg:min-w-[25%] cursor-pointer hover:from-[#D8F1FF] hover:to-white transition flex flex-col items-center justify-center p-8"
             >
               <div className="text-gray-800 font-semibold text-lg tracking-wide">See More</div>
               <div className="text-gray-500 text-sm mt-1">Explore all in {title}</div>
-
               <div className="mt-4 w-12 h-12 rounded-full bg-white shadow flex items-center justify-center">
                 <ChevronRight size={22} className="text-gray-700" />
               </div>
-            </a>
-          )}
+            </div>
+          
         </div>
 
         {hovering && canScrollRight && (

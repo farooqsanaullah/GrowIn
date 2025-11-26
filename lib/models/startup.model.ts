@@ -25,7 +25,7 @@ export interface IStartup {
   categoryType: string;
   industry: string;
   socialLinks?: SocialLinks;
-  followers: number;
+  followers: Schema.Types.ObjectId[];
   status: string;
   ratingCount: number;
   avgRating: number;
@@ -93,10 +93,10 @@ const startupSchema = new Schema<IStartup>(
       facebook: { type: String, trim: true },
     },
     followers: {
-      type: Number,
-      default: 0,
-      min: [0, "Followers cannot be negative"],
+      type: [{ type: Schema.Types.ObjectId, ref: "User" }],
+      default: [],
     },
+
     status: {
       type: String,
       enum: ["active", "inactive", "pending", "closed"],
@@ -110,8 +110,6 @@ const startupSchema = new Schema<IStartup>(
     avgRating: {
       type: Number,
       default: 0,
-      min: [0, "Average rating cannot be negative"],
-      max: [5, "Average rating cannot exceed 5"],
     },
     equityRange: [
       {

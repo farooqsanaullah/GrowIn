@@ -16,11 +16,12 @@ export interface Startup {
     instagram?: string;
     facebook?: string;
   };
-  followers: number;
+  followers: string[];
   status: string;
   ratingCount: number;
   avgRating: number;
   equityRange: { range: string; equity: number }[];
   profilePic: string;
+  totalRaised?: number;
 }
 

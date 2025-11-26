@@ -1,6 +1,8 @@
 import { NextRequest } from "next/server";
 import { connectDB } from "@/lib/db/connect";
 import Startup from "@/lib/models/startup.model";
+import Investment from "@/lib/models/investment.model";
+import { Types } from "mongoose";
 import User from "@/lib/models/user.model";
 import { successResponse, errorResponse } from "@/lib/utils/apiResponse";
 import {
@@ -9,28 +11,40 @@ import {
 } from "@/lib/utils/validation";
 
 const STATIC_FOUNDER_ID = "673615f87cdf80bbbb5d7cd7";
-
 export async function GET(request: NextRequest) {
   try {
     await connectDB();
 
     const { searchParams } = new URL(request.url);
-    const { page, limit, skip } = parseQueryParams(searchParams);
 
-    const query: any = {};
+    const page = Number(searchParams.get("page") || 1);
+    const limit = Number(searchParams.get("limit") || 10);
+    const skip = (page - 1) * limit;
 
-    const categoryType = searchParams.get("categoryType");
-    const industry = searchParams.get("industry");
-    const status = searchParams.get("status");
+    const query: Record<string, any> = {};
+
+    // Helper to convert CSV → array or return undefined
+    const parseList = (param: string | null) => {
+      if (!param) return undefined;
+      return param.split(",").map((v) => v.trim());
+    };
+
+    // Multi-select params
+    const categoryTypes = parseList(searchParams.get("categoryType"));
+    const industries = parseList(searchParams.get("industry"));
+    const statuses = parseList(searchParams.get("status"));
+    const badges = parseList(searchParams.get("badges"));
+
+    if (categoryTypes) query.categoryType = { $in: categoryTypes };
+    if (industries) query.industry = { $in: industries };
+    if (statuses) query.status = { $in: statuses };
+    if (badges) query.badges = { $in: badges };
+
+    // Text search
     const search = searchParams.get("search");
+    if (search) query.$text = { $search: search };
 
-    if (categoryType) query.categoryType = categoryType;
-    if (industry) query.industry = industry;
-    if (status) query.status = status;
-    if (search) {
-      query.$text = { $search: search };
-    }
-
+    // Fetch startups with pagination
     const [startups, total] = await Promise.all([
       Startup.find(query)
         .populate("founders", "userName name profileImage email")
@@ -39,27 +53,39 @@ export async function GET(request: NextRequest) {
         .skip(skip)
         .limit(limit)
         .lean(),
+
       Startup.countDocuments(query),
     ]);
 
-    return successResponse(
-      startups,
-      "Startups retrieved successfully",
-      200,
-      {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      }
-    );
+    const startupIds = startups.map((s) => new Types.ObjectId(s._id as any));
+
+    const investmentTotals = await Investment.aggregate([
+      { $match: { startupId: { $in: startupIds } } },
+      { $group: { _id: "$startupId", totalRaised: { $sum: "$amount" } } },
+    ]);
+
+    const totalsMap = investmentTotals.reduce((acc, item) => {
+      acc[item._id.toString()] = item.totalRaised;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const startupsWithTotal = startups.map((startup) => ({
+      ...startup,
+      totalRaised: totalsMap[(startup._id as Types.ObjectId).toString()] || 0,
+    }));
+
+    return successResponse(startupsWithTotal, "Startups retrieved successfully", 200, {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    });
+
   } catch (error: any) {
-    return errorResponse(
-      error.message || "Failed to fetch startups",
-      500
-    );
+    return errorResponse("Failed to fetch startups: " + error.message, 500);
   }
 }
+
 
 export async function POST(request: NextRequest) {
   try {

@@ -1,18 +1,15 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+
+import React, { useRef, useState, useEffect } from "react";
 import {
   Laptop, Heart, BookOpen, DollarSign, ShoppingCart,
   Coffee, Zap, Factory, Truck, Home, Video,
   ChevronDown, ChevronLeft, ChevronRight
 } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useHorizontalScroll } from "@/hooks/useHorizontalScroll";
 
-interface FiltersBarProps {
-  activeFilters: { industry?: string; category?: string; batch?: string };
-  setActiveFilters: (filters: { industry?: string; category?: string; batch?: string }) => void;
-}
-
-const industries = [
+const industriesList = [
   { name: "Technology", icon: <Laptop size={20} /> },
   { name: "Healthcare", icon: <Heart size={20} /> },
   { name: "Education", icon: <BookOpen size={20} /> },
@@ -26,15 +23,35 @@ const industries = [
   { name: "Media", icon: <Video size={20} /> },
 ];
 
-const categories = ["B2B", "B2C", "C2B", "C2C"];
-const batchFilters = ["Trending", "Funded", "Top Rated"];
+const categoriesList = ["B2B", "B2C", "C2B", "C2C"];
+const batchesList = ["Trending", "Funded", "Top Rated"];
 
-const FiltersBar: React.FC<FiltersBarProps> = ({ activeFilters, setActiveFilters }) => {
-  const [openDropdown, setOpenDropdown] = useState<"batch" | "category" | null>(null);
+export default function FilterBar() {
+  const router = useRouter();
+  const searchParams = Object.fromEntries(new URLSearchParams(useSearchParams()?.toString()));
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const [openDropdown, setOpenDropdown] = useState<"batch" | "category" | null>(null);
 
-  const { scrollRef, scroll, canScrollLeft, canScrollRight } = useHorizontalScroll(250);
+  const { scrollRef, scroll, canScrollLeft, canScrollRight } = useHorizontalScroll(6 * 110 + 5 * 12);
 
+  const getSelected = (key: string) => searchParams[key]?.split(",") || [];
+  const selectedIndustries = getSelected("industry");
+  const selectedCategories = getSelected("category");
+  const selectedBatches = getSelected("badges");
+
+  const toggleFilter = (key: "industry" | "category" | "badges", value: string) => {
+    const params = new URLSearchParams(searchParams as any);
+    const current = params.get(key)?.split(",") || [];
+    const newValues = current.includes(value) ? current.filter(v => v !== value) : [...current, value];
+
+    if (newValues.length) params.set(key, newValues.join(",")); 
+    else params.delete(key);
+
+    params.delete("page");
+    router.push(`/category?${params.toString()}`);
+  };
+
+  const clearAll = () => router.push("/explore");
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
@@ -42,61 +59,21 @@ const FiltersBar: React.FC<FiltersBarProps> = ({ activeFilters, setActiveFilters
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
+
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  const Dropdown = ({
-    label,
-    options,
-    filterKey,
-  }: {
-    label: string;
-    options: string[];
-    filterKey: "batch" | "category";
-  }) => (
-    <div className="relative">
-      <button
-        onClick={() => setOpenDropdown(openDropdown === filterKey ? null : filterKey)}
-        className="flex items-center justify-between min-w-[140px] px-4 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-sm md:text-base font-medium transition-all"
-      >
-        {activeFilters[filterKey] || label}
-        <ChevronDown size={20} className={`transition-transform ${openDropdown === filterKey ? "rotate-180" : ""}`} />
-      </button>
-
-      {openDropdown === filterKey && (
-        <div className="absolute right-0 mt-2 w-[160px] bg-white border rounded-xl shadow-lg z-10 overflow-hidden">
-          {options.map((option) => (
-            <button
-              key={option}
-              className={`w-full text-left px-4 py-2.5 text-sm md:text-base transition
-                ${activeFilters[filterKey] === option ? "bg-gray-100 font-semibold text-black" : "hover:bg-gray-50"}`}
-              onClick={() => {
-                setActiveFilters({
-                  ...activeFilters,
-                  [filterKey]: activeFilters[filterKey] === option ? undefined : option,
-                });
-                setOpenDropdown(null);
-              }}
-            >
-              {option}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
 
   return (
     <div
       ref={wrapperRef}
-      className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 px-3 sm:px-5 md:px-6 py-3 bg-white rounded-xl border border-gray-100 shadow-sm sticky top-0 z-20 mx-2 sm:mx-6 md:mx-20"
+      className="flex flex-col md:flex-row items-start md:items-center gap-3 p-3 bg-white border rounded-xl shadow-sm sm:mx-4 md:mx-20"
     >
 
-      <div className="flex items-center w-full md:w-auto flex-1">
+      <div className="flex items-center w-full md:w-auto flex-1 relative overflow-hidden">
         {canScrollLeft && (
           <button
             onClick={() => scroll("left")}
-            className="hidden md:flex p-2 rounded-full border border-gray-300 hover:bg-gray-100 transition"
+            className="hidden md:flex p-2 rounded-full border hover:bg-gray-100 absolute left-0 z-10"
           >
             <ChevronLeft size={16} />
           </button>
@@ -104,29 +81,18 @@ const FiltersBar: React.FC<FiltersBarProps> = ({ activeFilters, setActiveFilters
 
         <div
           ref={scrollRef}
-          className="flex gap-3 overflow-x-auto scrollbar-hide flex-1 px-2 scroll-smooth"
-          style={{ minWidth: "0", maxWidth: "calc(7 * 110px + 6 * 14px)" }}
+          className="flex gap-3 overflow-x-auto scrollbar-hide max-w-full flex-1 px-2"
         >
-          {industries.map((industry) => (
+          {industriesList.map(ind => (
             <button
-              key={industry.name}
-              className={`
-                flex flex-col items-center justify-center
-                min-w-[110px]
-                transition-all duration-200 text-center
-                ${activeFilters.industry === industry.name ? "text-black scale-105" : "text-gray-500 hover:text-gray-800"}
-              `}
-              onClick={() =>
-                setActiveFilters({
-                  ...activeFilters,
-                  industry: activeFilters.industry === industry.name ? undefined : industry.name,
-                })
-              }
+              key={ind.name}
+              onClick={() => toggleFilter("industry", ind.name)}
+              className={`flex-shrink-0 min-w-[110px] flex flex-col items-center py-2 px-2 rounded-xl transition ${
+                selectedIndustries.includes(ind.name) ? "text-black bg-gray-200" : "text-gray-500 hover:text-black"
+              }`}
             >
-              <div className="mb-1">{industry.icon}</div>
-              <span className="text-xs sm:text-sm font-medium whitespace-nowrap">
-                {industry.name}
-              </span>
+              {ind.icon}
+              <span className="text-xs mt-1 text-center truncate w-full">{ind.name}</span>
             </button>
           ))}
         </div>
@@ -134,19 +100,69 @@ const FiltersBar: React.FC<FiltersBarProps> = ({ activeFilters, setActiveFilters
         {canScrollRight && (
           <button
             onClick={() => scroll("right")}
-            className="hidden md:flex p-2 rounded-full border border-gray-300 hover:bg-gray-100 transition"
+            className="hidden md:flex p-2 rounded-full border hover:bg-gray-100 absolute right-0 z-10"
           >
-            <ChevronRight size={18} />
+            <ChevronRight size={16} />
           </button>
         )}
       </div>
 
-      <div className="flex items-center justify-end gap-3 w-full md:w-auto">
-        <Dropdown label="Filters" options={batchFilters} filterKey="batch" />
-        <Dropdown label="Business Model" options={categories} filterKey="category" />
+      <div className="flex flex-wrap gap-2 items-center w-full md:w-auto min-w-0">
+        <div className="relative flex-shrink-0 min-w-0">
+          <button
+            onClick={() => setOpenDropdown(openDropdown === "batch" ? null : "batch")}
+            className="px-4 py-2 bg-gray-100 rounded-xl flex items-center justify-between whitespace-nowrap truncate max-w-[200px]"
+          >
+            {selectedBatches.length ? selectedBatches.join(", ") : "Filters"}
+            <ChevronDown size={18} />
+          </button>
+          {openDropdown === "batch" && (
+            <div className="absolute right-0 bg-white border rounded-xl shadow-lg w-40 mt-2 z-10">
+              {batchesList.map(b => (
+                <button
+                  key={b}
+                  onClick={() => toggleFilter("badges", b)}
+                  className={`w-full text-left px-4 py-2 ${selectedBatches.includes(b) ? "bg-gray-200 font-semibold" : "hover:bg-gray-100"}`}
+                >
+                  {b}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="relative flex-shrink-0 min-w-0">
+          <button
+            onClick={() => setOpenDropdown(openDropdown === "category" ? null : "category")}
+            className="px-4 py-2 bg-gray-100 rounded-xl flex items-center justify-between whitespace-nowrap truncate max-w-[200px]"
+          >
+            {selectedCategories.length ? selectedCategories.join(", ") : "Business Model"}
+            <ChevronDown size={18} />
+          </button>
+          {openDropdown === "category" && (
+            <div className="absolute right-0 bg-white border rounded-xl shadow-lg w-40 mt-2 z-10">
+              {categoriesList.map(c => (
+                <button
+                  key={c}
+                  onClick={() => toggleFilter("category", c)}
+                  className={`w-full text-left px-4 py-2 ${selectedCategories.includes(c) ? "bg-gray-200 font-semibold" : "hover:bg-gray-100"}`}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {(selectedIndustries.length || selectedCategories.length || selectedBatches.length) && (
+          <button
+            onClick={clearAll}
+            className="px-4 py-2 bg-red-100 text-red-600 rounded-xl hover:bg-red-200 whitespace-nowrap flex-shrink-0 min-w-0 truncate max-w-[120px]"
+          >
+            Clear All
+          </button>
+        )}
       </div>
     </div>
   );
-};
-
-export default FiltersBar;
+}
