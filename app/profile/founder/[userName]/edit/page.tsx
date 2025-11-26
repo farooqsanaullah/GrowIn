@@ -56,6 +56,10 @@ export default function EditProfilePage() {
     skills: [] as string[],
   });
 
+  const previousExperiences = founder.experiences.slice(0, -1); // all except last
+  const currentExperience = founder.experiences.at(-1);         // last one (editable)
+  if (!currentExperience) return null; 
+
   // Fetching User From API
   useEffect(() => {
     async function fetchUser() {
@@ -251,32 +255,46 @@ export default function EditProfilePage() {
       <section className="space-y-6">
         <h2 className="text-xl font-bold text-foreground">Experiences</h2>
 
-        {/* Experiences field */}
-        {founder.experiences.map((exp, index) => (
-          <div key={index} className="space-y-4">
-              <FloatingLabelInput
-              id={`designation-${index}`}
+        {/* Ribbon for previous experiences */}
+        <div className="space-y-2">
+          {previousExperiences.map((exp, index) => (
+            <div key={index} className="p-3 rounded bg-gray-100 border">
+              <p className="font-semibold">{exp.designation || "No designation"}</p>
+              <p>{exp.company || "Company not added"}</p>
+              <p>
+                {exp.expStart?.toString().slice(0, 10)} - {exp.expEnd?.toString().slice(0, 10)}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {/* Editable inputs for ONLY the last experience */}
+        {currentExperience && (
+          <div className="space-y-4">
+
+            <FloatingLabelInput
+              id={"designation"}
               label="Designation"
-              value={exp.designation}
+              value={currentExperience.designation}
               onChange={(e) => {
                 const newExps = [...founder.experiences];
-                newExps[index].designation = e.target.value;
+                newExps[founder.experiences.length - 1].designation = e.target.value;
                 setFounder({ ...founder, experiences: newExps });
               }}
             />
 
             <div className="space-y-2 relative z-[9999]">
               <Datepicker
-                value={{ startDate: exp.expStart, endDate: exp.expEnd }}
+                value={{ startDate: currentExperience.expStart, endDate: currentExperience.expEnd }}
                 onChange={(range) => {
                   const newExps = [...founder.experiences];
-                  newExps[index].expStart = range?.startDate || new Date();
-                  newExps[index].expEnd = range?.endDate || new Date();
+                  newExps[founder.experiences.length - 1].expStart = range?.startDate || new Date();
+                  newExps[founder.experiences.length - 1].expEnd = range?.endDate || new Date();
                   setFounder({ ...founder, experiences: newExps });
                 }}
                 displayFormat="MM/DD/YYYY"
                 separator="-"
-                startFrom={exp.expStart}
+                startFrom={currentExperience.expStart}
                 inputClassName="peer w-full border rounded-md p-2 placeholder-transparent"
               />
               <FloatingLabel
@@ -288,28 +306,30 @@ export default function EditProfilePage() {
             </div>
 
             <FloatingLabelInput
-              id={`company-${index}`}
+              id={"company"}
               label="Company Name"
-              value={exp.company}
+              value={currentExperience.company}
               onChange={(e) => {
                 const newExps = [...founder.experiences];
-                newExps[index].company = e.target.value;
+                newExps[founder.experiences.length - 1].company = e.target.value;
                 setFounder({ ...founder, experiences: newExps });
               }}
             />
 
             <FloatingLabelInput
-              id={`desc-${index}`}
+              id={"desc"}
               label="Experience Description"
-              value={exp.experienceDesc}
+              value={currentExperience.experienceDesc}
               onChange={(e) => {
                 const newExps = [...founder.experiences];
-                newExps[index].experienceDesc = e.target.value;
+                newExps[founder.experiences.length - 1].experienceDesc = e.target.value;
                 setFounder({ ...founder, experiences: newExps });
               }}
             />
           </div>
-        ))}
+        )}
+
+        {/* Add More Button */}
         <div className="flex justify-end">
           <Button
             type="button"
@@ -320,6 +340,7 @@ export default function EditProfilePage() {
             Add More
           </Button>
         </div>
+
         <SkillsInput
           skills={founder.skills}
           setSkills={(val) => setFounder({ ...founder, skills: val })}
