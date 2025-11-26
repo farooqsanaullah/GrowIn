@@ -12,26 +12,19 @@ import {
   Label
 } from "@/components/ui";
 import Link from "next/link";
-import { EMAIL_REGEX } from "@/lib/constants/regex";
+import { EMAIL_REGEX } from "@/lib/constants";
 import Image from "next/image";
+import { getPasswordStrength } from "@/lib/helpers/shared";
 
 type SignupForm = {
   userName: string;
   email: string;
   password: string;
   confirmPassword: string;
-  role: "investor" | "founder" | "admin";
+  role: "investor" | "founder";
 };
 
 const isDev = process.env.NODE_ENV === "development";
-
-// Simple password strength checker
-function getPasswordStrength(password: string) {
-  const lengthCheck = password.length >= 8;
-  const specialCharCheck = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-  const digitCheck = /\d/.test(password);
-  return { lengthCheck, specialCharCheck, digitCheck };
-}
 
 export default function SignupPage() {
   const router = useRouter();
@@ -236,7 +229,7 @@ export default function SignupPage() {
           {/* Password */}
           <div>
             <Label htmlFor="password" className="text-foreground text-md">Password</Label>
-            <div className="relative">
+            <div className="mt-2 relative">
               <Input
                 id="password"
                 type={showPassword ? "text" : "password"}
@@ -249,7 +242,7 @@ export default function SignupPage() {
                     hasSpecialChar: (value) => /[!@#$%^&*(),.?\":{}|<>]/.test(value),
                   },
                 })}
-                className={`mt-2 bg-input text-foreground pr-10
+                className={`bg-input text-foreground pr-10
                   ${(lengthCheck && specialCharCheck && digitCheck)
                       ? "bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
                       : "border-border"
@@ -260,7 +253,7 @@ export default function SignupPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute right-2 top-3.5 flex items-center text-muted-foreground cursor-pointer"
+                  className="absolute right-2 inset-y-0 flex items-center text-muted-foreground cursor-pointer"
                 >
                   {showPassword ? <EyeClosedIcon /> : <Eye />}
                 </button>
@@ -292,7 +285,7 @@ export default function SignupPage() {
           {/* Confirm Password */}
           <div>
             <Label htmlFor="confirmPassword" className="text-foreground text-md">Confirm Password</Label>
-            <div className="relative">
+            <div className="mt-2 relative">
               <Input
                 id="confirmPassword"
                 type={showConfirm ? "text" : "password"}
@@ -302,7 +295,7 @@ export default function SignupPage() {
                   validate: (value) =>
                     value === watch("password") || "Passwords do not match",
                 })}
-                className={`mt-2 bg-input text-foreground pr-10
+                className={`bg-input text-foreground pr-10
                   ${(confirmValue.length > 0 && passwordValue === confirmValue)
                       ? "bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
                       : "border-border"
@@ -313,7 +306,7 @@ export default function SignupPage() {
                 <button
                   type="button"
                   onClick={() => setShowConfirm((prev) => !prev)}
-                  className="absolute right-2 top-3.5 flex items-center text-muted-foreground cursor-pointer"
+                  className="absolute right-2 inset-y-0 flex items-center text-muted-foreground cursor-pointer"
                 >
                   {showConfirm ? <EyeClosedIcon /> : <Eye />}
                 </button>
@@ -342,7 +335,7 @@ export default function SignupPage() {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full cursor-pointer bg-primary text-md text-primary-foreground hover:bg-primary/90"
+            className="w-full cursor-pointer text-md"
           >
             {isLoading ? (
               <>

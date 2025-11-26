@@ -1,23 +1,43 @@
-export { Button } from "./button";
-export { Input } from "./input";
-export { Label } from "./label";
-export { Textarea } from "./textarea";
+export { Button } from "@/components/ui/button";
+export { Input } from "@/components/ui/input";
+export { Label } from "@/components/ui/label";
+export { Textarea } from "@/components/ui/textarea";
 export { 
   Select, 
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue 
-} from "./select";
-export { Slider } from "./slider";
-export { Separator } from "./separator";
-// export { FloatingLabelInput } from "./FloatingLabelInput"
+} from "@/components/ui/select";
+export { Slider } from "@/components/ui/slider";
+export { Separator } from "@/components/ui/separator";
+export {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogOverlay,
+  DialogPortal,
+  DialogTitle,
+  DialogTrigger,
+} from "./dialog";
+export { DualRangeSlider } from "@/components/ui/dual-range-slider";
+export { SkillsInput } from "@/components/ui/custom/skillsinput";
+export { 
+  FloatingInput, 
+  FloatingLabel, 
+  FloatingLabelInput 
+} from "@/components/ui/custom/floating-labelinput";
+export { FloatingPhoneInput } from "@/components/ui/custom/floating-phoneinput";
+export { FloatingCountryInput } from "@/components/ui/custom/floating-country";
+export { FloatingRegionInput } from "@/components/ui/custom/floating-region";
 // export { Checkbox } from "./checkbox";
 // export { Switch } from "./switch";
 // export { RadioGroup } from "./radio-group";
 // export { Avatar } from "./avatar";
 // export { Card } from "./card";
-// export { Dialog } from "./dialog";
 // export { Popover } from "./popover";
 // export { Tooltip } from "./tooltip";
 // export { Badge } from "./badge";

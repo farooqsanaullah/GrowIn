@@ -1,0 +1,397 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Image from "next/image";
+import {
+  Button,
+  DualRangeSlider,
+  SkillsInput,
+  Label,
+  FloatingLabelInput,
+  FloatingCountryInput,
+  FloatingRegionInput,
+  FloatingPhoneInput,
+  FloatingLabel,
+} from "@/components/ui";
+import Datepicker from "react-tailwindcss-datepicker";
+import "flowbite/dist/flowbite.css";
+import { useParams } from "next/navigation";
+import { Loader } from "lucide-react";
+import { updateUserSchema } from "@/lib/auth/zodValidation/updateUserSchema";
+import toast from "react-hot-toast";
+import { isExperienceEmpty } from "@/lib/helpers/shared";
+import { Skeleton } from "@/components/ui/skeleton";
+
+export default function EditProfilePage() {
+  const [isUpdating, setIsUpdating] = useState(false);
+  const params = useParams();
+  const userName = params.userName;
+  const [user, setUser] = useState<any>(null);
+
+  // BASIC INFO
+  const [basicInfo, setBasicInfo] = useState({
+    userName: "",
+    name: "",
+    email: "",
+    profileImage: "",
+    bio: "",
+    phone: "",
+  });
+
+  // LOCATION
+  const [location, setLocation] = useState({
+    country: "",
+    city: "",
+  });
+
+  // FOUNDER INFO
+  const [founder, setFounder] = useState({
+    experiences: [
+      {
+        designation: "",
+        company: "",
+        experienceDesc: "",
+        startDate: new Date(),
+        endDate: new Date(),
+      },
+    ],
+    skills: [] as string[],
+  });
+
+  const previousExperiences = founder.experiences.slice(0, -1); // all except last
+  const currentExperience = founder.experiences.at(-1);         // last one (editable)
+  if (!currentExperience) return null; 
+
+  // Fetching User From API
+  useEffect(() => {
+    async function fetchUser() {
+      const res = await fetch(`/api/profile/${userName}`);
+      if (!res.ok) return;
+
+      const data = await res.json();
+      setUser(data.user);
+    }
+    fetchUser();
+  }, [userName]);
+
+  // Applying user data to all fields
+  useEffect(() => {
+    if (!user) return;
+
+    // BASIC INFO
+    setBasicInfo({
+      userName: user.userName ?? "",
+      name: user.name ?? "",
+      email: user.email ?? "",
+      profileImage: user.profileImage ?? "",
+      bio: user.bio ?? "",
+      phone: user.phone ?? "",
+    });
+
+    // LOCATION
+    setLocation({
+      country: user.country ?? "",
+      city: user.city ?? "",
+    });
+
+    // FOUNDER INFO
+    setFounder({
+      experiences: [{
+        designation: user.designation ?? "",
+        startDate: user.startDate ? new Date(user.startDate) : new Date(),
+        endDate: user.endDate ? new Date(user.endDate) : new Date(),
+        company: user.company ?? "",
+        experienceDesc: user.experienceDesc ?? "",
+      }],
+      skills: user.skills ?? [],
+    });
+  }, [user]);
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault(); // prevent page reload
+    setIsUpdating(true);
+
+    try {
+      // Prepare the data according to your schema
+      const updateData = {
+        userName: basicInfo.userName,
+        name: basicInfo.name,
+        phone: basicInfo.phone,
+        bio: basicInfo.bio,
+        profileImage: basicInfo.profileImage,
+        city: location.city,
+        country: location.country,
+        experiences: founder.experiences,
+        skills: founder.skills,
+      };
+
+      // Validate data with Zod
+      const parsed = updateUserSchema.parse(updateData);
+
+      // Make PUT request
+      const res = await fetch(`/api/profile/${basicInfo.userName}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(parsed),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        toast.error(err.message || "Failed to update profile");
+      } else {
+        toast.success("Profile updated successfully");
+      }
+    } catch (err: any) {
+      if (err?.issues) {
+        // Zod validation errors
+        toast.error(err.issues.map((i: any) => i.message).join(", "));
+      } else {
+        toast.error("Something went wrong");
+      }
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleAddExperience = () => {
+    const lastExp = founder.experiences[founder.experiences.length - 1];
+    
+    // Preventing to add a new empty field set
+    if (isExperienceEmpty(lastExp)) {
+      toast.error("Fill the current experience first.");
+      return;
+    }
+
+    setFounder((prev) => ({
+      ...prev,
+      experiences: [
+        ...prev.experiences,
+        {
+          designation: "",
+          startDate: new Date(),
+          endDate: new Date(),
+          company: "",
+          experienceDesc: "",
+        },
+      ],
+    }));
+  };
+
+  const handleRemoveExperience = (indexToRemove: number) => {
+    setFounder((prev) => ({
+      ...prev,
+      experiences: prev.experiences.filter((_, i) => i !== indexToRemove),
+    }));
+  };
+
+  return (
+    <div className="max-w-5xl mx-auto p-6 space-y-10">
+      <h1 className="text-3xl font-semibold text-primary">Edit Profile</h1>
+
+      {/* PROFILE IMAGE */}
+      <div className="flex items-center gap-6">
+        {basicInfo.profileImage ? (
+          <Image
+            src={basicInfo.profileImage}
+            alt="Profile"
+            width={90}
+            height={90}
+            className="rounded-full border transition-opacity duration-300 opacity-0"
+            onLoadingComplete={(img) => (img.style.opacity = "1")}
+          />
+        ) : (
+          <Skeleton className="w-[90px] h-[90px] rounded-full" />
+        )}
+
+        <Button className="cursor-pointer" variant="outline">
+          Change Photo
+        </Button>
+      </div>
+
+      {/* BASIC INFO */}
+      <section className="space-y-6">
+        <h2 className="text-xl font-semibold text-foreground">Basic Information</h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FloatingLabelInput
+            id="username"
+            label="Username"
+            value={basicInfo.userName}
+            onChange={(e) => setBasicInfo({ ...basicInfo, userName: e.target.value })}
+          />
+
+          <FloatingLabelInput
+            id="fullName"
+            label="Full Name"
+            value={basicInfo.name}
+            onChange={(e) => setBasicInfo({ ...basicInfo, name: e.target.value })}
+          />
+
+          <FloatingLabelInput
+            id="email"
+            label="Email"
+            disabled
+            value={basicInfo.email}
+            className="bg-muted opacity-70"
+          />
+
+          <FloatingPhoneInput
+            label="Phone"
+            value={basicInfo.phone}
+            onChange={(val) => setBasicInfo({ ...basicInfo, phone: val })}
+          />
+
+          <FloatingCountryInput
+            label="Country"
+            value={location.country}
+            onChange={(val) => setLocation({ country: val, city: "" })}
+          />
+
+          <FloatingRegionInput
+            label="City"
+            country={location.country}
+            value={location.city}
+            onChange={(val) => setLocation({ ...location, city: val })}
+          />
+        </div>
+
+        <FloatingLabelInput
+          id="bio"
+          label="Bio"
+          value={basicInfo.bio}
+          onChange={(e) => setBasicInfo({ ...basicInfo, bio: e.target.value })}
+        />
+      </section>
+
+      <section className="space-y-6">
+        <h2 className="text-xl font-bold text-foreground">Experiences</h2>
+
+        {/* Ribbon for previous experiences */}
+        <div className="space-y-2">
+          {previousExperiences.map((exp, index) => (
+            <div
+              key={index}
+              className="p-3 rounded bg-gray-100 border flex justify-between items-start"
+            >
+              <div>
+                <p className="font-semibold">{exp.designation}</p>
+                <p>{exp.company}</p>
+                <p>
+                  {exp.startDate?.toString().slice(0, 15)} - {exp.endDate?.toString().slice(0, 15)}
+                </p>
+              </div>
+              {/* Remove button */}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => handleRemoveExperience(index)}
+                className="border-none hover:text-background hover:bg-destructive/60 cursor-pointer"
+              >
+                Remove
+              </Button>
+            </div>
+          ))}
+        </div>
+
+        {/* Editable inputs for ONLY the last experience */}
+        {currentExperience && (
+          <div className="space-y-4">
+
+            <FloatingLabelInput
+              id={"designation"}
+              label="Designation"
+              value={currentExperience.designation}
+              onChange={(e) => {
+                const newExps = [...founder.experiences];
+                newExps[founder.experiences.length - 1].designation = e.target.value;
+                setFounder({ ...founder, experiences: newExps });
+              }}
+            />
+
+            <div className="space-y-2 relative z-[9999]">
+              <Datepicker
+                value={{ startDate: currentExperience.startDate, endDate: currentExperience.endDate }}
+                onChange={(range) => {
+                  const newExps = [...founder.experiences];
+                  newExps[founder.experiences.length - 1].startDate = range?.startDate || new Date();
+                  newExps[founder.experiences.length - 1].endDate = range?.endDate || new Date();
+                  setFounder({ ...founder, experiences: newExps });
+                }}
+                displayFormat="MM/DD/YYYY"
+                separator="-"
+                startFrom={currentExperience.startDate}
+                inputClassName="peer w-full border rounded-md p-2 placeholder-transparent"
+              />
+              <FloatingLabel
+                htmlFor="experiences"
+                className="absolute left-2 top-2 text-gray-500 text-sm pointer-events-none"
+              >
+                Experience Duration
+              </FloatingLabel>
+            </div>
+
+            <FloatingLabelInput
+              id={"company"}
+              label="Company Name"
+              value={currentExperience.company}
+              onChange={(e) => {
+                const newExps = [...founder.experiences];
+                newExps[founder.experiences.length - 1].company = e.target.value;
+                setFounder({ ...founder, experiences: newExps });
+              }}
+            />
+
+            <FloatingLabelInput
+              id={"desc"}
+              label="Experience Description"
+              value={currentExperience.experienceDesc}
+              onChange={(e) => {
+                const newExps = [...founder.experiences];
+                newExps[founder.experiences.length - 1].experienceDesc = e.target.value;
+                setFounder({ ...founder, experiences: newExps });
+              }}
+            />
+          </div>
+        )}
+
+        {/* Add More Button */}
+        <div className="flex justify-end">
+          <Button
+            type="button"
+            variant="ghost"
+            className="cursor-pointer"
+            onClick={handleAddExperience}
+          >
+            Add More
+          </Button>
+        </div>
+
+        <SkillsInput
+          skills={founder.skills}
+          setSkills={(val) => setFounder({ ...founder, skills: val })}
+        />
+      </section>
+
+      {/* Update Button */}
+      <div className="flex justify-end">
+        <Button
+          type="submit"
+          disabled={isUpdating}
+          onSubmit={handleSave}
+          className="w-full md:w-auto cursor-pointer"
+        >
+          {isUpdating ? (
+            <>
+              Saving
+              <Loader className="animate-spin ml-2" />
+            </>
+          ) : (
+            "Save Changes"
+          )}
+        </Button>
+      </div>
+    </div>
+  );
+}
