@@ -1,11 +1,5 @@
 import mongoose from "mongoose";
 
-const MONGODB_URI = process.env.MONGODB_URI!;
-
-if (!MONGODB_URI) {
-  throw new Error("Please define the MONGODB_URI environment variable in .env");
-}
-
 /**
  * Global is used here to maintain a cached connection across hot reloads in dev
  * This prevents creating multiple connections during Next.js development
@@ -19,6 +13,17 @@ if (!cached) {
 export async function connectDB() {
   if (cached.conn) {
     return cached.conn;
+  }
+
+  const MONGODB_URI = process.env.MONGODB_URI; 
+
+  // Skip connection during build time if no MONGODB_URI is provided
+  if (!MONGODB_URI) {
+    if (process.env.NODE_ENV === "production" && !process.env.MONGODB_URI) {
+      console.warn("MongoDB connection skipped during build time");
+      return null;
+    }
+    throw new Error("Please define the MONGODB_URI environment variable");
   }
 
   if (!cached.promise) {

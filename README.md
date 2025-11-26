@@ -110,4 +110,3 @@ This project is private and proprietary to Amrood Labs.
 
 ---
 
-**Built with ❤️ by the GrowIn Team**
