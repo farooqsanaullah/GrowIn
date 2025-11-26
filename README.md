@@ -1,36 +1,112 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# GrowIn
+
+A modern platform connecting startups with investors, built with Next.js 16 and MongoDB.
+
+## Features
+
+- 🚀 **Startup Management** - Complete CRUD operations for startups
+- 👥 **User Authentication** - Secure auth with NextAuth.js
+- 🔍 **Advanced Search** - Filter and search startups by category, industry
+- 📱 **Responsive Design** - Built with Tailwind CSS
+- 🗄️ **Database Integration** - MongoDB with Mongoose ODM
+
+## Tech Stack
+
+- **Framework:** Next.js 16 (App Router)
+- **Database:** MongoDB with Mongoose
+- **Authentication:** NextAuth.js
+- **Styling:** Tailwind CSS
+- **UI Components:** Radix UI
+- **Language:** TypeScript
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Node.js 18+
+- MongoDB (local or Atlas)
+- pnpm (recommended)
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/farooqsanaullah/GrowIn.git
+   cd GrowIn
+   ```
+
+2. **Install dependencies**
+   ```bash
+   pnpm install
+   ```
+
+3. **Set up environment variables**
+   
+   Create `.env.local`:
+   ```env
+   MONGODB_URI=your_mongodb_connection_string
+   NEXTAUTH_SECRET=your_nextauth_secret
+   NEXTAUTH_URL=http://localhost:3000
+   ```
+
+4. **Run the development server**
+   ```bash
+   pnpm dev
+   ```
+
+5. **Open your browser**
+   
+   Navigate to [http://localhost:3000](http://localhost:3000)
+
+## API Endpoints
+
+### Startup Management
+- `GET /api/startups` - List all startups (with pagination)
+- `POST /api/startups` - Create new startup
+- `GET /api/startups/[id]` - Get startup by ID
+- `PUT /api/startups/[id]` - Update startup
+- `DELETE /api/startups/[id]` - Delete startup
+- `GET /api/startups/founder/[founderId]` - Get startups by founder
+
+### Authentication
+- `POST /api/auth/signup` - User registration
+- `GET /api/auth/check-username` - Check username availability
+
+## Project Structure
+
+```
+├── app/                    # Next.js App Router
+│   ├── api/               # API routes
+│   ├── (auth)/            # Authentication pages
+│   └── globals.css        # Global styles
+├── components/            # React components
+├── lib/                   # Utilities and configurations
+│   ├── models/           # Database models
+│   ├── utils/            # Helper functions
+│   └── auth/             # Authentication logic
+└── types/                # TypeScript type definitions
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Scripts
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+pnpm dev          # Start development server
+pnpm build        # Build for production
+pnpm start        # Start production server
+pnpm lint         # Run ESLint
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Contributing
 
-## Learn More
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-To learn more about Next.js, take a look at the following resources:
+## License
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+This project is private and proprietary to Amrood Labs.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

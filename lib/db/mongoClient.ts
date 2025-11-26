@@ -3,7 +3,12 @@ import { MongoClient } from "mongodb";
 const { MONGODB_URI, NODE_ENV } = process.env;
 const isDev = NODE_ENV === "development";
 
-if (!MONGODB_URI) throw new Error("Please define the MONGODB_URI environment variable in .env");
+// Skip MongoDB connection during build time
+const isBuildTime = process.env.NODE_ENV === "production" && !process.env.MONGODB_URI;
+
+if (!MONGODB_URI && !isBuildTime) {
+  throw new Error("Please define the MONGODB_URI environment variable in .env");
+}
 
 let client: MongoClient;
 let clientPromise: Promise<MongoClient>;
@@ -13,7 +18,10 @@ declare global {
   var _mongoClientPromise: Promise<MongoClient>;
 }
 
-if (isDev) {
+// Provide a dummy promise during build time when MONGODB_URI is not available
+if (isBuildTime || !MONGODB_URI) {
+  clientPromise = Promise.resolve({} as MongoClient);
+} else if (isDev) {
   // Use global variable to preserve connection across hot reloads in dev mode
   if (!global._mongoClientPromise) {
     client = new MongoClient(MONGODB_URI);
@@ -29,8 +37,8 @@ if (isDev) {
   }
   clientPromise = global._mongoClientPromise;
 } else {
-  // In production, we will create a new client for every build
-  client = new MongoClient(MONGODB_URI);
+  // Production mode with fresh connection
+  client = new MongoClient(MONGODB_URI!); // Using ! since we know it exists here
   clientPromise = client.connect()
     .then((client) => {
       console.log("[MongoDB] connected (prod)");

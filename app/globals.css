@@ -122,5 +122,24 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-montserrat), sans-serif;
   }
 }
+
+/* Hide scrollbar for all browsers */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+
+:root {
+  --bg-primary: #D6F6FE;
+  --bg-secondary: #FEE8BD;
+  --text-primary: #16263d;
+  --text-secondary: #65728d;
+  --text-muted: #657da8;
+}
+

@@ -1,15 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: 'standalone',
   images: {
     remotePatterns: [
       {
-        protocol: "https",
-        hostname: "avatars.githubusercontent.com",
-        port: "", // leaving empty for default
-        pathname: "/**", // allows all paths
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        port: '',
+        pathname: '/**',
       },
-      // We can add more patterns here for other hosts
     ],
   },
 };
