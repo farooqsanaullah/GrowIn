@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Startup } from "@/types/startup";
+import { Startup } from "@/lib/types/startup";
 
 export default function useFilter(data: Startup[]) {
   const [activeFilter, setActiveFilter] = useState<string>("All");

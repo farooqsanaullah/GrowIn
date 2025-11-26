@@ -1,45 +1,28 @@
-"use client";
-
 import FiltersBar from "@/components/explore/FiltersBar";
 import HorizontalSection from "@/components/explore/HorizontalSection";
-import { Startup } from "@/types/startup";
-import { useState, useMemo } from "react";
+import { Startup } from "@/lib/types/startup";
 
 interface ClientExploreProps {
-  data: Startup[];
   trending: Startup[];
   funded: Startup[];
   active: Startup[];
 }
 
-export default function ClientExplore({ data }: ClientExploreProps) {
-  const [activeFilters, setActiveFilters] = useState<{ industry?: string; category?: string; batch?: string }>({});
-
-  const filteredData = useMemo(() => {
-    return data.filter((s) => {
-      const industryMatch = !activeFilters.industry || s.industry === activeFilters.industry;
-      const categoryMatch = !activeFilters.category || s.categoryType === activeFilters.category;
-      const batchMatch = !activeFilters.batch || s.badges?.includes(activeFilters.batch);
-      return industryMatch && categoryMatch && batchMatch;
-    });
-  }, [data, activeFilters]);
-
-  const trendingFiltered = filteredData.filter((s) => s.badges?.includes("Trending"));
-  const fundedFiltered = filteredData.filter((s) => s.badges?.includes("Funded"));
-  const activeFiltered = filteredData.filter((s) => s.status === "Active");
-
+export default function ClientExplore({ trending, funded, active }: ClientExploreProps) {
   return (
     <div className="space-y-6">
-      <FiltersBar activeFilters={activeFilters} setActiveFilters={setActiveFilters} />
+      <FiltersBar /> {/* optional if you plan to add filters later */}
 
-      {trendingFiltered.length > 0 && (
-        <HorizontalSection title="Trending Startups" startups={trendingFiltered} />
+      {trending.length > 0 && (
+        <HorizontalSection title="Trending Startups" startups={trending} badge="Trending"/>
       )}
-      {fundedFiltered.length > 0 && (
-        <HorizontalSection title="Funded Startups" startups={fundedFiltered} />
+
+      {funded.length > 0 && (
+        <HorizontalSection title="Funded Startups" startups={funded} badge="Funded"/>
       )}
-      {activeFiltered.length > 0 && (
-        <HorizontalSection title="All Active Startups" startups={activeFiltered} />
+
+      {active.length > 0 && (
+        <HorizontalSection title="All Active Startups" startups={active} badge="Active"/>
       )}
     </div>
   );
