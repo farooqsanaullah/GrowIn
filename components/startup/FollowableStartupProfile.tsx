@@ -35,14 +35,12 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
     return `$${amount}`;
   };
 
-  // Initialize follow state
   useEffect(() => {
     if (session?.user?.id && Array.isArray(startup.followers)) {
       setIsFollowed(startup.followers.includes(session.user.id));
     }
   }, [session, startup.followers]);
 
-  // Fetch current user's rating
   useEffect(() => {
     if (!session?.user?.id) return;
 
@@ -156,8 +154,6 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:mx-20 lg:p-8 flex flex-col lg:flex-row gap-6">
       <div className="flex-1 space-y-6 overflow-y-auto">
-
-        {/* Header */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold mb-1">{startup.title}</h1>
@@ -173,12 +169,10 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
           </button>
         </div>
 
-        {/* Profile Image */}
         <div className="relative w-full rounded-3xl overflow-hidden shadow-lg h-64 md:h-96">
           <img src={profilePic} alt={startup.title} className="w-full h-full object-cover" />
         </div>
 
-        {/* Sticky navigation */}
         <div className="sticky top-0 bg-white z-10 py-2 px-4 border-b border-gray-200 flex justify-between items-center">
           <div className="flex gap-4">
             <button onClick={() => scrollToSection("description")} className="font-semibold hover:underline text-gray-700">Description</button>
@@ -189,7 +183,6 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
           </div>
         </div>
 
-        {/* Description */}
         {startup.description && (
           <div ref={descriptionRef} className="bg-white rounded-2xl p-6 shadow-md">
             <p className="leading-relaxed text-gray-800">{startup.description}</p>
@@ -265,11 +258,9 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
         )}
       </div>
 
-      {/* Sidebar */}
       <div className="w-full lg:w-96 flex-shrink-0 space-y-6">
         <div className="lg:sticky lg:top-20 space-y-6">
 
-          {/* Investment */}
           {startup.equityRange?.length > 0 && (
             <div className="rounded-2xl p-6 shadow-md bg-gray-50">
               <h2 className="text-2xl font-bold mb-6">Investment Opportunity</h2>
@@ -354,9 +345,6 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
               ))}
             </div>
             {userRating && <p className="text-sm mb-2">You rated this {userRating} star{userRating>1?"s":""}.</p>}
-            <p className="text-gray-700 font-medium">
-              Average Rating: {avgRating.toFixed(1)} ({ratingCount} {ratingCount===1?"review":"reviews"})
-            </p>
           </div>
 
         </div>

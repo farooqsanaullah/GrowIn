@@ -12,9 +12,10 @@ export interface IInvestment {
 }
 
 export async function POST(req: NextRequest) {
-  await connectDB();
+  
 
   try {
+    await connectDB();
     let body: InvestmentBody;
 
     try {
