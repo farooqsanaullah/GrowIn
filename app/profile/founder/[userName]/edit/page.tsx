@@ -269,7 +269,7 @@ export default function EditProfilePage() {
         <h2 className="text-xl font-bold text-foreground">Experiences</h2>
 
         {/* Ribbon for previous experiences */}
-        <div className="space-y-2">
+        <div className="space-y-2 max-h-60 overflow-y-auto pr-1 shadow-sm">
           {previousExperiences.map((exp, index) => (
             <div
               key={index}
@@ -287,7 +287,7 @@ export default function EditProfilePage() {
                 type="button"
                 variant="outline"
                 onClick={() => handleRemoveExperience(index)}
-                className="border-none hover:text-background hover:bg-destructive/60 cursor-pointer"
+                className="border-none text-destructive hover:text-background hover:bg-destructive/60 cursor-pointer"
               >
                 Remove
               </Button>
@@ -356,7 +356,7 @@ export default function EditProfilePage() {
           </div>
         )}
 
-        {/* Add More Button */}
+        {/* Add New Field Button */}
         <div className="flex justify-end">
           <Button
             type="button"
@@ -364,7 +364,7 @@ export default function EditProfilePage() {
             className="cursor-pointer"
             onClick={handleAddExperience}
           >
-            Add More
+            Add New Field
           </Button>
         </div>
 
