@@ -347,14 +347,16 @@ export default function EditProfilePage() {
               />
             </div>
           ))}
-          <Button
-            type="button"
-            className="cursor-pointer"
-            onClick={handleAddExperience}
-          >
-            Add More
-          </Button>
-
+          <div className="flex justify-end">
+            <Button
+              type="button"
+              variant="ghost"
+              className="cursor-pointer"
+              onClick={handleAddExperience}
+            >
+              Add More
+            </Button>
+          </div>
           <SkillsInput
             skills={founder.skills}
             setSkills={(val) => setFounder({ ...founder, skills: val })}
@@ -402,21 +404,23 @@ export default function EditProfilePage() {
       }
 
       {/* Update Button */}
-      <Button
-        type="submit"
-        disabled={isUpdating}
-        onSubmit={handleSave}
-        className="w-full md:w-auto cursor-pointer"
-      >
-        {isUpdating ? (
-          <>
-            Saving
-            <Loader className="animate-spin ml-2" />
-          </>
-        ) : (
-          "Save Changes"
-        )}
-      </Button>
+      <div className="flex justify-end">
+        <Button
+          type="submit"
+          disabled={isUpdating}
+          onSubmit={handleSave}
+          className="w-full md:w-auto cursor-pointer"
+        >
+          {isUpdating ? (
+            <>
+              Saving
+              <Loader className="animate-spin ml-2" />
+            </>
+          ) : (
+            "Save Changes"
+          )}
+        </Button>
+      </div>
     </div>
   );
 }
