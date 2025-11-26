@@ -8,3 +8,9 @@ export { AnalyticsSection } from "./AnalyticsSection";
 export { StartupPerformance } from "./StartupPerformance";
 export { RecentActivity } from "./RecentActivity";
 export { GrowthInsights } from "./GrowthInsights";
+
+// Investor Dashboard Components
+export { InvestorSidebar } from "./InvestorSidebar";
+export { InvestorStats } from "./InvestorStats";
+export { PortfolioOverview } from "./PortfolioOverview";
+export { InvestmentActivity } from "./InvestmentActivity";
