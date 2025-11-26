@@ -14,12 +14,12 @@ interface FundingRange {
   max?: number;
 }
 
-interface Experience {
+export interface Experience {
   designation: string;
   startDate: Date;
   endDate: Date;
   company: string;
-  description?: string;
+  experienceDesc?: string;
 }
 
 export interface IUser {
@@ -150,7 +150,7 @@ const userSchema = new Schema<IUser>(
         startDate: { type: Date },
         endDate: { type: Date },
         company: { type: String, trim: true },
-        description: { type: String, trim: true, maxlength: [500, "Description too long"] },
+        experienceDesc: { type: String, trim: true, maxlength: [500, "Description too long"] },
       },
     ],
     skills: [{ type: String, trim: true }],

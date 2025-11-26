@@ -19,6 +19,7 @@ import { useParams } from "next/navigation";
 import { Loader } from "lucide-react";
 import { updateUserSchema } from "@/lib/auth/zodValidation/updateUserSchema";
 import toast from "react-hot-toast";
+import { isExperienceEmpty } from "@/lib/helpers/shared";
 
 export default function EditProfilePage() {
   const [isUpdating, setIsUpdating] = useState(false);
@@ -49,8 +50,8 @@ export default function EditProfilePage() {
         designation: "",
         company: "",
         experienceDesc: "",
-        expStart: new Date(),
-        expEnd: new Date(),
+        startDate: new Date(),
+        endDate: new Date(),
       },
     ],
     skills: [] as string[],
@@ -96,8 +97,8 @@ export default function EditProfilePage() {
     setFounder({
       experiences: [{
         designation: user.designation ?? "",
-        expStart: user.expStart ? new Date(user.expStart) : new Date(),
-        expEnd: user.expEnd ? new Date(user.expEnd) : new Date(),
+        startDate: user.startDate ? new Date(user.startDate) : new Date(),
+        endDate: user.endDate ? new Date(user.endDate) : new Date(),
         company: user.company ?? "",
         experienceDesc: user.experienceDesc ?? "",
       }],
@@ -154,14 +155,22 @@ export default function EditProfilePage() {
   };
 
   const handleAddExperience = () => {
+    const lastExp = founder.experiences[founder.experiences.length - 1];
+    
+    // Preventing to add a new empty field set
+    if (isExperienceEmpty(lastExp)) {
+      toast.error("Fill the current experience first.");
+      return;
+    }
+
     setFounder((prev) => ({
       ...prev,
       experiences: [
         ...prev.experiences,
         {
           designation: "",
-          expStart: new Date(),
-          expEnd: new Date(),
+          startDate: new Date(),
+          endDate: new Date(),
           company: "",
           experienceDesc: "",
         },
@@ -259,10 +268,10 @@ export default function EditProfilePage() {
         <div className="space-y-2">
           {previousExperiences.map((exp, index) => (
             <div key={index} className="p-3 rounded bg-gray-100 border">
-              <p className="font-semibold">{exp.designation || "No designation"}</p>
-              <p>{exp.company || "Company not added"}</p>
+              <p className="font-semibold">{exp.designation}</p>
+              <p>{exp.company}</p>
               <p>
-                {exp.expStart?.toString().slice(0, 10)} - {exp.expEnd?.toString().slice(0, 10)}
+                {exp.startDate?.toString().slice(0, 15)} - {exp.endDate?.toString().slice(0, 15)}
               </p>
             </div>
           ))}
@@ -285,16 +294,16 @@ export default function EditProfilePage() {
 
             <div className="space-y-2 relative z-[9999]">
               <Datepicker
-                value={{ startDate: currentExperience.expStart, endDate: currentExperience.expEnd }}
+                value={{ startDate: currentExperience.startDate, endDate: currentExperience.endDate }}
                 onChange={(range) => {
                   const newExps = [...founder.experiences];
-                  newExps[founder.experiences.length - 1].expStart = range?.startDate || new Date();
-                  newExps[founder.experiences.length - 1].expEnd = range?.endDate || new Date();
+                  newExps[founder.experiences.length - 1].startDate = range?.startDate || new Date();
+                  newExps[founder.experiences.length - 1].endDate = range?.endDate || new Date();
                   setFounder({ ...founder, experiences: newExps });
                 }}
                 displayFormat="MM/DD/YYYY"
                 separator="-"
-                startFrom={currentExperience.expStart}
+                startFrom={currentExperience.startDate}
                 inputClassName="peer w-full border rounded-md p-2 placeholder-transparent"
               />
               <FloatingLabel

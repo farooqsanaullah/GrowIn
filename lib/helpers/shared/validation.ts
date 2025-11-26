@@ -5,6 +5,7 @@ import {
   USERNAME_MIN_LENGTH, 
   EMAIL_REGEX 
 } from "@/lib/constants";
+import { Experience } from "@/lib/models/user.model";
 
 export function validateEmail(email: string): string | null {
   if (!email) 
@@ -64,3 +65,11 @@ export function validateRole(role: string): string | null {
   
   return null;
 }
+
+export const isExperienceEmpty = (exp: Experience) => {
+  return (
+    !exp.designation?.trim() ||
+    !exp.company?.trim() ||
+    !exp.experienceDesc?.trim()
+  );
+};
