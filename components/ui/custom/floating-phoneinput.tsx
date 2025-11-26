@@ -20,7 +20,7 @@ const FloatingPhoneInput: React.FC<Props> = ({ label, value, onChange }) => {
         country="pk"
         value={value}
         onChange={onChange}
-        inputClass="w-full border rounded-md p-2 peer"
+        inputClass="!w-full border rounded-md p-2 peer"
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
       />
