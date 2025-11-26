@@ -6,14 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { startupsApi } from "@/lib/api/startups";
-import type { Startup } from "@/types/api";
-import { 
-  Building2, 
-  Plus, 
+import type { Startup } from "@/lib/types/api";
+import {
+  Building2,
+  Plus,
   Search,
-  Edit, 
-  Eye, 
-  Trash2, 
+  Edit,
+  Eye,
+  Trash2,
   Users,
   Loader2
 } from "lucide-react";
@@ -35,7 +35,7 @@ export default function StartupsPage() {
     try {
       setLoading(true);
       setError(null);
-      
+
       const filters = {
         page: currentPage,
         limit: 10,
@@ -60,7 +60,7 @@ export default function StartupsPage() {
           filteredStartups = filteredStartups.filter(startup => startup.categoryType === categoryFilter);
         }
         if (searchTerm) {
-          filteredStartups = filteredStartups.filter(startup => 
+          filteredStartups = filteredStartups.filter(startup =>
             startup.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
             startup.description.toLowerCase().includes(searchTerm.toLowerCase())
           );
@@ -133,7 +133,7 @@ export default function StartupsPage() {
               className="pl-10"
             />
           </div>
-          
+
           <div className="flex gap-2">
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-32">
@@ -181,7 +181,7 @@ export default function StartupsPage() {
               <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-medium text-card-foreground mb-2">No startups found</h3>
               <p className="text-muted-foreground mb-4">
-                {searchTerm || statusFilter !== "all" || categoryFilter !== "all" 
+                {searchTerm || statusFilter !== "all" || categoryFilter !== "all"
                   ? "Try adjusting your filters or search terms"
                   : "Get started by creating your first startup"
                 }
@@ -204,9 +204,9 @@ export default function StartupsPage() {
                 <div className="flex items-start space-x-4 flex-1">
                   <div className="flex items-center justify-center w-12 h-12 bg-primary/10 rounded-lg">
                     {startup.profilePic ? (
-                      
-                      <img 
-                        src={startup.profilePic} 
+
+                      <img
+                        src={startup.profilePic}
                         alt={startup.title}
                         className="w-12 h-12 rounded-lg object-cover"
                       />
@@ -214,7 +214,7 @@ export default function StartupsPage() {
                       <Building2 className="h-6 w-6 text-primary" />
                     )}
                   </div>
-                  
+
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-2 mb-2">
                       <h3 className="font-semibold text-card-foreground">{startup.title}</h3>
@@ -268,15 +268,15 @@ export default function StartupsPage() {
                       <Edit className="h-4 w-4" />
                     </Link>
                   </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     className="text-destructive hover:text-destructive"
                     onClick={() => handleDelete(startup._id)}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
-                </div> 
+                </div>
               </div>
             ))
           )}
@@ -288,9 +288,9 @@ export default function StartupsPage() {
               Showing {startups.length} of {totalStartups} startups
             </p>
             <div className="flex items-center space-x-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
               >
@@ -299,9 +299,9 @@ export default function StartupsPage() {
               <span className="text-sm text-muted-foreground px-2">
                 Page {currentPage} of {totalPages}
               </span>
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                 disabled={currentPage === totalPages}
               >

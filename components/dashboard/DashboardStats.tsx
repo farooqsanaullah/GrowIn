@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Building2, Users, Eye, TrendingUp, Target } from "lucide-react";
 import { StatsCard } from "./StatsCard";
 import { startupsApi } from "@/lib/api/startups";
-import type { Startup } from "@/types/api";
+import type { Startup } from "@/lib/types/api";
 
 interface DashboardStatsData {
   totalStartups: number;
@@ -29,17 +29,17 @@ export function DashboardStats() {
       try {
         const founderId = "673615f87cdf80bbbb5d7cd7";
         const response = await startupsApi.getByFounder(founderId);
-      
-        
+
+
         if (response.success && response.data) {
           const startups = response.data;
-          
+
           const totalFollowers = startups.reduce((acc, startup) => acc + startup.followers.length, 0);
           const activeStartups = startups.filter(startup => startup.status === 'active').length;
-          const avgRating = startups.length > 0 
-            ? startups.reduce((acc, startup) => acc + startup.avgRating, 0) / startups.length 
+          const avgRating = startups.length > 0
+            ? startups.reduce((acc, startup) => acc + startup.avgRating, 0) / startups.length
             : 0;
-          
+
           // Mock total views calculation (in a real app, this would come from analytics)
           const totalViews = startups.reduce((acc, startup) => acc + (startup.followers.length * 12), 0);
 
@@ -84,7 +84,7 @@ export function DashboardStats() {
         changeType={stats.totalStartups > 0 ? "positive" : "neutral"}
         icon={<Building2 className="h-6 w-6 text-primary" />}
       />
-      
+
       <StatsCard
         title="Total Views"
         value={stats.totalViews.toLocaleString()}
@@ -92,7 +92,7 @@ export function DashboardStats() {
         changeType="neutral"
         icon={<Eye className="h-6 w-6 text-primary" />}
       />
-      
+
       <StatsCard
         title="Total Followers"
         value={stats.totalFollowers.toLocaleString()}
@@ -100,7 +100,7 @@ export function DashboardStats() {
         changeType="neutral"
         icon={<Users className="h-6 w-6 text-primary" />}
       />
-      
+
       <StatsCard
         title="Active Startups"
         value={stats.activeStartups.toString()}
@@ -108,7 +108,7 @@ export function DashboardStats() {
         changeType={stats.activeStartups > 0 ? "positive" : "neutral"}
         icon={<Target className="h-6 w-6 text-primary" />}
       />
-      
+
       <StatsCard
         title="Avg Rating"
         value={stats.avgRating.toFixed(1)}

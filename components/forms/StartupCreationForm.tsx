@@ -4,12 +4,12 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { 
-  Building2, 
-  Upload, 
-  X, 
-  Plus, 
-  Loader2, 
+import {
+  Building2,
+  Upload,
+  X,
+  Plus,
+  Loader2,
   Link as LinkIcon,
   FileText,
   ImageIcon,
@@ -27,15 +27,15 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-import { 
-  startupFormSchema, 
+import {
+  startupFormSchema,
   StartupFormData,
   INDUSTRY_OPTIONS,
   CATEGORY_TYPE_OPTIONS,
   STATUS_OPTIONS
 } from '@/lib/validations/startup';
 import { startupsApi } from '@/lib/api/startups';
-import type { CreateStartupData, Startup } from '@/types/api';
+import type { CreateStartupData, Startup } from '@/lib/types/api';
 
 interface StartupCreationFormProps {
   onSuccess?: () => void;
@@ -151,13 +151,13 @@ export function StartupCreationForm({ onSuccess, isEdit = false, initialData }: 
         equityRange: equityRanges.filter(range => range.range.trim() !== ''),
         // Clean up empty social links
         socialLinks: Object.fromEntries(
-          Object.entries(data.socialLinks || {}).filter(([_, value]) => 
+          Object.entries(data.socialLinks || {}).filter(([_, value]) =>
             typeof value === 'string' && value.trim() !== ''
           )
         ),
       };
 
-      const response = isEdit && initialData?._id 
+      const response = isEdit && initialData?._id
         ? await startupsApi.update(initialData._id, submissionData)
         : await startupsApi.create(submissionData);
 
@@ -288,9 +288,9 @@ export function StartupCreationForm({ onSuccess, isEdit = false, initialData }: 
             <div className="border-2 border-dashed border-border rounded-lg p-4">
               {profilePicUrl ? (
                 <div className="flex items-center gap-4">
-                  <img 
-                    src={profilePicUrl} 
-                    alt="Profile preview" 
+                  <img
+                    src={profilePicUrl}
+                    alt="Profile preview"
                     className="w-16 h-16 rounded-lg object-cover"
                   />
                   <div className="flex-1">

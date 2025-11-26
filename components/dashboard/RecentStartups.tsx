@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Building2, Plus, Edit, Eye, MoreHorizontal, Users, Loader2 } from "lucide-react";
 import { startupsApi } from '@/lib/api/startups';
-import type { Startup } from '@/types/api';
+import type { Startup } from '@/lib/types/api';
 
 export function RecentStartups() {
   const [startups, setStartups] = useState<Startup[]>([]);
@@ -18,7 +18,7 @@ export function RecentStartups() {
 
         const founderId = "673615f87cdf80bbbb5d7cd7";
         const response = await startupsApi.getByFounder(founderId, { limit: 3 });
-        
+
         if (response.success && response.data) {
           setStartups(response.data);
         } else {
@@ -93,8 +93,8 @@ export function RecentStartups() {
               <div className="flex items-start space-x-4 flex-1">
                 <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-lg">
                   {startup.profilePic ? (
-                    <img 
-                      src={startup.profilePic} 
+                    <img
+                      src={startup.profilePic}
                       alt={startup.title}
                       className="w-10 h-10 rounded-lg object-cover"
                     />
@@ -102,7 +102,7 @@ export function RecentStartups() {
                     <Building2 className="h-5 w-5 text-primary" />
                   )}
                 </div>
-                
+
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center space-x-2 mb-1">
                     <h3 className="font-medium text-card-foreground truncate">{startup.title}</h3>

@@ -5,10 +5,9 @@ import type {
   StartupFilters,
   StartupListResponse,
   StartupResponse,
-} from '@/types/api';
+} from "@/lib/types/api";
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '/api';
-
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "/api";
 
 const fetchAPI = async <T>(
   url: string,
@@ -16,14 +15,16 @@ const fetchAPI = async <T>(
 ): Promise<T> => {
   const response = await fetch(url, {
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...options.headers,
     },
     ...options,
   });
 
   if (!response.ok) {
-    const errorData = (await response.json().catch(() => ({}))) as ApiResponse<null>;
+    const errorData = (await response
+      .json()
+      .catch(() => ({}))) as ApiResponse<null>;
     throw new Error(errorData.message || `HTTP ${response.status}`);
   }
 
@@ -39,7 +40,7 @@ const buildQueryParams = <T extends Record<string, any>>(
   const params = new URLSearchParams();
 
   Object.entries(filters).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== '') {
+    if (value !== undefined && value !== null && value !== "") {
       params.set(key, String(value));
     }
   });
@@ -50,10 +51,7 @@ const buildQueryParams = <T extends Record<string, any>>(
 /**
  * Construct URL with query params
  */
-const buildUrl = (
-  baseUrl: string,
-  filters?: Record<string, any>
-): string => {
+const buildUrl = (baseUrl: string, filters?: Record<string, any>): string => {
   if (!filters || Object.keys(filters).length === 0) {
     return baseUrl;
   }
@@ -61,12 +59,13 @@ const buildUrl = (
   return query ? `${baseUrl}?${query}` : baseUrl;
 };
 
-
 export const startupsApi = {
   /**
    * Get all startups with optional filters and pagination
    */
-  getAll: async (filters: StartupFilters = {}): Promise<StartupListResponse> => {
+  getAll: async (
+    filters: StartupFilters = {}
+  ): Promise<StartupListResponse> => {
     const url = buildUrl(`${API_BASE_URL}/startups`, filters);
     return fetchAPI<StartupListResponse>(url);
   },
@@ -83,9 +82,12 @@ export const startupsApi = {
    */
   getByFounder: async (
     founderId: string,
-    filters: Pick<StartupFilters, 'page' | 'limit'> = {}
+    filters: Pick<StartupFilters, "page" | "limit"> = {}
   ): Promise<StartupListResponse> => {
-    const url = buildUrl(`${API_BASE_URL}/startups/founder/${founderId}`, filters);
+    const url = buildUrl(
+      `${API_BASE_URL}/startups/founder/${founderId}`,
+      filters
+    );
     return fetchAPI<StartupListResponse>(url);
   },
 
@@ -94,7 +96,7 @@ export const startupsApi = {
    */
   create: async (data: CreateStartupData): Promise<StartupResponse> => {
     return fetchAPI<StartupResponse>(`${API_BASE_URL}/startups`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(data),
     });
   },
@@ -107,7 +109,7 @@ export const startupsApi = {
     data: Partial<CreateStartupData>
   ): Promise<StartupResponse> => {
     return fetchAPI<StartupResponse>(`${API_BASE_URL}/startups/${id}`, {
-      method: 'PUT',
+      method: "PUT",
       body: JSON.stringify(data),
     });
   },
@@ -116,8 +118,11 @@ export const startupsApi = {
    * Delete startup by ID
    */
   delete: async (id: string): Promise<ApiResponse<{ id: string }>> => {
-    return fetchAPI<ApiResponse<{ id: string }>>(`${API_BASE_URL}/startups/${id}`, {
-      method: 'DELETE',
-    });
+    return fetchAPI<ApiResponse<{ id: string }>>(
+      `${API_BASE_URL}/startups/${id}`,
+      {
+        method: "DELETE",
+      }
+    );
   },
 };

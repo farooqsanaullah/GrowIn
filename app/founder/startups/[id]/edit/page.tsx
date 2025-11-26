@@ -7,7 +7,7 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { startupsApi } from '@/lib/api/startups';
-import type { Startup } from '@/types/api';
+import type { Startup } from '@/lib/types/api';
 
 export default function EditStartupPage() {
   const params = useParams();
@@ -21,7 +21,7 @@ export default function EditStartupPage() {
       try {
         setLoading(true);
         const response = await startupsApi.getById(startupId);
-        
+
         if (response.success && response.data) {
           setStartup(response.data);
         } else {
@@ -100,7 +100,7 @@ export default function EditStartupPage() {
       </div>
 
       {/* Form */}
-      <StartupCreationForm 
+      <StartupCreationForm
         isEdit={true}
         initialData={startup}
       />
