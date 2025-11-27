@@ -1,55 +1,59 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import { Briefcase, TrendingUp, DollarSign, Target, BarChart3 } from "lucide-react";
 import { StatsCard } from "./StatsCard";
 
 interface InvestorStatsData {
-  totalInvestments: number;
-  portfolioValue: number;
-  activeInvestments: number;
-  avgReturn: number;
-  totalStartups: number;
+  totalInvested: number;
+  totalCurrentValue: number;
+  totalROI: number;
+  portfolioCount: number;
+  avgInvestment: number;
 }
 
 export function InvestorStats() {
+  const { data: session } = useSession();
   const [stats, setStats] = useState<InvestorStatsData>({
-    totalInvestments: 0,
-    portfolioValue: 0,
-    activeInvestments: 0,
-    avgReturn: 0,
-    totalStartups: 0,
+    totalInvested: 0,
+    totalCurrentValue: 0,
+    totalROI: 0,
+    portfolioCount: 0,
+    avgInvestment: 0,
   });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchInvestorStats = async () => {
+      if (!session?.user?.id) {
+        setLoading(false);
+        return;
+      }
+
       try {
-
-        const mockInvestorId = "INV001";
+        const response = await fetch(`/api/investor/dashboard?userId=${session.user.id}`);
+        if (!response.ok) throw new Error('Failed to fetch stats');
         
-
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-
-        const mockStats = {
-          totalInvestments: 125000, 
-          portfolioValue: 142000,
-          activeInvestments: 8,
-          avgReturn: 13.6, 
-          totalStartups: 12, 
-        };
-
-        setStats(mockStats);
+        const data = await response.json();
+        setStats(data.stats);
       } catch (error) {
         console.error('Error fetching investor stats:', error);
+        // Fallback to empty stats
+        setStats({
+          totalInvested: 0,
+          totalCurrentValue: 0,
+          totalROI: 0,
+          portfolioCount: 0,
+          avgInvestment: 0,
+        });
       } finally {
         setLoading(false);
       }
     };
 
     fetchInvestorStats();
-  }, []);
+  }, [session]);
 
   if (loading) {
     return (
@@ -65,47 +69,92 @@ export function InvestorStats() {
     );
   }
 
-  const returnPercentage = ((stats.portfolioValue - stats.totalInvestments) / stats.totalInvestments) * 100;
+  // Show empty state if no investments
+  if (stats.portfolioCount === 0) {
+    return (
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
+        <StatsCard
+          title="Portfolio Value"
+          value="$0"
+          change="No investments yet"
+          changeType="neutral"
+          icon={<DollarSign className="h-6 w-6 text-muted-foreground" />}
+        />
+        
+        <StatsCard
+          title="Total Invested"
+          value="$0"
+          change="Start your journey"
+          changeType="neutral"
+          icon={<Briefcase className="h-6 w-6 text-muted-foreground" />}
+        />
+        
+        <StatsCard
+          title="Active Investments"
+          value="0"
+          change="Discover startups"
+          changeType="neutral"
+          icon={<Target className="h-6 w-6 text-muted-foreground" />}
+        />
+        
+        <StatsCard
+          title="ROI"
+          value="0.0%"
+          change="Track performance"
+          changeType="neutral"
+          icon={<TrendingUp className="h-6 w-6 text-muted-foreground" />}
+        />
+
+        <StatsCard
+          title="Avg Investment"
+          value="$0"
+          change="Plan your strategy"
+          changeType="neutral"
+          icon={<BarChart3 className="h-6 w-6 text-muted-foreground" />}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
       <StatsCard
         title="Portfolio Value"
-        value={`$${stats.portfolioValue.toLocaleString()}`}
-        change={`+$${(stats.portfolioValue - stats.totalInvestments).toLocaleString()} (${returnPercentage.toFixed(1)}%)`}
-        changeType={returnPercentage > 0 ? "positive" : returnPercentage < 0 ? "negative" : "neutral"}
+        value={`$${stats.totalCurrentValue.toLocaleString()}`}
+        change={`+$${(stats.totalCurrentValue - stats.totalInvested).toLocaleString()} (${stats.totalROI.toFixed(1)}%)`}
+        changeType={stats.totalROI > 0 ? "positive" : stats.totalROI < 0 ? "negative" : "neutral"}
         icon={<DollarSign className="h-6 w-6 text-primary" />}
       />
       
       <StatsCard
         title="Total Invested"
-        value={`$${stats.totalInvestments.toLocaleString()}`}
-        change={`Across ${stats.totalStartups} startups`}
+        value={`$${stats.totalInvested.toLocaleString()}`}
+        change={`Across ${stats.portfolioCount} startups`}
         changeType="neutral"
         icon={<Briefcase className="h-6 w-6 text-primary" />}
       />
       
       <StatsCard
         title="Active Investments"
-        value={stats.activeInvestments.toString()}
-        change={`${Math.round((stats.activeInvestments / stats.totalStartups) * 100)}% of portfolio`}
-        changeType={stats.activeInvestments > 0 ? "positive" : "neutral"}
+        value={stats.portfolioCount.toString()}
+        change={stats.portfolioCount > 0 ? "Portfolio active" : "Start investing"}
+        changeType={stats.portfolioCount > 0 ? "positive" : "neutral"}
         icon={<Target className="h-6 w-6 text-primary" />}
       />
       
       <StatsCard
-        title="Avg Return"
-        value={`${stats.avgReturn.toFixed(1)}%`}
-        change={stats.avgReturn >= 15 ? "Excellent!" : stats.avgReturn >= 10 ? "Good performance" : "Room for improvement"}
-        changeType={stats.avgReturn >= 15 ? "positive" : stats.avgReturn >= 10 ? "neutral" : "negative"}
+        title="ROI"
+        value={`${stats.totalROI.toFixed(1)}%`}
+        change={stats.totalROI >= 15 ? "Excellent!" : stats.totalROI >= 10 ? "Good performance" : stats.totalROI >= 0 ? "Positive returns" : "Room for improvement"}
+        changeType={stats.totalROI >= 15 ? "positive" : stats.totalROI >= 0 ? "neutral" : "negative"}
         icon={<TrendingUp className="h-6 w-6 text-primary" />}
       />
       
       <StatsCard
-        title="Portfolio Diversity"
-        value={stats.totalStartups.toString()}
-        change={stats.totalStartups >= 10 ? "Well diversified" : "Consider diversifying"}
-        changeType={stats.totalStartups >= 10 ? "positive" : stats.totalStartups >= 5 ? "neutral" : "negative"}
+        title="Avg Investment"
+        value={`$${stats.avgInvestment.toLocaleString()}`}
+        change={stats.portfolioCount >= 10 ? "Well diversified" : stats.portfolioCount >= 5 ? "Good spread" : "Consider diversifying"}
+        changeType={stats.portfolioCount >= 10 ? "positive" : stats.portfolioCount >= 5 ? "neutral" : "negative"}
         icon={<BarChart3 className="h-6 w-6 text-primary" />}
       />
     </div>
