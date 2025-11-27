@@ -23,7 +23,7 @@ export function SkillsInput({ skills, setSkills }: SkillsInputProps) {
 
   return (
     <div className="relative w-full">
-      <div className="flex flex-wrap items-center gap-2 w-full border border-input rounded-md p-2 peer">
+      <div className="peer flex flex-wrap items-center gap-2 w-full border border-input rounded-md p-2">
         {skills.map((skill) => (
           <span
             key={skill}
@@ -45,7 +45,7 @@ export function SkillsInput({ skills, setSkills }: SkillsInputProps) {
           onChange={(e) => setSkillInput(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={skills.length > 0 ? "" : "Type and press enter"}
-          className="flex-1 min-w-[120px] border-none outline-none p-1 text-sm focus:ring-0"
+          className="flex-1 min-w-[120px] border-none outline-none p-1 text-sm focus:ring-0 placeholder-gray-500"
         />
       </div>
       <FloatingLabel

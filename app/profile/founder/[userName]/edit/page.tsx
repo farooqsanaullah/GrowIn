@@ -205,7 +205,7 @@ export default function EditProfilePage() {
           <Skeleton className="w-[90px] h-[90px] rounded-full" />
         )}
 
-        <Button className="cursor-pointer" variant="outline">
+        <Button className="cursor-pointer" variant="secondary">
           Change Photo
         </Button>
       </div>
@@ -220,7 +220,7 @@ export default function EditProfilePage() {
             label="Username"
             value={basicInfo.userName}
             onChange={(e) => setBasicInfo({ ...basicInfo, userName: e.target.value })}
-          />
+            />
 
           <FloatingLabelInput
             id="fullName"
@@ -299,6 +299,7 @@ export default function EditProfilePage() {
         {currentExperience && (
           <div className="space-y-4">
 
+            {/* Designation */}
             <FloatingLabelInput
               id={"designation"}
               label="Designation"
@@ -310,6 +311,7 @@ export default function EditProfilePage() {
               }}
             />
 
+            {/* Duration */}
             <div className="space-y-2 relative z-[9999]">
               <Datepicker
                 value={{ startDate: currentExperience.startDate, endDate: currentExperience.endDate }}
@@ -326,12 +328,13 @@ export default function EditProfilePage() {
               />
               <FloatingLabel
                 htmlFor="experiences"
-                className="absolute left-2 top-2 text-gray-500 text-sm pointer-events-none"
+                className="bg-background absolute left-2 top-2 text-gray-500 text-sm pointer-events-none"
               >
                 Experience Duration
               </FloatingLabel>
             </div>
 
+            {/* Company Name */}
             <FloatingLabelInput
               id={"company"}
               label="Company Name"
@@ -343,6 +346,7 @@ export default function EditProfilePage() {
               }}
             />
 
+            {/* Experience Description */}
             <FloatingLabelInput
               id={"desc"}
               label="Experience Description"
@@ -368,6 +372,7 @@ export default function EditProfilePage() {
           </Button>
         </div>
 
+        {/* Skills */}
         <SkillsInput
           skills={founder.skills}
           setSkills={(val) => setFounder({ ...founder, skills: val })}
@@ -383,10 +388,7 @@ export default function EditProfilePage() {
           className="w-full md:w-auto cursor-pointer"
         >
           {isUpdating ? (
-            <>
-              Saving
-              <Loader className="animate-spin ml-2" />
-            </>
+            <>Saving<Loader className="animate-spin ml-2" /></>
           ) : (
             "Save Changes"
           )}
