@@ -5,6 +5,8 @@ import { useSession } from "next-auth/react";
 import { Star } from "lucide-react";
 import { Startup } from "@/lib/types/startup";
 import { useHorizontalScroll } from "@/hooks/useHorizontalScroll";
+import Header from "../landingpage/Header";
+import Footer from "../landingpage/Footer";
 
 interface Props {
   startup: Startup;
@@ -152,7 +154,9 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
   const profilePic = startup.profilePic || "/fallback-image.png";
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:mx-20 lg:p-8 flex flex-col lg:flex-row gap-6">
+    <div>
+    <div className="bg-gray-50 p-4 md:mx-20 lg:p-8 flex flex-col lg:flex-row gap-6 mt-20">
+      <Header />
       <div className="flex-1 space-y-6 overflow-y-auto">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
@@ -212,6 +216,7 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
         )}
 
         {startup.pitch?.length > 0 && (
+
           <div ref={pitchRef} className="bg-white rounded-2xl p-6 shadow-md relative scrollbar-hide">
             <h2 className="text-2xl font-bold mb-4">Pitch Deck</h2>
             <div className="relative">
@@ -349,6 +354,8 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
 
         </div>
       </div>
+    </div>
+    <Footer />
     </div>
   );
 };
