@@ -27,17 +27,14 @@ const Header = () => {
 
   const navItems = [
     { name: "Home", href: "/" },
-    { name: "Startups", href: "/startups" },
-    { name: "Investors", href: "/investors" },
-    { name: "Competitions", href: "/competitions" },
+    { name: "Explore Startups", href: "/explore" },
     { name: "About", href: "/about" },
   ];
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? "backdrop-blur-md shadow-lg" : "bg-transparent"
-      }`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? "backdrop-blur-md shadow-lg" : "bg-transparent"
+        }`}
       style={{
         backgroundColor: isScrolled ? colors.bgPrimary + "E6" : "transparent",
         borderBottom: isScrolled ? `1px solid ${colors.textMuted}30` : "none",
@@ -64,7 +61,7 @@ const Header = () => {
                 onMouseLeave={(e) => {
                   e.currentTarget.style.color = colors.textSecondary;
                 }}
-               >
+              >
                 {item.name}
                 <span
                   className="absolute -bottom-1 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full"
@@ -93,7 +90,10 @@ const Header = () => {
                 e.currentTarget.style.boxShadow = "none";
               }}
             >
-              Sign In
+
+              <Link href="/signin" className="" >
+                Sign In
+              </Link>
             </button>
             <button
               className="px-4 py-2 lg:px-6 lg:py-3 text-sm lg:text-base font-semibold text-white rounded-lg transition-all duration-300 hover:scale-105 shadow-lg"
@@ -112,7 +112,12 @@ const Header = () => {
                   "0 5px 15px rgba(22, 38, 61, 0.25)";
               }}
             >
-              Get Started
+              <Link href="/explore" className="" >
+                Get Started
+              </Link>
+
+
+
             </button>
           </div>
 
@@ -162,9 +167,8 @@ const Header = () => {
 
         {/* Mobile Menu */}
         <div
-          className={`md:hidden transition-all duration-300 overflow-hidden ${
-            isMobileMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-          }`}
+          className={`md:hidden transition-all duration-300 overflow-hidden ${isMobileMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+            }`}
         >
           <div
             className="py-4 space-y-4 border-t"
