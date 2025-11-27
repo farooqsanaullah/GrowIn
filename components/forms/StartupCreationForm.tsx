@@ -225,12 +225,12 @@ export function StartupCreationForm({ onSuccess, isEdit = false, initialData }: 
                 value={watch('status')}
                 onValueChange={(value) => setValue('status', value as any)}
               >
-                <SelectTrigger>
+                <SelectTrigger className='cursor-pointer'>
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
                   {STATUS_OPTIONS.map((status) => (
-                    <SelectItem key={status.value} value={status.value}>
+                    <SelectItem key={status.value} value={status.value} className='cursor-pointer'>
                       {status.label}
                     </SelectItem>
                   ))}
@@ -255,7 +255,7 @@ export function StartupCreationForm({ onSuccess, isEdit = false, initialData }: 
 
           <div className="space-y-2">
             <Label htmlFor="profilePic">Profile Picture</Label>
-            <div className="border-2 border-dashed border-border rounded-lg p-4">
+            <div className="border-2 border-dashed border-border rounded-lg p-4 cursor-pointer">
               {profilePicUrl ? (
                 <div className="flex items-center gap-4">
                   <img
@@ -519,6 +519,7 @@ export function StartupCreationForm({ onSuccess, isEdit = false, initialData }: 
               variant="outline"
               size="sm"
               onClick={() => setEquityRanges([...equityRanges, { range: '', equity: 0 }])}
+              className='cursor-pointer'
             >
               <Plus className="h-4 w-4 mr-2" />
               Add Equity Range
