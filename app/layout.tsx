@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
+import { SessionWrapper } from "@/components/providers/SessionWrapper";
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -23,8 +24,10 @@ export default function RootLayout({
       <body
         className={` ${montserrat.variable} antialiased`}
       >
-        <Toaster position="top-right" />
-        {children}
+        <SessionWrapper>
+          <Toaster position="top-right" />
+          {children}
+        </SessionWrapper>
       </body>
     </html>
   );
