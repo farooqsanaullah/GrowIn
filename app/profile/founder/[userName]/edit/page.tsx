@@ -322,7 +322,7 @@ export default function EditProfilePage() {
                 displayFormat="MM/DD/YYYY"
                 separator="-"
                 startFrom={currentExperience.startDate}
-                inputClassName="peer w-full border rounded-md p-2 placeholder-transparent"
+                inputClassName="peer w-full rounded-md border border-input h-9 text-sm cursor-pointer"
               />
               <FloatingLabel
                 htmlFor="experiences"

@@ -12,21 +12,17 @@ interface Props {
 }
 
 const FloatingRegionInput: React.FC<Props> = ({ label, country, value, onChange }) => {
-  const [focused, setFocused] = React.useState(false);
-
   return (
     <div className="relative">
       <RegionDropdown
         country={country}
         value={value}
         onChange={onChange}
-        className="w-full rounded-md peer cursor-pointer"
-        onFocus={() => setFocused(true)}
-        // onBlur={() => setFocused(false)}
+        className="w-full rounded-md peer border border-input h-9 text-sm cursor-pointer"
       />
       <FloatingLabel
-        htmlFor=""
-        className={`${focused || value ? "peer-focus:top-2" : ""}`}
+        htmlFor="city"
+        className={`absolute left-2 top-2 text-gray-500 text-sm pointer-events-none`}
       >
         {label}
       </FloatingLabel>
