@@ -68,35 +68,25 @@ export const startupFormSchema = z.object({
 
 export type StartupFormData = z.infer<typeof startupFormSchema>;
 
-// Industry options
+
 export const INDUSTRY_OPTIONS = [
   "Technology",
   "Healthcare",
-  "Finance",
-  "E-commerce",
   "Education",
-  "Real Estate",
-  "Transportation",
-  "Food & Beverage",
-  "Energy",
-  "Entertainment",
-  "Agriculture",
-  "Manufacturing",
+  "Finance",
   "Retail",
-  "Consulting",
-  "Other",
+  "Food & Beverage",
+  "Sustainability",
+  "Manufacturing",
+  "Mobility",
+  "Real Estate",
+  "Media"
 ];
 
+
 // Category type options
-export const CATEGORY_TYPE_OPTIONS = [
-  "B2B",
-  "B2C",
-  "B2B2C",
-  "Marketplace",
-  "SaaS",
-  "Hardware",
-  "Service",
-];
+export const CATEGORY_TYPE_OPTIONS = ["B2B", "B2C", "C2B", "C2C"];
+
 
 // Status options
 export const STATUS_OPTIONS = [
