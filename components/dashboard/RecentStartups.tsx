@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Building2, Plus, Edit, Eye, MoreHorizontal, Users, Loader2 } from "lucide-react";
-import { startupsApi } from '@/lib/api/startups';
+import { startupsApi } from '@/lib/helpers/api/startups';
 import type { Startup } from '@/lib/types/api';
 
 export function RecentStartups() {

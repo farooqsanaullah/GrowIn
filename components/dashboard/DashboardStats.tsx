@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import { Building2, Users, Eye, TrendingUp, Target } from "lucide-react";
 import { StatsCard } from "./StatsCard";
-import { startupsApi } from "@/lib/api/startups";
-import type { Startup } from "@/lib/types/api";
+import { startupsApi } from "@/lib/helpers/api/startups";
 
 interface DashboardStatsData {
   totalStartups: number;

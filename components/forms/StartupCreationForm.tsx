@@ -34,7 +34,7 @@ import {
   CATEGORY_TYPE_OPTIONS,
   STATUS_OPTIONS
 } from '@/lib/validations/startup';
-import { startupsApi } from '@/lib/api/startups';
+import { startupsApi } from '@/lib/helpers/api/startups';
 import type { CreateStartupData, Startup } from '@/lib/types/api';
 
 interface StartupCreationFormProps {
