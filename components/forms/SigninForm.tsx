@@ -79,22 +79,24 @@ export default function SigninForm({ providers }: SigninFormProps) {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background text-foreground">
+    <div className="flex min-h-screen items-center justify-around bg-background text-foreground">
+      
+      {/* Logo */}
+      <div className="flex flex-col justify-start mb-80">
+        <Image
+          src="/logo.png"
+          alt="App Logo"
+          width={200}
+          height={0}
+          className="rounded-md"
+        />
+        <p className="mt-4 text-xl text-muted-foreground pl-4">
+          Welcome back! Sign in to continue your journey with GrowIn.
+        </p>
+      </div>
+      
       <div className="w-full max-w-md rounded-lg border border-border bg-card p-8 shadow-sm">
-        
-        {/* Logo */}
-        <div className="flex justify-center mt-[-10]">
-          <Image
-            src="/logo.png"
-            alt="App Logo"
-            width={125}
-            height={0}
-            className="rounded-md"
-          />
-        </div>
-
-        <h1 className="mb-6 text-center text-3xl font-semibold text-foreground">Sign In</h1>
-
+        <h1 className="mb-6 text-center text-2xl font- text-foreground">Sign In</h1>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           {/* Email */}
           <div>
