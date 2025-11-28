@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { JSX, useState } from "react";
 import { useForm } from "react-hook-form";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -9,6 +9,8 @@ import { toast } from "react-hot-toast";
 import { Eye, EyeClosedIcon, Loader } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { FcGoogle } from "react-icons/fc";
+import { FaGithub } from "react-icons/fa";
 
 type SigninFormValues = {
   email: string;
@@ -20,6 +22,11 @@ type SigninFormProps = {
 };
 
 const isDev = process.env.NODE_ENV === "development";
+
+const providerIcons: { [key: string]: JSX.Element } = {
+  google: <FcGoogle className="mr-2" />,
+  github: <FaGithub className="mr-2" />,
+};
 
 export default function SigninForm({ providers }: SigninFormProps) {
   const router = useRouter();
@@ -182,6 +189,7 @@ export default function SigninForm({ providers }: SigninFormProps) {
                       onClick={() => signIn(prov.id)}
                       className="w-full bg-background text-foreground hover:bg-foreground hover:text-background border-border hover:border-transparent cursor-pointer"
                     >
+                      {providerIcons[prov.id]}
                       Sign in with {prov.name}
                     </Button>
                   ))}
