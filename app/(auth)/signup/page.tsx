@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { toast } from "react-hot-toast";
 import { Eye, EyeClosedIcon, Loader } from "lucide-react";
 import {
   Button,
@@ -96,13 +96,13 @@ export default function SignupPage() {
 
       toast.success("Account created successfully!");
 
-      // Auto-login after signup
       await signIn("credentials", {
         redirect: false,
         email: data.email,
         password: data.password,
       });
 
+      toast.success("Account created successfully.");
       router.push("/signin"); // Redirect to signin after signup
     } catch (error) {
       isDev && console.error("Signup error:", error);

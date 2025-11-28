@@ -52,7 +52,17 @@ export default function SigninForm({ providers }: SigninFormProps) {
       }
 
       toast.success("Login successful");
-      router.push("/"); // redirect after login
+      const session = await fetch("/api/auth/session").then(r => r.json());
+      const role = session?.user?.role;
+
+      if (role === "founder") {
+        router.push("/founder/dashboard");
+      } else if (role === "investor") {
+        router.push("/investor/dashboard");
+      } else {
+        router.push("/");
+      }
+
     } catch (error) {
       isDev && console.error("Login error:", error);
       toast.error("Something went wrong");
@@ -143,10 +153,7 @@ export default function SigninForm({ providers }: SigninFormProps) {
             className="w-full cursor-pointer bg-primary text-md text-primary-foreground hover:bg-primary/90"
           >
             {isLoading ? (
-              <>
-                Signing in
-                <Loader className="animate-spin ml-2" />
-              </>
+              <>Signing in<Loader className="animate-spin ml-2" /></>
             ) : (
               "Sign In"
             )}
