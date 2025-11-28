@@ -4,7 +4,7 @@ import { JSX, useState } from "react";
 import { useForm } from "react-hook-form";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Button, Input, Label, Separator } from "@/components/ui";
+import { Button, FloatingLabelInput, Separator } from "@/components/ui";
 import { toast } from "react-hot-toast";
 import { Eye, EyeClosedIcon, Loader } from "lucide-react";
 import Link from "next/link";
@@ -98,12 +98,9 @@ export default function SigninForm({ providers }: SigninFormProps) {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           {/* Email */}
           <div>
-            <Label htmlFor="email" className="text-foreground text-md">Email</Label>
-            <Input
+            <FloatingLabelInput 
               id="email"
-              type="email"
-              placeholder="email@example.com"
-              className="mt-2 bg-input text-foreground border-border"
+              label="Email"
               {...register("email", { required: "Email is required" })}
             />
             {errors.email && (
@@ -112,29 +109,25 @@ export default function SigninForm({ providers }: SigninFormProps) {
           </div>
 
           {/* Password */}
-          <div>
-            <Label htmlFor="password" className="text-foreground text-md">Password</Label>
-            <div className="relative">
-              <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="••••••••"
-                className="mt-2 bg-input text-foreground border-border pr-10"
-                {...register("password", {
-                })}
-              />
-              {isPassEntered && (
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(prev => !prev)}
-                  className="absolute flex items-center inset-y-6.75 space-y-1 right-2 text-muted-foreground cursor-pointer"
-                >
-                  {showPassword ? <EyeClosedIcon /> : <Eye />}
-                </button>
-              )}
-            </div>
+          <div className="relative">
+            <FloatingLabelInput
+              id="password"
+              label="Password"
+              type={showPassword ? "text" : "password"}
+              placeholder="••••••••"
+              {...register("password", { required: "Password is required" })}
+            />
             {errors.password && (
               <p className="mt-1 text-sm text-destructive">{errors.password.message}</p>
+            )}
+            {isPassEntered && (
+              <button
+                type="button"
+                onClick={() => setShowPassword(prev => !prev)}
+                className="absolute right-2 inset-y-0 flex items-center text-muted-foreground cursor-pointer"
+              >
+                {showPassword ? <EyeClosedIcon /> : <Eye />}
+              </button>
             )}
           </div>
 
