@@ -219,8 +219,8 @@ interface ProfilePortfolio {
 
 interface ProfileData {
   user: ProfileUser;
-  portfolio: ProfilePortfolio[];
-  stats: {
+  portfolioData: ProfilePortfolio[];
+  portfolioStats: {
     stat1: { value: number | string; label: string };
     stat2: { value: number | string; label: string };
     stat3: { value: number | string; label: string };
