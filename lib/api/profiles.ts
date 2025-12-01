@@ -4,7 +4,17 @@ import type {
   ProfileData,
 } from "@/lib/types/api";
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "/api";
+// For server-side rendering, we need the full URL. For client-side, relative URLs work fine.
+const getBaseUrl = () => {
+  // If we have the public API URL (includes domain), use it as is
+  if (process.env.NEXT_PUBLIC_API_BASE_URL) {
+    return process.env.NEXT_PUBLIC_API_BASE_URL;
+  }
+  // Fallback to relative URL for client-side
+  return "";
+};
+
+const API_BASE_URL = getBaseUrl();
 
 const fetchAPI = async <T>(
   url: string,
@@ -32,22 +42,22 @@ export const profilesApi = {
   /**
    * Get profile by username (works for both founders and investors)
    */
-  getByUsername: async (username: string): Promise<ProfileResponse> => {
-    return fetchAPI<ProfileResponse>(`${API_BASE_URL}/profile/${username}`);
+  getByUsername: async (Id: string): Promise<ProfileResponse> => {
+    return fetchAPI<ProfileResponse>(`${API_BASE_URL}/api/profile/${Id}`);
   },
 
   /**
    * Get founder profile by username
    */
-  getFounderByUsername: async (username: string): Promise<ProfileResponse> => {
-    return fetchAPI<ProfileResponse>(`${API_BASE_URL}/profile/founder/${username}`);
+  getFounderByUsername: async (Id: string): Promise<ProfileResponse> => {
+    return fetchAPI<ProfileResponse>(`${API_BASE_URL}/api/profile/${Id}`);
   },
 
   /**
    * Get investor profile by username
    */
-  getInvestorByUsername: async (username: string): Promise<ProfileResponse> => {
-    return fetchAPI<ProfileResponse>(`${API_BASE_URL}/profile/investor/${username}`);
+  getInvestorByUsername: async (Id: string): Promise<ProfileResponse> => {
+    return fetchAPI<ProfileResponse>(`${API_BASE_URL}/api/profile/${Id}`);
   },
 
   /**
@@ -56,7 +66,7 @@ export const profilesApi = {
   updateProfile: async (
     data: Partial<ProfileData["user"]>
   ): Promise<ProfileResponse> => {
-    return fetchAPI<ProfileResponse>(`${API_BASE_URL}/profile/update`, {
+    return fetchAPI<ProfileResponse>(`${API_BASE_URL}/api/profile/update`, {
       method: "PUT",
       body: JSON.stringify(data),
     });
@@ -66,14 +76,14 @@ export const profilesApi = {
    * Get current user's profile
    */
   getCurrentProfile: async (): Promise<ProfileResponse> => {
-    return fetchAPI<ProfileResponse>(`${API_BASE_URL}/profile/me`);
+    return fetchAPI<ProfileResponse>(`${API_BASE_URL}/api/profile/me`);
   },
 
   /**
    * Upload profile image
    */
   uploadProfileImage: async (formData: FormData): Promise<ApiResponse<{ imageUrl: string }>> => {
-    return fetchAPI<ApiResponse<{ imageUrl: string }>>(`${API_BASE_URL}/profile/upload-image`, {
+    return fetchAPI<ApiResponse<{ imageUrl: string }>>(`${API_BASE_URL}/api/profile/upload-image`, {
       method: "POST",
       body: formData,
       headers: {
@@ -89,7 +99,7 @@ export const profilesApi = {
     username: string
   ): Promise<ApiResponse<{ following: boolean }>> => {
     return fetchAPI<ApiResponse<{ following: boolean }>>(
-      `${API_BASE_URL}/profile/${username}/follow`,
+      `${API_BASE_URL}/api/profile/${username}/follow`,
       {
         method: "POST",
       }
@@ -101,7 +111,7 @@ export const profilesApi = {
    */
   getFollowers: async (username: string): Promise<ApiResponse<ProfileData["user"][]>> => {
     return fetchAPI<ApiResponse<ProfileData["user"][]>>(
-      `${API_BASE_URL}/profile/${username}/followers`
+      `${API_BASE_URL}/api/profile/${username}/followers`
     );
   },
 
@@ -110,7 +120,7 @@ export const profilesApi = {
    */
   getFollowing: async (username: string): Promise<ApiResponse<ProfileData["user"][]>> => {
     return fetchAPI<ApiResponse<ProfileData["user"][]>>(
-      `${API_BASE_URL}/profile/${username}/following`
+      `${API_BASE_URL}/api/profile/${username}/following`
     );
   },
 
@@ -133,7 +143,7 @@ export const profilesApi = {
     if (options.limit) params.set("limit", String(options.limit));
 
     const queryString = params.toString();
-    const url = `${API_BASE_URL}/profile/search${queryString ? `?${queryString}` : ""}`;
+    const url = `${API_BASE_URL}/api/profile/search${queryString ? `?${queryString}` : ""}`;
     
     return fetchAPI<ApiResponse<ProfileData["user"][]>>(url);
   },
@@ -146,7 +156,7 @@ export const profilesApi = {
     verified: boolean
   ): Promise<ApiResponse<{ verified: boolean }>> => {
     return fetchAPI<ApiResponse<{ verified: boolean }>>(
-      `${API_BASE_URL}/profile/${username}/verify`,
+      `${API_BASE_URL}/api/profile/${username}/verify`,
       {
         method: "POST",
         body: JSON.stringify({ verified }),
