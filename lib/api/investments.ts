@@ -153,11 +153,12 @@ export const investmentsApi = {
   /**
    * Get portfolio stats for an investor
    */
-  getPortfolioStats: async (investorId?: string): Promise<PortfolioStatsResponse> => {
+  
+  getPortfolioStats: async (investorId?: string, options: RequestInit = {}): Promise<PortfolioStatsResponse> => {
     const url = investorId 
       ? `${API_BASE_URL}/investor/${investorId}/portfolio/stats`
       : `${API_BASE_URL}/investor/portfolio/stats`;
-    return fetchAPI<PortfolioStatsResponse>(url);
+    return fetchAPI<PortfolioStatsResponse>(url, options);
   },
 
   /**
@@ -165,13 +166,14 @@ export const investmentsApi = {
    */
   getPortfolio: async (
     investorId?: string,
-    filters: Pick<InvestmentFilters, "page" | "limit" | "status"> = {}
+    filters: Pick<InvestmentFilters, "page" | "limit" | "status"> = {},
+    options: RequestInit = {}
   ): Promise<InvestmentListResponse> => {
     const baseUrl = investorId 
       ? `${API_BASE_URL}/investor/${investorId}/portfolio`
       : `${API_BASE_URL}/investor/portfolio`;
     const url = buildUrl(baseUrl, filters);
-    return fetchAPI<InvestmentListResponse>(url);
+    return fetchAPI<InvestmentListResponse>(url, options);
   },
 
   /**
