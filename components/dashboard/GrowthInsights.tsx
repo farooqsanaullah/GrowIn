@@ -17,6 +17,7 @@ import {
 } from "recharts";
 import { TrendingUp, Users, Calendar } from "lucide-react";
 import { startupsApi } from "@/lib/api/startups";
+import { useSession } from "next-auth/react";
 
 interface MonthlyData {
   month: string;
@@ -36,6 +37,8 @@ export function GrowthInsights() {
   const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
   const [categoryData, setCategoryData] = useState<CategoryData[]>([]);
   const [loading, setLoading] = useState(true);
+  const { data: session } = useSession();
+  const founderId = session?.user?.id;
 
   const generateMonthlyData = (startups: any[]) => {
     const months = [
@@ -86,10 +89,17 @@ export function GrowthInsights() {
     }));
   };
 
+  
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const founderId = "673615f87cdf80bbbb5d7cd7";
+        if (!founderId) {
+          setLoading(false);
+          return;
+        }
+        
+
         const response = await startupsApi.getByFounder(founderId);
         
         if (response.success && response.data) {
