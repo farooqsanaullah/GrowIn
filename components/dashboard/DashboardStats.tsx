@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { Building2, Users, Eye, TrendingUp, Target } from "lucide-react";
 import { StatsCard } from "./StatsCard";
 import { startupsApi } from "@/lib/helpers/api/startups";
+import { useSession } from "next-auth/react";
+import type { Startup } from "@/lib/types/api";
 
 interface DashboardStatsData {
   totalStartups: number;
@@ -14,6 +16,8 @@ interface DashboardStatsData {
 }
 
 export function DashboardStats() {
+  const { data: session } = useSession();
+  const founderId = session?.user?.id;
   const [stats, setStats] = useState<DashboardStatsData>({
     totalStartups: 0,
     totalFollowers: 0,
@@ -26,7 +30,11 @@ export function DashboardStats() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const founderId = "673615f87cdf80bbbb5d7cd7";
+        if (!founderId) {
+          setLoading(false);
+          return;
+        }
+
         const response = await startupsApi.getByFounder(founderId);
 
 
