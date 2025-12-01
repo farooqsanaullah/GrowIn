@@ -36,3 +36,23 @@ export const handleProfilePicUpload = async (
     onUploadEnd();
   }
 };
+
+export const handleCheckout = async () => {
+  try {
+    const res = await fetch("/api/checkout/create-session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ amount: 5000 }), // $50 → change as needed
+    });
+
+    const data = await res.json();
+
+    if (data.url) {
+      window.location.href = data.url; // redirect to Stripe checkout
+    } else {
+      console.error("No session URL returned.");
+    }
+  } catch (error) {
+    console.error("Checkout error:", error);
+  }
+};
