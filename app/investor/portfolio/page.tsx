@@ -22,9 +22,18 @@ export default function PortfolioPage() {
       setLoading(true);
       setError(null);
 
+      // Check if user is authenticated and has an ID
+      if (!session?.user?.id) {
+        setError("User not authenticated");
+        return;
+      }
+
+      const userId = session.user.id;
+
+      // Pass userId as first parameter to both functions
       const [portfolioResponse, statsResponse] = await Promise.all([
-        investmentsApi.getPortfolio(),
-        investmentsApi.getPortfolioStats(),
+        investmentsApi.getPortfolio(userId),
+        investmentsApi.getPortfolioStats(userId),
       ]);
 
       if (portfolioResponse.success && portfolioResponse.data) {
@@ -42,12 +51,12 @@ export default function PortfolioPage() {
   };
 
   useEffect(() => {
-    if (session?.user) {
+    if (session?.user?.id) {
       fetchPortfolioData();
     } else {
       setLoading(false);
     }
-  }, [session]);
+  }, [session?.user?.id]);
 
   if (!session?.user) {
     return (
