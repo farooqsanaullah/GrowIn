@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useSession } from "next-auth/react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { startupsApi } from "@/lib/helpers/api/startups";
 import type { Startup } from "@/lib/types/api";
@@ -18,9 +19,10 @@ import {
   Loader2
 } from "lucide-react";
 
-const STATIC_FOUNDER_ID = "673615f87cdf80bbbb5d7cd7";
 
 export default function StartupsPage() {
+  const { data: session } = useSession();
+  const founderId = session?.user?.id;
   const [startups, setStartups] = useState<Startup[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,6 +38,12 @@ export default function StartupsPage() {
       setLoading(true);
       setError(null);
 
+      // Check if founderId exists before making the API call
+      if (!founderId) {
+        setError("User not authenticated");
+        return;
+      }
+
       const filters = {
         page: currentPage,
         limit: 10,
@@ -44,7 +52,7 @@ export default function StartupsPage() {
         ...(searchTerm && { search: searchTerm }),
       };
 
-      const response = await startupsApi.getByFounder(STATIC_FOUNDER_ID, {
+      const response = await startupsApi.getByFounder(founderId, {
         page: filters.page,
         limit: filters.limit,
       });
@@ -78,8 +86,10 @@ export default function StartupsPage() {
   };
 
   useEffect(() => {
-    fetchStartups();
-  }, [currentPage, statusFilter, categoryFilter, searchTerm]);
+    if (founderId) {
+      fetchStartups();
+    }
+  }, [currentPage, statusFilter, categoryFilter, searchTerm, founderId]);
 
   const handleDelete = async (startupId: string) => {
     if (window.confirm("Are you sure you want t deloete this startup?")) {
