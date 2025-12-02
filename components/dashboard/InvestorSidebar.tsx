@@ -40,6 +40,11 @@ const investorSidebarItems = [
     icon: TrendingUp,
   },
   {
+    title: "Explore Investors",
+    href: "/explore-investors",
+    icon: PieChart,
+  },
+  {
     title: "Profile",
     href: "/investor/profile",
     icon: User,
