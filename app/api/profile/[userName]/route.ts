@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db/connect";
 import User from "@/lib/models/user.model";
-import { updateUserSchema } from "@/lib/auth/zodValidation/updateUserSchema";
+import { updateUserSchema } from "@/lib/auth/zodSchemas/updateUserSchema.zod";
 
 const isDev = process.env.NODE_ENV === "development";
 

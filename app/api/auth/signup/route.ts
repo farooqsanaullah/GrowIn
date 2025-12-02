@@ -3,7 +3,7 @@ import { connectDB } from "@/lib/db/connect";
 import { hashPassword, getUserByEmail } from "@/lib/helpers/backend";
 import { success, error } from "@/lib/auth/apiResponses";
 import User from "@/lib/models/user.model";
-import { signupSchema } from "@/lib/auth/zodValidation/userSchemas";
+import { signUpSchema } from "@/lib/auth/zodSchemas";
 
 const isDev = process.env.NODE_ENV === "development";
 
@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
 
     // Validating request body with zod
-    const parsed = signupSchema.safeParse(body);
+    const parsed = signUpSchema.safeParse(body);
     if (!parsed.success) {
       return error(parsed.error.issues[0].message, 400);
     }

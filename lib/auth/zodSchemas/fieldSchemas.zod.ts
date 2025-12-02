@@ -1,12 +1,47 @@
+import { z } from "zod";
 import { 
   PASSWORD_MIN_LENGTH, 
-  PASSWORD_SPECIAL_CHAR_REGEX, 
-  PHONE_REGEX 
+  USERNAME_MAX_LENGTH, 
+  USERNAME_MIN_LENGTH,
+  ALLOWED_ROLES,
+  PASSWORD_SPECIAL_CHAR_REGEX,
+  PHONE_REGEX,
 } from "@/lib/constants";
-import { z, ZodError } from "zod";
+
+export const userNameSchema = z
+  .string()
+  .trim()
+  .min(
+    USERNAME_MIN_LENGTH,
+    `Username must be at least ${USERNAME_MIN_LENGTH} characters long.`
+  )
+  .max(
+    USERNAME_MAX_LENGTH,
+    `Username must not exceed ${USERNAME_MAX_LENGTH} characters.`
+  );
+
+export const emailSchema = z
+  .string()
+  .trim()
+  .email("Please enter a valid email address.");
+
+export const passwordSchema = z
+  .string()
+  .min(
+    PASSWORD_MIN_LENGTH,
+    `Password must be at least ${PASSWORD_MIN_LENGTH} characters long.`
+  )
+  .refine((val) => PASSWORD_SPECIAL_CHAR_REGEX.test(val), "Password must contain at least one special character.")
+  .refine((val) => /\d/.test(val), "Password must contain at least one number.");
+
+export const roleSchema = z
+  .enum(ALLOWED_ROLES)
+  .refine((val) => ALLOWED_ROLES.includes(val), {
+    message: `Role must be one of: ${ALLOWED_ROLES.join(", ")}`,
+});
 
 // Social links schema
-const socialLinksSchema = z.object({
+export const socialLinksSchema = z.object({
   twitter: z
     .string()
     .url("Invalid Twitter URL")
@@ -26,18 +61,18 @@ const socialLinksSchema = z.object({
 }).optional();
 
 // Funding range schema
-const fundingRangeSchema = z.object({
+export const fundingRangeSchema = z.object({
   min: z.number().min(0, "Minimum funding must be positive").optional(),
   max: z.number().min(0, "Maximum funding must be positive").optional(),
 }).optional();
 
 // Phone schema using regex for now (matches E.164 or common formats)
-const phoneSchema = z
+export const phoneSchema = z
   .string()
   .regex(PHONE_REGEX, "Invalid phone number")
   .optional();
 
-export const passwordSchema = z
+export const updatePasswordSchema = z
   .string()
   .min(
     PASSWORD_MIN_LENGTH,
@@ -47,7 +82,7 @@ export const passwordSchema = z
   .refine((val) => /\d/.test(val), "Password must contain at least one number.")
   .optional();
 
-const experienceSchema = z.object({
+export const experienceSchema = z.object({
   designation: z.string().min(1),
   company: z.string().min(1),
   experienceDesc: z.string().max(500).optional(),
@@ -56,23 +91,4 @@ const experienceSchema = z.object({
 }).refine(data => data.endDate >= data.startDate, {
   message: "End date must be after start date",
   path: ["endDate"],
-});
-
-// User update schema
-export const updateUserSchema = z.object({
-  userName: z.string().min(3, "Username too short").max(30, "Username too long").optional(),
-  name: z.string().max(50, "Name too long").optional(),
-  email: z.string().email("Invalid email").optional(),
-  phone: phoneSchema,
-  password: passwordSchema,
-  role: z.enum(["investor", "founder"]).optional(),
-  profileImage: z.string().url("Invalid URL").optional(),
-  bio: z.string().max(500, "Bio too long").optional(),
-  socialLinks: socialLinksSchema,
-  city: z.string().optional(),
-  country: z.string().optional(),
-  experiences: z.array(experienceSchema).optional(),
-  skills: z.array(z.string()).optional(),
-  fundingRange: fundingRangeSchema,
-  isVerified: z.boolean().optional(),
 });

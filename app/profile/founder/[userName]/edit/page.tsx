@@ -16,7 +16,7 @@ import Datepicker from "react-tailwindcss-datepicker";
 import "flowbite/dist/flowbite.css";
 import { useParams } from "next/navigation";
 import { Loader } from "lucide-react";
-import { updateUserSchema } from "@/lib/auth/zodValidation/updateUserSchema";
+import { updateUserSchema } from "@/lib/auth/zodSchemas/updateUserSchema.zod";
 import toast from "react-hot-toast";
 import { isExperienceEmpty } from "@/lib/helpers/shared";
 import { useForm, useFieldArray } from "react-hook-form";
