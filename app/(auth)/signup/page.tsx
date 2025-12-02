@@ -116,7 +116,7 @@ export default function SignupPage() {
       {/* Left side with background image */}
       <div
         className="w-1/2 relative bg-cover bg-center"
-        style={{ backgroundImage: "url('/signup-bg-1.jpg')" }}
+        style={{ backgroundImage: "url('/signup-bg.jpg')" }}
       >
         {/* Black overlay with 50% opacity and blur*/}
         <div className="absolute inset-0 bg-black/60"></div>

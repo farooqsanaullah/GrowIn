@@ -96,7 +96,7 @@ export default function SigninForm({ providers }: SigninFormProps) {
       </div>
       
       <div className="w-full max-w-md rounded-lg border border-border bg-card p-8 shadow-sm">
-        <h1 className="mb-6 text-center text-2xl font- text-foreground">Sign In</h1>
+        <h1 className="mb-6 text-center text-2xl text-foreground">Sign In</h1>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           {/* Email */}
           <div>
