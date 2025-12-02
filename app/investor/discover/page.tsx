@@ -18,203 +18,89 @@ import {
   Star,
   Users,
   DollarSign,
-  TrendingUp,
-  MapPin,
-  Calendar,
-  Heart,
-  ExternalLink
+  ExternalLink,
+  Loader2,
+  Building2
 } from "lucide-react";
 import Link from "next/link";
-
-interface DiscoverStartup {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  stage: string;
-  location: string;
-  foundedYear: number;
-  founderName: string;
-  seekingAmount: number;
-  raisedAmount: number;
-  followers: number;
-  rating: number;
-  tags: string[];
-  logo?: string;
-  isBookmarked: boolean;
-}
+import { startupsApi } from "@/lib/helpers/api/startups";
+import type { Startup, StartupFilters } from "@/lib/types/api";
 
 export default function DiscoverPage() {
-  const [startups, setStartups] = useState<DiscoverStartup[]>([]);
+  const [startups, setStartups] = useState<Startup[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterCategory, setFilterCategory] = useState("all");
-  const [filterStage, setFilterStage] = useState("all");
-  const [sortBy, setSortBy] = useState("trending");
+  const [filterCategory, setFilterCategory] = useState<string>("all");
+  const [filterIndustry, setFilterIndustry] = useState<string>("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const fetchStartups = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const filters: StartupFilters = {
+        page: currentPage,
+        limit: 12,
+        ...(filterCategory !== "all" && { categoryType: filterCategory }),
+        ...(filterIndustry !== "all" && { industry: filterIndustry }),
+        ...(searchTerm && { search: searchTerm }),
+        status: "active",
+      };
+
+      const response = await startupsApi.getAll(filters);
+      
+      if (response.success && response.data) {
+        setStartups(response.data);
+        setTotalPages(response.pagination?.totalPages || 1);
+      } else {
+        setStartups([]);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch startups");
+      setStartups([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchStartups = async () => {
-      try {
-
-        const mockStartups: DiscoverStartup[] = [
-          {
-            id: "s1",
-            name: "GreenCharge",
-            description: "Solar-powered charging stations for electric vehicles in urban areas",
-            category: "Clean Energy",
-            stage: "Seed",
-            location: "San Francisco, CA",
-            foundedYear: 2023,
-            founderName: "Emma Davis",
-            seekingAmount: 500000,
-            raisedAmount: 150000,
-            followers: 1250,
-            rating: 4.8,
-            tags: ["Sustainable", "EV", "Urban Tech"],
-            isBookmarked: false,
-          },
-          {
-            id: "s2",
-            name: "MindfulAI",
-            description: "AI-powered mental health support platform with personalized therapy sessions",
-            category: "Healthcare",
-            stage: "Pre-Seed",
-            location: "Austin, TX",
-            foundedYear: 2024,
-            founderName: "Dr. Ryan Kim",
-            seekingAmount: 250000,
-            raisedAmount: 75000,
-            followers: 890,
-            rating: 4.6,
-            tags: ["Mental Health", "AI", "Therapy"],
-            isBookmarked: true,
-          },
-          {
-            id: "s3",
-            name: "CropOptimizer",
-            description: "Machine learning platform for optimizing crop yields using satellite data",
-            category: "AgTech",
-            stage: "Series A",
-            location: "Denver, CO",
-            foundedYear: 2022,
-            founderName: "Carlos Rodriguez",
-            seekingAmount: 2000000,
-            raisedAmount: 800000,
-            followers: 2100,
-            rating: 4.9,
-            tags: ["ML", "Agriculture", "Satellite"],
-            isBookmarked: false,
-          },
-          {
-            id: "s4",
-            name: "EduMetaverse",
-            description: "Virtual reality platform for immersive educational experiences",
-            category: "EdTech",
-            stage: "Seed",
-            location: "Seattle, WA",
-            foundedYear: 2023,
-            founderName: "Sarah Williams",
-            seekingAmount: 750000,
-            raisedAmount: 300000,
-            followers: 1650,
-            rating: 4.7,
-            tags: ["VR", "Education", "Immersive"],
-            isBookmarked: true,
-          },
-          {
-            id: "s5",
-            name: "WaterSense",
-            description: "IoT sensors for real-time water quality monitoring in residential buildings",
-            category: "PropTech",
-            stage: "Pre-Seed",
-            location: "Miami, FL",
-            foundedYear: 2024,
-            founderName: "Miguel Santos",
-            seekingAmount: 300000,
-            raisedAmount: 50000,
-            followers: 420,
-            rating: 4.4,
-            tags: ["IoT", "Water", "Sensors"],
-            isBookmarked: false,
-          },
-          {
-            id: "s6",
-            name: "RetailBot",
-            description: "AI-powered customer service automation for e-commerce platforms",
-            category: "E-commerce",
-            stage: "Seed",
-            location: "New York, NY",
-            foundedYear: 2023,
-            founderName: "Lisa Chen",
-            seekingAmount: 600000,
-            raisedAmount: 200000,
-            followers: 980,
-            rating: 4.5,
-            tags: ["AI", "Customer Service", "Automation"],
-            isBookmarked: false,
-          }
-        ];
-
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setStartups(mockStartups);
-      } catch (error) {
-        console.error('Error fetching startups:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchStartups();
-  }, []);
-
-  const categories = [...new Set(startups.map(startup => startup.category))];
-  const stages = [...new Set(startups.map(startup => startup.stage))];
-
-  const filteredStartups = startups.filter(startup => {
-    const matchesSearch = startup.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         startup.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         startup.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesCategory = filterCategory === "all" || startup.category === filterCategory;
-    const matchesStage = filterStage === "all" || startup.stage === filterStage;
-    return matchesSearch && matchesCategory && matchesStage;
-  });
-
-  const sortedStartups = [...filteredStartups].sort((a, b) => {
-    switch (sortBy) {
-      case "trending":
-        return b.followers - a.followers;
-      case "rating":
-        return b.rating - a.rating;
-      case "recent":
-        return b.foundedYear - a.foundedYear;
-      case "funding":
-        return (b.seekingAmount - b.raisedAmount) - (a.seekingAmount - a.raisedAmount);
-      default:
-        return 0;
-    }
-  });
-
-  const toggleBookmark = (startupId: string) => {
-    setStartups(prev => prev.map(startup => 
-      startup.id === startupId 
-        ? { ...startup, isBookmarked: !startup.isBookmarked }
-        : startup
-    ));
-  };
+  }, [searchTerm, filterCategory, filterIndustry, currentPage]);
 
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="h-8 bg-muted rounded w-1/4"></div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="bg-card rounded-lg border border-border p-6 shadow-sm animate-pulse">
-              <div className="h-6 bg-muted rounded w-3/4 mb-4"></div>
-              <div className="h-4 bg-muted rounded w-full mb-2"></div>
-              <div className="h-4 bg-muted rounded w-2/3 mb-4"></div>
-              <div className="h-10 bg-muted rounded w-full"></div>
-            </div>
-          ))}
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground mb-2">Discover Startups</h1>
+            <p className="text-muted-foreground">Find and invest in promising startups</p>
+          </div>
+        </div>
+        <div className="text-center py-16">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Finding amazing startups for you...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground mb-2">Discover Startups</h1>
+            <p className="text-muted-foreground">Find and invest in promising startups</p>
+          </div>
+        </div>
+        <div className="text-center py-16">
+          <Building2 className="h-16 w-16 mx-auto mb-6 text-destructive" />
+          <h2 className="text-2xl font-bold mb-4">Error loading startups</h2>
+          <p className="text-muted-foreground mb-6">{error}</p>
+          <Button onClick={fetchStartups}>Try Again</Button>
         </div>
       </div>
     );
@@ -224,163 +110,157 @@ export default function DiscoverPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-foreground mb-2">Discover Startups</h1>
-        <p className="text-muted-foreground">
-          Find promising startups to add to your investment portfolio.
-        </p>
+        <p className="text-muted-foreground">Find promising startups to add to your investment portfolio.</p>
       </div>
 
-      {/* Filters and Search */}
       <div className="flex flex-col lg:flex-row gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search startups, categories, or tags..."
+            placeholder="Search startups..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
           />
         </div>
         
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex gap-4">
           <Select value={filterCategory} onValueChange={setFilterCategory}>
-            <SelectTrigger className="w-full sm:w-48">
+            <SelectTrigger className="w-48">
               <Filter className="h-4 w-4 mr-2" />
               <SelectValue placeholder="Category" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Categories</SelectItem>
-              {categories.map(category => (
-                <SelectItem key={category} value={category}>{category}</SelectItem>
-              ))}
+              <SelectItem value="B2B">B2B</SelectItem>
+              <SelectItem value="B2C">B2C</SelectItem>
             </SelectContent>
           </Select>
 
-          <Select value={filterStage} onValueChange={setFilterStage}>
-            <SelectTrigger className="w-full sm:w-40">
-              <SelectValue placeholder="Stage" />
+          <Select value={filterIndustry} onValueChange={setFilterIndustry}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Industry" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Stages</SelectItem>
-              {stages.map(stage => (
-                <SelectItem key={stage} value={stage}>{stage}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-full sm:w-40">
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="trending">Trending</SelectItem>
-              <SelectItem value="rating">Rating</SelectItem>
-              <SelectItem value="recent">Recently Added</SelectItem>
-              <SelectItem value="funding">Funding Need</SelectItem>
+              <SelectItem value="all">All Industries</SelectItem>
+              <SelectItem value="Technology">Technology</SelectItem>
+              <SelectItem value="Healthcare">Healthcare</SelectItem>
+              <SelectItem value="Finance">Finance</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
 
-      {/* Startup Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {sortedStartups.map((startup) => {
-          const fundingProgress = (startup.raisedAmount / startup.seekingAmount) * 100;
-          
-          return (
-            <Card key={startup.id} className="p-6 hover:shadow-lg transition-shadow">
-              <div className="space-y-4">
-                <div className="flex items-start justify-between">
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <h3 className="text-lg font-semibold text-foreground">{startup.name}</h3>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => toggleBookmark(startup.id)}
-                        className="h-6 w-6"
-                      >
-                        <Heart className={`h-4 w-4 ${startup.isBookmarked ? 'fill-red-500 text-red-500' : 'text-muted-foreground'}`} />
-                      </Button>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Badge variant="outline" className="text-xs">
-                        {startup.stage}
-                      </Badge>
-                      <Badge variant="secondary" className="text-xs">
-                        {startup.category}
-                      </Badge>
-                    </div>
+        {startups.map((startup) => (
+          <Card key={startup._id} className="p-6 hover:shadow-lg transition-shadow">
+            <div className="space-y-4">
+              <div className="flex items-start justify-between">
+                <div className="space-y-2 flex-1">
+                  <div className="flex items-center space-x-2">
+                    {startup.profilePic ? (
+                      <img
+                        src={startup.profilePic}
+                        alt={startup.title}
+                        className="w-8 h-8 rounded-lg object-cover"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                        <Building2 className="h-4 w-4 text-primary" />
+                      </div>
+                    )}
+                    <h3 className="text-lg font-semibold text-foreground line-clamp-1">{startup.title}</h3>
                   </div>
-                  <Link href={`/startup/${startup.id}`}>
-                    <Button variant="ghost" size="icon">
-                      <ExternalLink className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                </div>
-
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                  {startup.description}
-                </p>
-
-                <div className="flex flex-wrap gap-1">
-                  {startup.tags.slice(0, 3).map(tag => (
-                    <Badge key={tag} variant="outline" className="text-xs">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">Funding Progress</span>
-                    <span className="font-medium">
-                      ${startup.raisedAmount.toLocaleString()} / ${startup.seekingAmount.toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="w-full bg-muted rounded-full h-2">
-                    <div 
-                      className="bg-primary h-2 rounded-full transition-all"
-                      style={{ width: `${Math.min(fundingProgress, 100)}%` }}
-                    ></div>
+                  <div className="flex items-center space-x-2">
+                    <Badge variant="outline" className="text-xs">{startup.status}</Badge>
+                    <Badge variant="secondary" className="text-xs">{startup.categoryType}</Badge>
                   </div>
                 </div>
-
-                <div className="flex items-center justify-between text-sm text-muted-foreground">
-                  <div className="flex items-center space-x-1">
-                    <MapPin className="h-3 w-3" />
-                    <span>{startup.location}</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <div className="flex items-center space-x-1">
-                      <Users className="h-3 w-3" />
-                      <span>{startup.followers}</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                      <span>{startup.rating}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t border-border">
-                  <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
-                    <span>Founder: {startup.founderName}</span>
-                    <span>Founded {startup.foundedYear}</span>
-                  </div>
-                  <Button className="w-full" size="sm">
-                    <DollarSign className="h-4 w-4 mr-2" />
-                    Invest Now
+                <Link href={`/startup/${startup._id}`}>
+                  <Button variant="ghost" size="icon">
+                    <ExternalLink className="h-4 w-4" />
                   </Button>
-                </div>
+                </Link>
               </div>
-            </Card>
-          );
-        })}
+
+              <p className="text-sm text-muted-foreground line-clamp-2">{startup.description}</p>
+
+              {startup.badges.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {startup.badges.slice(0, 3).map((badge, index) => (
+                    <Badge key={index} variant="outline" className="text-xs">{badge}</Badge>
+                  ))}
+                  {startup.badges.length > 3 && (
+                    <span className="text-xs text-muted-foreground">+{startup.badges.length - 3} more</span>
+                  )}
+                </div>
+              )}
+
+              <div className="flex items-center justify-between text-sm text-muted-foreground">
+                <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-1">
+                    <Users className="h-3 w-3" />
+                    <span>{startup.followers.length}</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                    <span>{startup.avgRating.toFixed(1)}</span>
+                  </div>
+                </div>
+                <span className="text-xs">Industry: {startup.industry}</span>
+              </div>
+
+              <div className="pt-4 border-t border-border">
+                <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
+                  <span>Founded: {new Date(startup.createdAt).getFullYear()}</span>
+                  <span>{startup.ratingCount} reviews</span>
+                </div>
+                <Button className="w-full" size="sm" asChild>
+                  <Link href={`/startup/${startup._id}`}>
+                    <DollarSign className="h-4 w-4 mr-2" />
+                    View Details
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </Card>
+        ))}
       </div>
 
-      {sortedStartups.length === 0 && (
+      {startups.length === 0 && !loading ? (
         <div className="text-center py-12">
-          <p className="text-muted-foreground">No startups found matching your criteria.</p>
+          <Building2 className="h-16 w-16 mx-auto mb-6 text-muted-foreground" />
+          <h2 className="text-2xl font-bold mb-4">No startups found</h2>
+          <p className="text-muted-foreground">
+            {searchTerm || filterCategory !== "all" || filterIndustry !== "all"
+              ? "Try adjusting your filters or search terms"
+              : "No active startups are available at the moment"}
+          </p>
+        </div>
+      ) : startups.length > 0 && (
+        <div className="flex items-center justify-between pt-6 border-t border-border/50">
+          <p className="text-sm text-muted-foreground">Showing {startups.length} startups</p>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </Button>
+            <span className="text-sm text-muted-foreground px-2">
+              Page {currentPage} of {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages}
+            >
+              Next
+            </Button>
+          </div>
         </div>
       )}
     </div>
