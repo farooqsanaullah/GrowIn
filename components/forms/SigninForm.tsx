@@ -96,7 +96,7 @@ export default function SigninForm({ providers }: SigninFormProps) {
       </div>
       
       <div className="w-full max-w-md rounded-lg border border-border bg-card p-8 shadow-sm">
-        <h1 className="mb-6 text-center text-2xl text-foreground">Sign In</h1>
+        <h1 className="mb-6 text-left text-2xl text-foreground">Sign In for GrowIn</h1>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           {/* Email */}
           <div>
@@ -134,18 +134,13 @@ export default function SigninForm({ providers }: SigninFormProps) {
           </div>
 
           {/* SignUp Link */}
-          <div className="flex justify-between text-sm">
-            <p>
-              Don't have an account? SignUp {" "}
-              <Link className="text-sm underline text-foreground hover:text-primary" href={"/signup"}>
-                here
-              </Link>
-            </p>
-            <p>
-              <Link className="text-sm underline text-foreground hover:text-primary" href={"/forgot-password"}>
-                Forgot password?
-              </Link>
-            </p>
+          <div className="flex justify-between text-sm px-1">
+            <Link className="text-sm underline text-foreground hover:text-primary" href={"/signup"}>
+              SignUp
+            </Link>
+            <Link className="text-sm underline text-foreground hover:text-primary" href={"/forgot-password"}>
+              Forgot password?
+            </Link>
           </div>
 
           {/* SignIn Button */}
@@ -164,7 +159,7 @@ export default function SigninForm({ providers }: SigninFormProps) {
           {/* Separator */}
           <div className="relative flex items-center justify-center overflow-hidden">
             <Separator />
-            <div className="py-1.5 px-2 border rounded-full text-center bg-muted text-xs mx-1">
+            <div className="py-2 px-2 border rounded-lg text-center bg-muted text-xs mx-1">
               OR
             </div>
             <Separator />
