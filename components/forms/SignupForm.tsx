@@ -215,12 +215,11 @@ export default function SignupForm({ providers }: SignupFormProps) {
                 id="userName"
                 label="Username"
                 autoComplete="new-username"
-                className={`bg-input text-foreground pr-10
-                  ${
-                    isAvailable === true && !isChecking
-                      ? "bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
-                      : "border-border"
-                  }`}
+                className={`text-foreground pr-10 ${
+                  isAvailable && !isChecking
+                    ? "!bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
+                    : "bg-input border-border"
+                }`}
                 {...register("userName", { 
                   required: "Username is required",
                   minLength: { value: 3, message: "Username must be at least 3 characters long" },
