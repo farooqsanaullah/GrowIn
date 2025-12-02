@@ -1,27 +1,52 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const ParticipantSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  role: { type: String, enum: ["FOUNDER","INVESTOR","TEAM"], required: true }
-}, { _id: false });
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  role: { type: String, required: true },
+});
+
+const LastMessageSchema = new mongoose.Schema({
+  content: { type: String, default: '' },
+  sentAt: { type: Date },
+  senderId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+}, { _id: false }); // No separate _id for embedded lastMessage
 
 const ConversationSchema = new mongoose.Schema({
-  type: { type: String, enum: ["INVESTOR_FOUNDER","TEAM_CHAT"], required: true },
-  participants: { type: [ParticipantSchema], required: true },
-
-  startupId: { type: mongoose.Schema.Types.ObjectId, ref: "Startup" }, 
-  initiatedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null }, 
-  firstMessageSent: { type: Boolean, default: false },
-
-  metadata: { type: mongoose.Schema.Types.Mixed, default: {} }, 
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
+  participants: {
+    type: [ParticipantSchema],
+    required: true,
+  },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
+  startupId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Startup',
+    required: true,
+  },
+  isTeamChat: {
+    type: Boolean,
+    default: false,
+  },
+  lastMessage: {
+    type: LastMessageSchema,
+    default: () => ({}),
+  },
+  lastMessageAt: {
+    type: Date,
+    default: Date.now,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
-ConversationSchema.index({ startupId: 1, "participants.user": 1 });
-ConversationSchema.pre("save", function(next) {
-  this.updatedAt = new Date(Date.now());
-  next();
-});
+// Indexes for faster queries
+ConversationSchema.index({ 'participants.userId': 1 });
+ConversationSchema.index({ startupId: 1 });
 
-export default mongoose.models.Conversation || mongoose.model("Conversation", ConversationSchema);
+export default mongoose.models.Conversation ||
+  mongoose.model('Conversation', ConversationSchema);
