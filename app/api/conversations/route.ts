@@ -1,62 +1,101 @@
-import { NextRequest, NextResponse } from "next/server";
-import Conversation from "@/lib/models/converstaion.model";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth/nextAuthOptions";
+import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from "@/lib/db/connect";
+import Conversation from '@/lib/models/converstaion.model';
+import { getCurrentUser, canInitiateConversation } from '@/lib/auth/session';
+import { CreateConversationRequest, IConversation } from '@/lib/types/index';
+import mongoose from 'mongoose';
 
-export async function POST(req: NextRequest) {
-  await connectDB();
-
+export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    const userId = session.user.id;
-    const { type, startupId, participants } = await req.json();
-
-    if (!type || !participants || !Array.isArray(participants)) {
-      return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check if conversation already exists
-    const existing = await Conversation.findOne({
-      type,
-      startupId: startupId || undefined,
-      "participants.user": { $all: participants.map(p => p.user) },
-    });
+    await connectDB();
 
-    if (existing) return NextResponse.json({ conversation: existing }, { status: 200 });
+    const conversations = await Conversation.find({
+      'participants.userId': user.id,
+      'metadata.isArchived': false,
+    })
+      .sort({ 'lastMessage.sentAt': -1 })
+      .populate('participants.userId', 'name email avatar')
+      .limit(50)
+      .lean<IConversation[]>();
 
-    const conversation = await Conversation.create({
-      type,
-      participants,
-      startupId: startupId || undefined,
-      firstMessageSent: false,
-    });
-
-    return NextResponse.json({ conversation }, { status: 201 });
-  } catch (err: any) {
-    console.error("POST /api/conversations error:", err);
-    return NextResponse.json({ error: err.message || "Server error" }, { status: 500 });
+    return NextResponse.json({ conversations });
+  } catch (error) {
+    console.error('Error fetching conversations:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
-export async function GET(req: NextRequest) {
-  await connectDB();
 
+
+
+export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-    const userId = session.user.id;
+    // Parse JSON properly
+    const body: CreateConversationRequest = await request.json();
+    const { recipientId, recipientRole, startupId } = body;
 
-    const conversations = await Conversation.find({ "participants.user": userId })
-      .sort({ updatedAt: -1 })
-      .lean();
+    if (!recipientId || !recipientRole || !startupId) {
+      return NextResponse.json(
+        { error: 'recipientId, recipientRole, and startupId are required' },
+        { status: 400 }
+      );
+    }
 
-    return NextResponse.json({ conversations }, { status: 200 });
-  } catch (err: any) {
-    console.error("GET /api/conversations error:", err);
-    return NextResponse.json({ error: err.message || "Server error" }, { status: 500 });
+    await connectDB();
+
+    // Validate conversation initiation rules
+    if (!canInitiateConversation(user.role, recipientRole)) {
+      return NextResponse.json(
+        { error: 'Only investors can initiate conversations with founders' },
+        { status: 403 }
+      );
+    }
+
+    // Convert all string IDs to ObjectId
+    const userObjectId = new mongoose.Types.ObjectId(user.id);
+    const recipientObjectId = new mongoose.Types.ObjectId(recipientId);
+    const startupObjectId = new mongoose.Types.ObjectId(startupId);
+
+    // Check if conversation already exists
+    const existingConversation = await Conversation.findOne({
+      'participants.userId': { $all: [userObjectId, recipientObjectId] },
+      startupId: startupObjectId,
+    }).lean<IConversation>();
+
+    if (existingConversation) {
+      return NextResponse.json({ conversation: existingConversation });
+    }
+
+    // Create new conversation
+    const conversation = await Conversation.create({
+      participants: [
+        { userId: userObjectId, role: user.role },
+        { userId: recipientObjectId, role: recipientRole },
+      ],
+      createdBy: userObjectId,
+      startupId: startupObjectId,
+      isTeamChat: false,
+      lastMessage: '',
+      lastMessageAt: new Date(),
+      createdAt: new Date(),
+    });
+
+    return NextResponse.json({ conversation }, { status: 201 });
+  } catch (error: any) {
+    console.error('Error creating conversation:', error);
+    if (error.name === 'ValidationError') {
+      console.error('Validation errors:', error.errors);
+    }
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
