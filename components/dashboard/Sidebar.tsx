@@ -35,6 +35,11 @@ const sidebarItems = [
     icon: Users,
   },
   {
+    title: "Explore Investors",
+    href: "/explore-investors",
+    icon: TrendingUp,
+  },
+  {
     title: "Profile",
     href: "/founder/profile",
     icon: User,
