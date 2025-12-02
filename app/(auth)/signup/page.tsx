@@ -9,8 +9,6 @@ import { Eye, EyeClosedIcon, Loader } from "lucide-react";
 import {
   Button,
   FloatingLabelInput,
-  Input,
-  Label
 } from "@/components/ui";
 import Link from "next/link";
 import { EMAIL_REGEX } from "@/lib/constants";
@@ -114,90 +112,69 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background text-foreground">
-      <div className="w-full max-w-md rounded-lg border border-border bg-card p-8 shadow-sm">
-        
-        {/* Logo */}
-        <div className="flex justify-center mt-[-10]">
-          <Image
-            src="/logo.png"
-            alt="App Logo"
-            width={125}
-            height={0}
-            className="rounded-md"
-          />
+    <div className="flex min-h-screen overflow-y-auto">
+      {/* Left side with background image */}
+      <div
+        className="w-1/2 relative bg-cover bg-center"
+        style={{ backgroundImage: "url('/signup-bg-1.jpg')" }}
+      >
+        {/* Black overlay with 50% opacity and blur*/}
+        <div className="absolute inset-0 bg-black/60"></div>
+
+        {/* Centered content */}
+        <div className="relative flex h-full items-center justify-center">
+          <p className="text-white text-2xl font-semibold">Create your free account</p>
         </div>
-        
-        <h1 className="mb-6 text-center text-3xl font-semibold text-foreground">Sign Up</h1>
+      </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-          {/* Role */}
-          <Controller
-            name="role"
-            control={control}
-            defaultValue="investor"
-            rules={{ required: "Role is required" }}
-            render={({ field }) => (
-              <div className="flex flex-col gap-1">
-                <div className="flex gap-2">
-                  <Button
-                    type="button" // Prevent form submit
-                    variant={field.value === "investor" ? "default" : "outline"}
-                    className="flex-grow cursor-pointer"
-                    onClick={() => field.onChange("investor")}
-                  >
-                    Investor
-                  </Button>
+      {/* Right side with signup form */}
+      <div className="w-1/2 flex flex-col items-center justify-center">        
+        <div className="w-full max-w-md rounded-lg border border-border bg-card p-8 shadow-sm">
+          <h1 className="mb-6 text-left text-2xl text-foreground">Sign Up for GrowIn</h1>
 
-                  <Button
-                    type="button" // Prevent form submit
-                    variant={field.value === "founder" ? "default" : "outline"}
-                    className="flex-grow cursor-pointer"
-                    onClick={() => field.onChange("founder")}
-                  >
-                    Founder
-                  </Button>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            {/* Role */}
+            <Controller
+              name="role"
+              control={control}
+              defaultValue="investor"
+              rules={{ required: "Role is required" }}
+              render={({ field }) => (
+                <div className="flex flex-col gap-1">
+                  <div className="flex gap-2">
+                    <Button
+                      type="button" // Prevent form submit
+                      variant={field.value === "investor" ? "default" : "outline"}
+                      className="flex-grow cursor-pointer"
+                      onClick={() => field.onChange("investor")}
+                    >
+                      Investor
+                    </Button>
+
+                    <Button
+                      type="button" // Prevent form submit
+                      variant={field.value === "founder" ? "default" : "outline"}
+                      className="flex-grow cursor-pointer"
+                      onClick={() => field.onChange("founder")}
+                    >
+                      Founder
+                    </Button>
+                  </div>
+
+                  {errors.role && (
+                    <p className="mt-1 text-sm text-destructive">{errors.role.message}</p>
+                  )}
                 </div>
-
-                {errors.role && (
-                  <p className="mt-1 text-sm text-destructive">{errors.role.message}</p>
-                )}
-              </div>
-            )}
-          />
-
-          {/* User Name */}
-          <div>
-            <FloatingLabelInput 
-              id="userName"
-              label="Username"
-              placeholder="John Doe"
-              autoComplete="new-username"
-              className={`mt-2 bg-input text-foreground pr-10
-                ${
-                  isAvailable === true && !isChecking
-                    ? "bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
-                    : "border-border"
-                }`}
-              {...register("userName", { 
-                required: "Username is required",
-                minLength: { value: 3, message: "Username must be at least 3 characters long" },
-                maxLength: { value: 30, message: "Username must not exceed 30 characters" },
-                // trim input on change
-                setValueAs: (value) => value.trim(),
-              })}
+              )}
             />
-            {isChecking && (
-              <Loader className="animate-spin absolute right-2 top-3.5 w-5 h-5 text-muted-foreground" />
-            )}
-            {/* <Label htmlFor="userName" className="text-foreground text-md">Username</Label>
-            <div className="relative">
-              <Input
+
+            {/* User Name */}
+            <div>
+              <FloatingLabelInput 
                 id="userName"
-                type="text"
-                placeholder="John Doe"
+                label="Username"
                 autoComplete="new-username"
-                className={`mt-2 bg-input text-foreground pr-10
+                className={`bg-input text-foreground pr-10
                   ${
                     isAvailable === true && !isChecking
                       ? "bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
@@ -214,161 +191,152 @@ export default function SignupPage() {
               {isChecking && (
                 <Loader className="animate-spin absolute right-2 top-3.5 w-5 h-5 text-muted-foreground" />
               )}
-            </div> */}
+              {isAvailable === true && !isChecking && (
+                <p className="mt-1 text-sm text-success">Username <b>{userNameValue}</b> is available.</p>
+              )}
+              {isAvailable === false && !isChecking && (
+                <p className="mt-1 text-sm text-destructive">Username is already taken.</p>
+              )}
+              {errors.userName && (
+                <p className="mt-1 text-sm text-destructive">{errors.userName.message}</p>
+              )}
+            </div>
 
-            {isAvailable === true && !isChecking && (
-              <p className="mt-1 text-sm text-success">Username <b>{userNameValue}</b> is available.</p>
-            )}
-            {isAvailable === false && !isChecking && (
-              <p className="mt-1 text-sm text-destructive">Username is already taken.</p>
-            )}
-            {errors.userName && (
-              <p className="mt-1 text-sm text-destructive">{errors.userName.message}</p>
-            )}
-          </div>
-
-          {/* Email */}
-          <div>
-            <FloatingLabelInput
-              id="email"
-              label="Email"
-              {...register("email", { required: "Email is required" })}
-              className={`mt-2 bg-input text-foreground pr-10
-                ${(EMAIL_REGEX.test(emailValue))
-                    ? "bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
-                    : "border-border"
-                }
-              `}
-            />
-            {errors.email && (
-              <p className="mt-1 text-sm text-destructive">
-                {errors.email.message}
-              </p>
-            )}
-          </div>
-
-          {/* Password */}
-          <div>
-            <Label htmlFor="password" className="text-foreground text-md">Password</Label>
-            <div className="mt-2 relative">
-              <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="••••••••"
-                {...register("password", {
-                  required: "Password is required",
-                  validate: {
-                    hasLength: (value) => value.length >= 8, 
-                    hasDigit: (value) => /\d/.test(value),
-                    hasSpecialChar: (value) => /[!@#$%^&*(),.?\":{}|<>]/.test(value),
-                  },
-                })}
+            {/* Email */}
+            <div>
+              <FloatingLabelInput
+                id="email"
+                label="Email"
+                {...register("email", { required: "Email is required" })}
                 className={`bg-input text-foreground pr-10
-                  ${(lengthCheck && specialCharCheck && digitCheck)
+                  ${(EMAIL_REGEX.test(emailValue))
                       ? "bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
                       : "border-border"
                   }
                 `}
               />
-              {passwordValue.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute right-2 inset-y-0 flex items-center text-muted-foreground cursor-pointer"
-                >
-                  {showPassword ? <EyeClosedIcon /> : <Eye />}
-                </button>
+              {errors.email && (
+                <p className="mt-1 text-sm text-destructive">
+                  {errors.email.message}
+                </p>
               )}
             </div>
 
-            {passwordValue.length > 0 && (
-              // Password Guide
-              <div className="mt-4 text-sm space-y-1">
-                <p className={lengthCheck ? "text-success" : "text-destructive"}>
-                  • At least 8 characters
-                </p>
-                <p className={specialCharCheck ? "text-success" : "text-destructive"}>
-                  • 1 special character
-                </p>
-                <p className={digitCheck ? "text-success" : "text-destructive"}>
-                  • 1 digit
-                </p>
+            {/* Password */}
+            <div>
+              <div className="relative">
+                <FloatingLabelInput 
+                  id="password"
+                  label="Password"
+                  autoComplete="password"
+                  className={`bg-input text-foreground pr-10
+                    ${(lengthCheck && specialCharCheck && digitCheck)
+                        ? "bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
+                        : "border-border"
+                  }`}
+                  {...register("password", {
+                    required: "Password is required",
+                    validate: {
+                      hasLength: (value) => value.length >= 8, 
+                      hasDigit: (value) => /\d/.test(value),
+                      hasSpecialChar: (value) => /[!@#$%^&*(),.?\":{}|<>]/.test(value),
+                    },
+                  })}
+                />
+                {passwordValue.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute right-2 inset-y-0 flex items-center text-muted-foreground cursor-pointer"
+                  >
+                    {showPassword ? <EyeClosedIcon /> : <Eye />}
+                  </button>
+                )}
               </div>
-            )}
+              
+              {passwordValue.length > 0 && (
+                // Password Guide
+                <div className="mt-4 text-sm space-y-1">
+                  <p className={lengthCheck ? "text-success" : "text-destructive"}>
+                    • At least 8 characters
+                  </p>
+                  <p className={specialCharCheck ? "text-success" : "text-destructive"}>
+                    • 1 special character
+                  </p>
+                  <p className={digitCheck ? "text-success" : "text-destructive"}>
+                    • 1 digit
+                  </p>
+                </div>
+              )}
 
-            {errors.password && (
-              <p className="mt-1 text-sm text-destructive">
-                {errors.password.message}
-              </p>
-            )}
-          </div>
-
-          {/* Confirm Password */}
-          <div>
-            <Label htmlFor="confirmPassword" className="text-foreground text-md">Confirm Password</Label>
-            <div className="mt-2 relative">
-              <Input
-                id="confirmPassword"
-                type={showConfirm ? "text" : "password"}
-                placeholder="••••••••"
-                {...register("confirmPassword", {
-                  required: "Please confirm your password",
-                  validate: (value) =>
-                    value === watch("password") || "Passwords do not match",
-                })}
-                className={`bg-input text-foreground pr-10
-                  ${(confirmValue.length > 0 && passwordValue === confirmValue)
-                      ? "bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
-                      : "border-border"
-                  }
-                `}
-              />
-              {confirmValue.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setShowConfirm((prev) => !prev)}
-                  className="absolute right-2 inset-y-0 flex items-center text-muted-foreground cursor-pointer"
-                >
-                  {showConfirm ? <EyeClosedIcon /> : <Eye />}
-                </button>
+              {errors.password && (
+                <p className="mt-1 text-sm text-destructive">
+                  {errors.password.message}
+                </p>
               )}
             </div>
 
-            {errors.confirmPassword && (
-              <p className="mt-1 text-sm text-destructive">
-                {errors.confirmPassword.message}
-              </p>
-            )}
-          </div>
+            {/* Confirm Password */}
+            <div>
+              <div className="relative">
+                <FloatingLabelInput 
+                  id="confirmPassword"
+                  label="Confirm Password"
+                  autoComplete="password"
+                  className={`bg-input text-foreground pr-10
+                    ${(confirmValue.length > 0 && passwordValue === confirmValue)
+                        ? "bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
+                        : "border-border"
+                  }`}
+                  {...register("confirmPassword", {
+                    required: "Please confirm your password",
+                    validate: (value) =>
+                      value === watch("password") || "Passwords do not match",
+                  })}
+                />
+                {confirmValue.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirm((prev) => !prev)}
+                    className="absolute right-2 inset-y-0 flex items-center text-muted-foreground cursor-pointer"
+                  >
+                    {showConfirm ? <EyeClosedIcon /> : <Eye />}
+                  </button>
+                )}
+              </div>
 
-          {/* SignIn Page Link */}
-          <p className="text-sm">
-            Already have an account? SignIn{" "}
-            <Link
-              className="text-sm underline text-primary hover:text-primary"
-              href={"/signin"}
+              {errors.confirmPassword && (
+                <p className="mt-1 text-sm text-destructive">
+                  {errors.confirmPassword.message}
+                </p>
+              )}
+            </div>
+
+            {/* SignIn Page Link */}
+            <p className="text-sm">
+              Already have an account? SignIn{" "}
+              <Link
+                className="text-sm underline text-primary hover:text-primary"
+                href={"/signin"}
+              >
+                here
+              </Link>
+            </p>
+
+            {/* SignUp Button */}
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="w-full cursor-pointer text-md"
             >
-              here
-            </Link>
-          </p>
-
-          {/* SignUp Button */}
-          <Button
-            type="submit"
-            disabled={isLoading}
-            className="w-full cursor-pointer text-md"
-          >
-            {isLoading ? (
-              <>
-                Signing up
-                <Loader className="animate-spin ml-2" />
-              </>
-            ) : (
-              "Sign Up"
-            )}
-          </Button>
-
-        </form>
+              {isLoading ? (
+                <>Signing up<Loader className="animate-spin ml-2" /></>
+              ) : (
+                "Sign Up"
+              )}
+            </Button>
+          </form>
+        </div>
       </div>
     </div>
   );
