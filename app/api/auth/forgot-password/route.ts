@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { Resend } from "resend";
 import { getUserByEmail, getSignedToken } from "@/lib/helpers/backend";
-import { validateEmail } from "@/lib/helpers/shared" ;
+import { EmailSchema } from "@/lib/auth/zodSchemas";
 import { success, error } from "@/lib/auth/apiResponses";
 import { connectDB } from "@/lib/db/connect";
 
@@ -11,7 +11,7 @@ const {
   RESEND_API_KEY,
 } = process.env;
 
-const isDev = NODE_ENV! === "development";
+const isDev = NODE_ENV === "development";
 
 // Lazy initialize Resend to avoid build errors when API key is missing
 let resend: Resend | null = null;
@@ -28,15 +28,18 @@ export async function POST(req: NextRequest) {
   try {
     const { email } = await req.json();
 
-    const emailError = validateEmail(email);
-    if (emailError) return error(emailError, 400);
+    // Zod validation for email
+    const result = EmailSchema.safeParse(email);
+    if (!result.success) {
+      return error(result.error.issues.map(e => e.message).join(", "), 400);
+    }
 
     const user = await getUserByEmail(email);
     if (!user) return error("Email not found", 404);
     if (!user.password) return error("OAuth accounts cannot reset passwords manually", 403);
 
     const resetToken = getSignedToken({ userId: user._id.toString() });
-    const resetUrl = `${NEXTAUTH_URL!}/reset-password?token=${resetToken}`;
+    const resetUrl = `${NEXTAUTH_URL}/reset-password?token=${resetToken}`;
 
     const resendClient = getResendClient();
     if (!resendClient) {

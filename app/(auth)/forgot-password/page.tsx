@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { validateEmail } from "@/lib/helpers/shared";
+import { EmailSchema } from "@/lib/auth/zodSchemas/fieldSchemas.zod";
 import toast from "react-hot-toast";
 import { Loader } from "lucide-react";
 import { 
@@ -13,15 +13,18 @@ import {
   DialogTitle, 
   DialogFooter 
 } from "@/components/ui/dialog";
-import { 
-  Input,
-  Button,
-  Label 
-} from "@/components/ui";
+import { Input, Button, Label } from "@/components/ui";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 type ForgotPasswordFormValues = {
   email: string;
 };
+
+// Wrap EmailSchema in object for the form
+const ForgotPasswordSchema = z.object({
+  email: EmailSchema,
+});
 
 export default function ForgotPasswordDialog() {
   const [open, setOpen] = useState(true);
@@ -36,12 +39,14 @@ export default function ForgotPasswordDialog() {
     watch,
     formState: { errors },
   } = useForm<ForgotPasswordFormValues>({
+    resolver: zodResolver(ForgotPasswordSchema),
     defaultValues: {
       email: "",
-    }
+    },
   });
 
   const emailValue = watch("email");
+  const isEmailValid = EmailSchema.safeParse(emailValue).success;
 
   const onSubmit = async (data: ForgotPasswordFormValues) => {
     setFormError(null);
@@ -73,9 +78,10 @@ export default function ForgotPasswordDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-md"
-        onInteractOutside={(event) => event.preventDefault()} // Prevent click outside
-        onEscapeKeyDown={(event) => event.preventDefault()}   // Prevent Esc
+      <DialogContent
+        className="sm:max-w-md"
+        onInteractOutside={(event) => event.preventDefault()}
+        onEscapeKeyDown={(event) => event.preventDefault()}
       >
         <DialogHeader>
           <DialogTitle className="text-xl text-center">Forgot Password</DialogTitle>
@@ -89,31 +95,32 @@ export default function ForgotPasswordDialog() {
               type="email"
               placeholder="Enter your email"
               autoComplete="email"
-              {...register("email", {
-                required: "Email is required.",
-                validate: (value) => validateEmail(value) || true,
-              })}
+              {...register("email")}
               className={`mt-2 bg-input text-foreground pr-10
-                ${(!validateEmail(emailValue))
-                    ? "bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
-                    : "border-border"
+                ${errors.email
+                  ? "!bg-destructive/10 border-transparent focus-visible:border-destructive focus-visible:ring-0 shadow-none"
+                  : isEmailValid
+                  ? "bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
+                  : "border-border"
                 }
-              `}            />
-            {errors.email && <p className="text-destructive text-sm mt-1">{errors.email.message}</p>}
+              `}
+            />
+            {errors.email && (
+              <p className="text-destructive text-sm mt-1">{errors.email.message}</p>
+            )}
           </div>
 
           {formError && <p className="text-destructive text-sm">{formError}</p>}
 
           <DialogFooter className="mt-8">
             <div className="w-full">
-              {/* Buttons */}
               <div className="flex flex-col sm:flex-row gap-2">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => router.back()}
                   className="flex-1 cursor-pointer"
-                  >
+                >
                   Cancel
                 </Button>
 
@@ -130,7 +137,6 @@ export default function ForgotPasswordDialog() {
                 </Button>
               </div>
 
-              {/* Success Msg */}
               {success && (
                 <div className="mt-4 bg-success/10 p-2 rounded text-center">
                   <p className="text-success text-sm">
@@ -140,7 +146,6 @@ export default function ForgotPasswordDialog() {
               )}
             </div>
           </DialogFooter>
-
         </form>
       </DialogContent>
     </Dialog>
