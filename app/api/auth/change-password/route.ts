@@ -5,7 +5,7 @@ import {
   getAuthenticatedUser, 
   destroySession 
 } from "@/lib/helpers/backend"
-import { validatePassword } from "@/lib/helpers/shared";
+import { PasswordSchema } from "@/lib/auth/zodSchemas";
 import { success, error } from "@/lib/auth/apiResponses";
 
 export async function POST(req: NextRequest) {
@@ -25,8 +25,11 @@ export async function POST(req: NextRequest) {
     const isMatch = await verifyPassword(currentPassword, user.password);
     if (!isMatch) return error("Incorrect current password", 400);
 
-    const passwordError = validatePassword(newPassword);
-    if (passwordError) return error("Invalid new password", 400);
+    // Zod validation for new password
+    const result = PasswordSchema.safeParse(newPassword);
+    if (!result.success) {
+      return error(result.error.issues.map(e => e.message).join(", "), 400);
+    }
 
     await updatePassword(user._id.toString(), newPassword);
 
