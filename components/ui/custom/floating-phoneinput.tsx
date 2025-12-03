@@ -12,7 +12,6 @@ interface Props {
 }
 
 const FloatingPhoneInput: React.FC<Props> = ({ label, value, onChange }) => {
-  const [focused, setFocused] = React.useState(false);
 
   return (
     <div className="relative">
@@ -20,13 +19,11 @@ const FloatingPhoneInput: React.FC<Props> = ({ label, value, onChange }) => {
         country="pk"
         value={value}
         onChange={onChange}
-        inputClass="w-full border rounded-md p-2 peer"
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
+        inputClass="!w-full border rounded-md p-2 peer"
       />
       <FloatingLabel
-        htmlFor=""
-        className={`${focused || value ? "peer-focus:top-2" : ""}`}
+        htmlFor="phone"
+        className="bg-background absolute left-2 top-2 text-gray-500 text-sm pointer-events-none"
       >
         {label}
       </FloatingLabel>

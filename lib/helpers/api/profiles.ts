@@ -82,14 +82,19 @@ export const profilesApi = {
   /**
    * Upload profile image
    */
-  uploadProfileImage: async (formData: FormData): Promise<ApiResponse<{ imageUrl: string }>> => {
-    return fetchAPI<ApiResponse<{ imageUrl: string }>>(`${API_BASE_URL}/api/profile/upload-image`, {
-      method: "POST",
-      body: formData,
-      headers: {
-        // Don't set Content-Type for FormData, let the browser set it
-      },
-    });
+  uploadProfileImage: async (
+    formData: FormData
+  ): Promise<ApiResponse<{ imageUrl: string }>> => {
+    return fetchAPI<ApiResponse<{ imageUrl: string }>>(
+      `${API_BASE_URL}/api/profile/upload-image`,
+      {
+        method: "POST",
+        body: formData,
+        headers: {
+          // Don't set Content-Type for FormData, let the browser set it
+        },
+      }
+    );
   },
 
   /**
@@ -109,7 +114,9 @@ export const profilesApi = {
   /**
    * Get user's followers
    */
-  getFollowers: async (username: string): Promise<ApiResponse<ProfileData["user"][]>> => {
+  getFollowers: async (
+    username: string
+  ): Promise<ApiResponse<ProfileData["user"][]>> => {
     return fetchAPI<ApiResponse<ProfileData["user"][]>>(
       `${API_BASE_URL}/api/profile/${username}/followers`
     );
@@ -118,7 +125,9 @@ export const profilesApi = {
   /**
    * Get users that this user is following
    */
-  getFollowing: async (username: string): Promise<ApiResponse<ProfileData["user"][]>> => {
+  getFollowing: async (
+    username: string
+  ): Promise<ApiResponse<ProfileData["user"][]>> => {
     return fetchAPI<ApiResponse<ProfileData["user"][]>>(
       `${API_BASE_URL}/api/profile/${username}/following`
     );
@@ -137,14 +146,16 @@ export const profilesApi = {
   ): Promise<ApiResponse<ProfileData["user"][]>> => {
     const params = new URLSearchParams();
     params.set("search", query);
-    
+
     if (options.role) params.set("role", options.role);
     if (options.page) params.set("page", String(options.page));
     if (options.limit) params.set("limit", String(options.limit));
 
     const queryString = params.toString();
-    const url = `${API_BASE_URL}/api/profile/search${queryString ? `?${queryString}` : ""}`;
-    
+    const url = `${API_BASE_URL}/api/profile/search${
+      queryString ? `?${queryString}` : ""
+    }`;
+
     return fetchAPI<ApiResponse<ProfileData["user"][]>>(url);
   },
 

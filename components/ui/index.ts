@@ -33,6 +33,7 @@ export {
 export { FloatingPhoneInput } from "@/components/ui/custom/floating-phoneinput";
 export { FloatingCountryInput } from "@/components/ui/custom/floating-country";
 export { FloatingRegionInput } from "@/components/ui/custom/floating-region";
+export { Skeleton } from "./skeleton";
 // export { Checkbox } from "./checkbox";
 // export { Switch } from "./switch";
 // export { RadioGroup } from "./radio-group";
@@ -44,7 +45,6 @@ export { FloatingRegionInput } from "@/components/ui/custom/floating-region";
 // export { Tabs } from "./tabs";
 // export { ScrollArea } from "./scroll-area";
 // export { SwitchGroup } from "./switch-group";
-// export { Skeleton } from "./skeleton";
 // export { Alert } from "./alert";
 // export { Collapsible } from "./collapsible";
 // export { DropdownMenu } from "./dropdown-menu";

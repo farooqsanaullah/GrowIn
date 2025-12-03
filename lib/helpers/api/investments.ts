@@ -136,26 +136,35 @@ export const investmentsApi = {
    * Cancel investment by ID
    */
   cancel: async (id: string): Promise<InvestmentResponse> => {
-    return fetchAPI<InvestmentResponse>(`${API_BASE_URL}/investment/${id}/cancel`, {
-      method: "POST",
-    });
+    return fetchAPI<InvestmentResponse>(
+      `${API_BASE_URL}/investment/${id}/cancel`,
+      {
+        method: "POST",
+      }
+    );
   },
 
   /**
    * Complete investment by ID
    */
   complete: async (id: string): Promise<InvestmentResponse> => {
-    return fetchAPI<InvestmentResponse>(`${API_BASE_URL}/investment/${id}/complete`, {
-      method: "POST",
-    });
+    return fetchAPI<InvestmentResponse>(
+      `${API_BASE_URL}/investment/${id}/complete`,
+      {
+        method: "POST",
+      }
+    );
   },
 
   /**
    * Get portfolio stats for an investor
    */
-  
-  getPortfolioStats: async (investorId?: string, options: RequestInit = {}): Promise<PortfolioStatsResponse> => {
-    const url = investorId 
+
+  getPortfolioStats: async (
+    investorId?: string,
+    options: RequestInit = {}
+  ): Promise<PortfolioStatsResponse> => {
+    const url = investorId
       ? `${API_BASE_URL}/investor/${investorId}/portfolio/stats`
       : `${API_BASE_URL}/investor/portfolio/stats`;
     return fetchAPI<PortfolioStatsResponse>(url, options);
@@ -169,7 +178,7 @@ export const investmentsApi = {
     filters: Pick<InvestmentFilters, "page" | "limit" | "status"> = {},
     options: RequestInit = {}
   ): Promise<InvestmentListResponse> => {
-    const baseUrl = investorId 
+    const baseUrl = investorId
       ? `${API_BASE_URL}/investor/${investorId}/portfolio`
       : `${API_BASE_URL}/investor/portfolio`;
     const url = buildUrl(baseUrl, filters);
@@ -183,7 +192,7 @@ export const investmentsApi = {
     investorId?: string,
     period: "1m" | "3m" | "6m" | "1y" | "all" = "6m"
   ): Promise<AnalyticsResponse> => {
-    const baseUrl = investorId 
+    const baseUrl = investorId
       ? `${API_BASE_URL}/investor/${investorId}/analytics`
       : `${API_BASE_URL}/investor/analytics`;
     const url = `${baseUrl}?period=${period}`;
@@ -195,33 +204,41 @@ export const investmentsApi = {
    */
   getActivities: async (
     filters: Pick<InvestmentFilters, "page" | "limit"> & { type?: string } = {}
-  ): Promise<ApiResponse<Array<{
-    id: string;
-    type: "investment" | "update" | "exit";
-    title: string;
-    description: string;
-    amount?: number;
-    date: string;
-    startup?: {
-      id: string;
-      name: string;
-      logo?: string;
-    };
-  }>>> => {
-    const url = buildUrl(`${API_BASE_URL}/investor/activities`, filters);
-    return fetchAPI<ApiResponse<Array<{
-      id: string;
-      type: "investment" | "update" | "exit";
-      title: string;
-      description: string;
-      amount?: number;
-      date: string;
-      startup?: {
+  ): Promise<
+    ApiResponse<
+      Array<{
         id: string;
-        name: string;
-        logo?: string;
-      };
-    }>>>(url);
+        type: "investment" | "update" | "exit";
+        title: string;
+        description: string;
+        amount?: number;
+        date: string;
+        startup?: {
+          id: string;
+          name: string;
+          logo?: string;
+        };
+      }>
+    >
+  > => {
+    const url = buildUrl(`${API_BASE_URL}/investor/activities`, filters);
+    return fetchAPI<
+      ApiResponse<
+        Array<{
+          id: string;
+          type: "investment" | "update" | "exit";
+          title: string;
+          description: string;
+          amount?: number;
+          date: string;
+          startup?: {
+            id: string;
+            name: string;
+            logo?: string;
+          };
+        }>
+      >
+    >(url);
   },
 
   /**
@@ -229,32 +246,40 @@ export const investmentsApi = {
    */
   getRecommendations: async (
     filters: Pick<InvestmentFilters, "page" | "limit"> = {}
-  ): Promise<ApiResponse<Array<{
-    startup: {
-      id: string;
-      name: string;
-      description: string;
-      logo?: string;
-      category: string;
-      funding_target: number;
-      raised_amount: number;
-    };
-    score: number;
-    reasons: string[];
-  }>>> => {
+  ): Promise<
+    ApiResponse<
+      Array<{
+        startup: {
+          id: string;
+          name: string;
+          description: string;
+          logo?: string;
+          category: string;
+          funding_target: number;
+          raised_amount: number;
+        };
+        score: number;
+        reasons: string[];
+      }>
+    >
+  > => {
     const url = buildUrl(`${API_BASE_URL}/investor/recommendations`, filters);
-    return fetchAPI<ApiResponse<Array<{
-      startup: {
-        id: string;
-        name: string;
-        description: string;
-        logo?: string;
-        category: string;
-        funding_target: number;
-        raised_amount: number;
-      };
-      score: number;
-      reasons: string[];
-    }>>>(url);
+    return fetchAPI<
+      ApiResponse<
+        Array<{
+          startup: {
+            id: string;
+            name: string;
+            description: string;
+            logo?: string;
+            category: string;
+            funding_target: number;
+            raised_amount: number;
+          };
+          score: number;
+          reasons: string[];
+        }>
+      >
+    >(url);
   },
 };

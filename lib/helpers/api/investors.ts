@@ -1,8 +1,8 @@
-import type {
-  ApiResponse,
-} from "@/lib/types/api";
+import type { ApiResponse } from "@/lib/types/api";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+console.log("Investor API Base URL:", process.env.NEXT_PUBLIC_API_BASE_URL);
 
 // Types for investor API
 export interface InvestorFilters {
@@ -155,9 +155,9 @@ const fetchAPI = async <T>(
  */
 const buildQueryParams = (filters: Record<string, any>): string => {
   const params = new URLSearchParams();
-  
+
   Object.entries(filters).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== '') {
+    if (value !== undefined && value !== null && value !== "") {
       params.set(key, String(value));
     }
   });
@@ -180,7 +180,9 @@ export const investorsApi = {
   /**
    * Get all investors with optional filters and pagination
    */
-  getAll: async (filters: InvestorFilters = {}): Promise<InvestorListResponse> => {
+  getAll: async (
+    filters: InvestorFilters = {}
+  ): Promise<InvestorListResponse> => {
     const url = buildUrl(`${API_BASE_URL}/api/investors`, filters);
     return fetchAPI<InvestorListResponse>(url);
   },
@@ -195,30 +197,43 @@ export const investorsApi = {
   /**
    * Search investors by query
    */
-  search: async (query: string, filters: Omit<InvestorFilters, 'search'> = {}): Promise<InvestorListResponse> => {
+  search: async (
+    query: string,
+    filters: Omit<InvestorFilters, "search"> = {}
+  ): Promise<InvestorListResponse> => {
     return investorsApi.getAll({ ...filters, search: query });
   },
 
   /**
    * Get investors by location
    */
-  getByLocation: async (city?: string, country?: string, filters: Omit<InvestorFilters, 'city' | 'country'> = {}): Promise<InvestorListResponse> => {
+  getByLocation: async (
+    city?: string,
+    country?: string,
+    filters: Omit<InvestorFilters, "city" | "country"> = {}
+  ): Promise<InvestorListResponse> => {
     return investorsApi.getAll({ ...filters, city, country });
   },
 
   /**
    * Get investors by funding range
    */
-  getByFundingRange: async (minFunding?: number, maxFunding?: number, filters: Omit<InvestorFilters, 'minFunding' | 'maxFunding'> = {}): Promise<InvestorListResponse> => {
+  getByFundingRange: async (
+    minFunding?: number,
+    maxFunding?: number,
+    filters: Omit<InvestorFilters, "minFunding" | "maxFunding"> = {}
+  ): Promise<InvestorListResponse> => {
     return investorsApi.getAll({ ...filters, minFunding, maxFunding });
   },
 
   /**
    * Get verified investors only
    */
-  getVerified: async (filters: Omit<InvestorFilters, 'isVerified'> = {}): Promise<InvestorListResponse> => {
-    return investorsApi.getAll({ ...filters, isVerified: 'true' });
-  }
+  getVerified: async (
+    filters: Omit<InvestorFilters, "isVerified"> = {}
+  ): Promise<InvestorListResponse> => {
+    return investorsApi.getAll({ ...filters, isVerified: "true" });
+  },
 };
 
 export default investorsApi;
