@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
+import { useSession } from 'next-auth/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Building2,
@@ -54,6 +55,8 @@ export function StartupCreationForm({ onSuccess, isEdit = false, initialData }: 
   );
   const [uploadingProfilePic, setUploadingProfilePic] = useState(false);
   const [profilePicUrl, setProfilePicUrl] = useState<string>(initialData?.profilePic || '');
+  const { data: session } = useSession();
+  const founderId = session?.user?.id;
 
   const {
     register,
@@ -82,6 +85,8 @@ export function StartupCreationForm({ onSuccess, isEdit = false, initialData }: 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+    if (!founderId) { alert('You must be logged in to upload files'); return; }
+    console.log('Founder ID for upload:', founderId);
 
     setUploadingFile(true);
     try {
@@ -92,6 +97,7 @@ export function StartupCreationForm({ onSuccess, isEdit = false, initialData }: 
       const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
+        headers: { 'founderId': founderId }
       });
 
       const result = await response.json();
@@ -126,10 +132,12 @@ export function StartupCreationForm({ onSuccess, isEdit = false, initialData }: 
           )
         ),
       };
-
+// have to send founder id in header in both create and update
+      if (!founderId) { alert('You must be logged in to submit the form'); return; }
+    
       const response = isEdit && initialData?._id
-        ? await startupsApi.update(initialData._id, submissionData)
-        : await startupsApi.create(submissionData);
+        ? await startupsApi.update(initialData._id, submissionData, { headers: { founderId } })
+        : await startupsApi.create(submissionData, { headers: { founderId } });
 
       if (response.success) {
         if (onSuccess) {

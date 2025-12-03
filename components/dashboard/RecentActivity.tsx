@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Calendar, Loader2 } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 interface Activity {
   id: string;
@@ -14,6 +15,8 @@ interface Activity {
 export function RecentActivity() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
+  const { data: session } = useSession();
+  const founderId = session?.user?.id;
 
   const getColorClass = (color: string) => {
     switch (color) {
@@ -30,7 +33,10 @@ export function RecentActivity() {
   useEffect(() => {
     const fetchActivities = async () => {
       try {
-        const founderId = "673615f87cdf80bbbb5d7cd7"; // This should come from auth context in real app
+        if (!founderId) {
+          setLoading(false);
+          return;
+        }
         const response = await fetch(`/api/activities?founderId=${founderId}&limit=6`);
         
         if (response.ok) {

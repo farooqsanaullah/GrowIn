@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, TrendingDown, DollarSign, Calendar } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, Calendar, Building2 } from "lucide-react";
 import Link from "next/link";
 
 interface PortfolioStartup {
@@ -20,66 +21,54 @@ interface PortfolioStartup {
 }
 
 export function PortfolioOverview() {
+  const { data: session } = useSession();
   const [portfolioStartups, setPortfolioStartups] = useState<PortfolioStartup[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchPortfolioData = async () => {
+      if (!session?.user?.id) {
+        setLoading(false);
+        return;
+      }
+
       try {
+        const queryParams = new URLSearchParams({
+          userId: session.user.id,
+          limit: '6' // Only show first 6 for overview
+        });
 
-        const mockPortfolio: PortfolioStartup[] = [
-          {
-            id: "1",
-            name: "EcoTech Solutions",
-            description: "Renewable energy solutions for small businesses",
-            category: "Clean Energy",
-            investmentAmount: 25000,
-            currentValue: 32000,
-            investmentDate: "2024-01-15",
-            status: "growing",
-          },
-          {
-            id: "2", 
-            name: "HealthAI",
-            description: "AI-powered health diagnostics platform",
-            category: "Healthcare",
-            investmentAmount: 50000,
-            currentValue: 58000,
-            investmentDate: "2024-03-20",
-            status: "growing",
-          },
-          {
-            id: "3",
-            name: "FoodieConnect",
-            description: "Platform connecting local restaurants with customers",
-            category: "Food Tech",
-            investmentAmount: 15000,
-            currentValue: 14500,
-            investmentDate: "2024-06-10",
-            status: "stable",
-          },
-          {
-            id: "4",
-            name: "EduPlatform",
-            description: "Online learning platform for technical skills",
-            category: "EdTech",
-            investmentAmount: 35000,
-            currentValue: 42000,
-            investmentDate: "2024-02-28",
-            status: "growing",
-          }
-        ];
-
-        setPortfolioStartups(mockPortfolio);
+        const response = await fetch(`/api/investor/portfolio?${queryParams}`);
+        if (!response.ok) throw new Error('Failed to fetch portfolio');
+        
+        const data = await response.json();
+        
+        if (data.success && Array.isArray(data.portfolio)) {
+          const transformedPortfolio = data.portfolio.map((item: any) => ({
+            id: item.id,
+            name: item.name,
+            description: item.description,
+            category: item.category,
+            investmentAmount: item.investmentAmount,
+            currentValue: item.currentValue,
+            investmentDate: item.investmentDate,
+            status: item.status,
+            logo: item.logo
+          }));
+          setPortfolioStartups(transformedPortfolio);
+        } else {
+          setPortfolioStartups([]);
+        }
       } catch (error) {
         console.error('Error fetching portfolio data:', error);
+        setPortfolioStartups([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchPortfolioData();
-  }, []);
+  }, [session]);
 
   if (loading) {
     return (
@@ -101,6 +90,41 @@ export function PortfolioOverview() {
               </div>
             </div>
           ))}
+        </div>
+      </Card>
+    );
+  }
+
+  // Empty state when no session
+  if (!session?.user) {
+    return (
+      <Card className="p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-foreground">Portfolio Overview</h2>
+        </div>
+        <div className="text-center py-8">
+          <p className="text-muted-foreground">Please sign in to view your portfolio.</p>
+        </div>
+      </Card>
+    );
+  }
+
+  // Empty state when no investments
+  if (portfolioStartups.length === 0) {
+    return (
+      <Card className="p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-foreground">Portfolio Overview</h2>
+          <Link href="/investor/discover">
+            <Button variant="outline" size="sm">
+              Discover Startups
+            </Button>
+          </Link>
+        </div>
+        <div className="text-center py-8">
+          <Building2 className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+          <p className="text-muted-foreground mb-2">No investments yet</p>
+          <p className="text-sm text-muted-foreground">Start building your portfolio by investing in startups.</p>
         </div>
       </Card>
     );
