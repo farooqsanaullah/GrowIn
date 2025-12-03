@@ -16,7 +16,7 @@ import {
   Cell,
 } from "recharts";
 import { TrendingUp, Users, Calendar } from "lucide-react";
-import { startupsApi } from "@/lib/api/startups";
+import { startupsApi } from "@/lib/helpers/api/startups";
 
 interface MonthlyData {
   month: string;

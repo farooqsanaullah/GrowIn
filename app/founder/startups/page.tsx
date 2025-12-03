@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { startupsApi } from "@/lib/api/startups";
+import { startupsApi } from "@/lib/helpers/api/startups";
 import type { Startup } from "@/lib/types/api";
 import {
   Building2,

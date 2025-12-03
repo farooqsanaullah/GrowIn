@@ -4,14 +4,13 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import {
   Button,
-  DualRangeSlider,
   SkillsInput,
-  Label,
   FloatingLabelInput,
   FloatingCountryInput,
   FloatingRegionInput,
   FloatingPhoneInput,
   FloatingLabel,
+  Skeleton,
 } from "@/components/ui";
 import Datepicker from "react-tailwindcss-datepicker";
 import "flowbite/dist/flowbite.css";
@@ -20,52 +19,52 @@ import { Loader } from "lucide-react";
 import { updateUserSchema } from "@/lib/auth/zodValidation/updateUserSchema";
 import toast from "react-hot-toast";
 import { isExperienceEmpty } from "@/lib/helpers/shared";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useForm, useFieldArray } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 export default function EditProfilePage() {
-  const [isUpdating, setIsUpdating] = useState(false);
   const params = useParams();
   const userName = params.userName;
   const [user, setUser] = useState<any>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
 
-  // BASIC INFO
-  const [basicInfo, setBasicInfo] = useState({
-    userName: "",
-    name: "",
-    email: "",
-    profileImage: "",
-    bio: "",
-    phone: "",
+  const { control, register, handleSubmit, setValue, watch, formState: { errors } } = useForm({
+    resolver: zodResolver(updateUserSchema),
+    defaultValues: {
+      userName: "",
+      name: "",
+      email: "",
+      profileImage: "",
+      bio: "",
+      phone: "",
+      country: "",
+      city: "",
+      experiences: [
+        {
+          designation: "",
+          company: "",
+          experienceDesc: "",
+          startDate: new Date(),
+          endDate: new Date(),
+        },
+      ],
+      skills: [] as string[],
+    },
   });
 
-  // LOCATION
-  const [location, setLocation] = useState({
-    country: "",
-    city: "",
+  const { fields: experiencesFields, append, remove, update } = useFieldArray({
+    control,
+    name: "experiences",
   });
 
-  // FOUNDER INFO
-  const [founder, setFounder] = useState({
-    experiences: [
-      {
-        designation: "",
-        company: "",
-        experienceDesc: "",
-        startDate: new Date(),
-        endDate: new Date(),
-      },
-    ],
-    skills: [] as string[],
-  });
-
-  const previousExperiences = founder.experiences.slice(0, -1); // all except last
-  const currentExperience = founder.experiences.at(-1);         // last one (editable)
-  if (!currentExperience) return null; 
+  const formData = watch();
 
   // Fetching User From API
   useEffect(() => {
     async function fetchUser() {
-      const res = await fetch(`/api/profile/${userName}`);
+      const res = await fetch(`/api/profile/${userName}`, {
+        method: "GET",
+      });
       if (!res.ok) return;
 
       const data = await res.json();
@@ -74,67 +73,41 @@ export default function EditProfilePage() {
     fetchUser();
   }, [userName]);
 
-  // Applying user data to all fields
+  // Populate form when user data arrives
   useEffect(() => {
     if (!user) return;
 
-    // BASIC INFO
-    setBasicInfo({
-      userName: user.userName ?? "",
-      name: user.name ?? "",
-      email: user.email ?? "",
-      profileImage: user.profileImage ?? "",
-      bio: user.bio ?? "",
-      phone: user.phone ?? "",
-    });
-
-    // LOCATION
-    setLocation({
-      country: user.country ?? "",
-      city: user.city ?? "",
-    });
-
-    // FOUNDER INFO
-    setFounder({
-      experiences: [{
+    setValue("userName", user.userName ?? "");
+    setValue("name", user.name ?? "");
+    setValue("email", user.email ?? "");
+    setValue("profileImage", user.profileImage ?? "");
+    setValue("bio", user.bio ?? "");
+    setValue("phone", user.phone ?? "");
+    setValue("country", user.country ?? "");
+    setValue("city", user.city ?? "");
+    setValue("experiences", [
+      {
         designation: user.designation ?? "",
         startDate: user.startDate ? new Date(user.startDate) : new Date(),
         endDate: user.endDate ? new Date(user.endDate) : new Date(),
         company: user.company ?? "",
         experienceDesc: user.experienceDesc ?? "",
-      }],
-      skills: user.skills ?? [],
-    });
-  }, [user]);
+      },
+    ]);
+    setValue("skills", user.skills ?? []);
+  }, [user, setValue]);
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault(); // prevent page reload
+  const onSubmit = async (data: any) => {
+    // console.log("Error: ", errors);
+    console.log("Form submiting with data: ", data);
     setIsUpdating(true);
-
     try {
-      // Prepare the data according to your schema
-      const updateData = {
-        userName: basicInfo.userName,
-        name: basicInfo.name,
-        phone: basicInfo.phone,
-        bio: basicInfo.bio,
-        profileImage: basicInfo.profileImage,
-        city: location.city,
-        country: location.country,
-        experiences: founder.experiences,
-        skills: founder.skills,
-      };
-
-      // Validate data with Zod
-      const parsed = updateUserSchema.parse(updateData);
-
-      // Make PUT request
-      const res = await fetch(`/api/profile/${basicInfo.userName}`, {
+      const res = await fetch(`/api/profile/${data.userName}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(parsed),
+        body: JSON.stringify(data),
       });
 
       if (!res.ok) {
@@ -143,58 +116,42 @@ export default function EditProfilePage() {
       } else {
         toast.success("Profile updated successfully");
       }
-    } catch (err: any) {
-      if (err?.issues) {
-        // Zod validation errors
-        toast.error(err.issues.map((i: any) => i.message).join(", "));
-      } else {
-        toast.error("Something went wrong");
-      }
+    } catch (err) {
+      toast.error("Something went wrong");
     } finally {
       setIsUpdating(false);
     }
   };
 
   const handleAddExperience = () => {
-    const lastExp = founder.experiences[founder.experiences.length - 1];
-    
+    const lastExp = experiencesFields[experiencesFields.length - 1];
+
     // Preventing to add a new empty field set
     if (isExperienceEmpty(lastExp)) {
       toast.error("Fill the current experience first.");
       return;
     }
 
-    setFounder((prev) => ({
-      ...prev,
-      experiences: [
-        ...prev.experiences,
-        {
-          designation: "",
-          startDate: new Date(),
-          endDate: new Date(),
-          company: "",
-          experienceDesc: "",
-        },
-      ],
-    }));
+    append({
+      designation: "",
+      startDate: new Date(),
+      endDate: new Date(),
+      company: "",
+      experienceDesc: "",
+    });
   };
 
-  const handleRemoveExperience = (indexToRemove: number) => {
-    setFounder((prev) => ({
-      ...prev,
-      experiences: prev.experiences.filter((_, i) => i !== indexToRemove),
-    }));
-  };
+  const handleRemoveExperience = (index: number) => remove(index);
 
   return (
-    <div className="max-w-5xl mx-auto p-6 space-y-10">
+    <form onSubmit={handleSubmit(onSubmit)} className="max-w-5xl mx-auto p-6 space-y-10">
       <h1 className="text-3xl font-semibold text-primary">Edit Profile</h1>
 
       {/* PROFILE IMAGE */}
       <div className="flex items-center gap-6">
-        {basicInfo.profileImage ? (
+        {formData.profileImage ? (
           <Image
-            src={basicInfo.profileImage}
+            src={formData.profileImage}
             alt="Profile"
             width={90}
             height={90}
@@ -205,7 +162,7 @@ export default function EditProfilePage() {
           <Skeleton className="w-[90px] h-[90px] rounded-full" />
         )}
 
-        <Button className="cursor-pointer" variant="outline">
+        <Button className="cursor-pointer" variant="secondary">
           Change Photo
         </Button>
       </div>
@@ -213,66 +170,53 @@ export default function EditProfilePage() {
       {/* BASIC INFO */}
       <section className="space-y-6">
         <h2 className="text-xl font-semibold text-foreground">Basic Information</h2>
-
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FloatingLabelInput
-            id="username"
-            label="Username"
-            value={basicInfo.userName}
-            onChange={(e) => setBasicInfo({ ...basicInfo, userName: e.target.value })}
-          />
+          <FloatingLabelInput id="username" label="Username" {...register("userName")} />
 
-          <FloatingLabelInput
-            id="fullName"
-            label="Full Name"
-            value={basicInfo.name}
-            onChange={(e) => setBasicInfo({ ...basicInfo, name: e.target.value })}
-          />
+          <FloatingLabelInput id="fullName" label="Full Name" {...register("name")} />
 
           <FloatingLabelInput
             id="email"
             label="Email"
             disabled
-            value={basicInfo.email}
             className="bg-muted opacity-70"
+            {...register("email")}
           />
 
           <FloatingPhoneInput
             label="Phone"
-            value={basicInfo.phone}
-            onChange={(val) => setBasicInfo({ ...basicInfo, phone: val })}
+            value={formData?.phone || ""}
+            onChange={(val) => setValue("phone", val)}
           />
 
           <FloatingCountryInput
             label="Country"
-            value={location.country}
-            onChange={(val) => setLocation({ country: val, city: "" })}
+            value={formData?.country || ""}
+            onChange={(val) => {
+              setValue("country", val);
+              setValue("city", "");
+            }}
           />
 
           <FloatingRegionInput
             label="City"
-            country={location.country}
-            value={location.city}
-            onChange={(val) => setLocation({ ...location, city: val })}
+            country={formData?.country || ""}
+            value={formData?.city || ""}
+            onChange={(val) => setValue("city", val)}
           />
         </div>
 
-        <FloatingLabelInput
-          id="bio"
-          label="Bio"
-          value={basicInfo.bio}
-          onChange={(e) => setBasicInfo({ ...basicInfo, bio: e.target.value })}
-        />
+        <FloatingLabelInput id="bio" label="Bio" {...register("bio")} />
       </section>
 
       <section className="space-y-6">
         <h2 className="text-xl font-bold text-foreground">Experiences</h2>
 
         {/* Ribbon for previous experiences */}
-        <div className="space-y-2">
-          {previousExperiences.map((exp, index) => (
+        <div className="space-y-2 max-h-60 overflow-y-auto pr-1 shadow-sm">
+          {experiencesFields.slice(0, -1).map((exp, index) => (
             <div
-              key={index}
+              key={exp.id}
               className="p-3 rounded bg-gray-100 border flex justify-between items-start"
             >
               <div>
@@ -287,7 +231,7 @@ export default function EditProfilePage() {
                 type="button"
                 variant="outline"
                 onClick={() => handleRemoveExperience(index)}
-                className="border-none hover:text-background hover:bg-destructive/60 cursor-pointer"
+                className="border-none text-destructive hover:text-background hover:bg-destructive/60 cursor-pointer"
               >
                 Remove
               </Button>
@@ -295,103 +239,83 @@ export default function EditProfilePage() {
           ))}
         </div>
 
-        {/* Editable inputs for ONLY the last experience */}
-        {currentExperience && (
-          <div className="space-y-4">
-
+        {/* Editable inputs for last experience */}
+        {experiencesFields.slice(-1).map((exp, index) => (
+          <div key={exp.id} className="space-y-4">
+            {/* Designation */}
             <FloatingLabelInput
-              id={"designation"}
+              id="designation"
               label="Designation"
-              value={currentExperience.designation}
-              onChange={(e) => {
-                const newExps = [...founder.experiences];
-                newExps[founder.experiences.length - 1].designation = e.target.value;
-                setFounder({ ...founder, experiences: newExps });
-              }}
+              value={exp.designation}
+              onChange={(e) => update(index, { ...exp, designation: e.target.value })}
             />
 
+            {/* Duration */}
             <div className="space-y-2 relative z-[9999]">
               <Datepicker
-                value={{ startDate: currentExperience.startDate, endDate: currentExperience.endDate }}
-                onChange={(range) => {
-                  const newExps = [...founder.experiences];
-                  newExps[founder.experiences.length - 1].startDate = range?.startDate || new Date();
-                  newExps[founder.experiences.length - 1].endDate = range?.endDate || new Date();
-                  setFounder({ ...founder, experiences: newExps });
-                }}
+                value={{ startDate: exp.startDate, endDate: exp.endDate }}
+                onChange={(range) =>
+                  update(index, {
+                    ...exp,
+                    startDate: range?.startDate || new Date(),
+                    endDate: range?.endDate || new Date(),
+                  })
+                }
                 displayFormat="MM/DD/YYYY"
                 separator="-"
-                startFrom={currentExperience.startDate}
-                inputClassName="peer w-full border rounded-md p-2 placeholder-transparent"
+                startFrom={exp.startDate}
+                inputClassName="peer w-full rounded-md border border-input h-9 text-sm cursor-pointer"
               />
               <FloatingLabel
                 htmlFor="experiences"
-                className="absolute left-2 top-2 text-gray-500 text-sm pointer-events-none"
+                className="bg-background absolute left-2 top-2 text-gray-500 text-sm pointer-events-none"
               >
                 Experience Duration
               </FloatingLabel>
             </div>
 
+            {/* Company Name */}
             <FloatingLabelInput
-              id={"company"}
+              id="company"
               label="Company Name"
-              value={currentExperience.company}
-              onChange={(e) => {
-                const newExps = [...founder.experiences];
-                newExps[founder.experiences.length - 1].company = e.target.value;
-                setFounder({ ...founder, experiences: newExps });
-              }}
+              value={exp.company}
+              onChange={(e) => update(index, { ...exp, company: e.target.value })}
             />
 
+            {/* Experience Description */}
             <FloatingLabelInput
-              id={"desc"}
+              id="desc"
               label="Experience Description"
-              value={currentExperience.experienceDesc}
-              onChange={(e) => {
-                const newExps = [...founder.experiences];
-                newExps[founder.experiences.length - 1].experienceDesc = e.target.value;
-                setFounder({ ...founder, experiences: newExps });
-              }}
+              value={exp.experienceDesc}
+              onChange={(e) => update(index, { ...exp, experienceDesc: e.target.value })}
             />
           </div>
-        )}
+        ))}
 
-        {/* Add More Button */}
+        {/* Add New Field Button */}
         <div className="flex justify-end">
-          <Button
-            type="button"
-            variant="ghost"
-            className="cursor-pointer"
-            onClick={handleAddExperience}
-          >
-            Add More
+          <Button type="button" variant="ghost" className="cursor-pointer" onClick={handleAddExperience}>
+            Add New Field
           </Button>
         </div>
 
-        <SkillsInput
-          skills={founder.skills}
-          setSkills={(val) => setFounder({ ...founder, skills: val })}
-        />
+        {/* Skills */}
+        <SkillsInput skills={formData?.skills || []} setSkills={(val) => setValue("skills", val)} />
       </section>
 
       {/* Update Button */}
       <div className="flex justify-end">
-        <Button
-          type="submit"
-          disabled={isUpdating}
-          onSubmit={handleSave}
-          className="w-full md:w-auto cursor-pointer"
-        >
+        <Button 
+          type="submit" 
+          disabled={isUpdating} 
+          className="w-full md:w-auto cursor-pointer">
           {isUpdating ? (
-            <>
-              Saving
-              <Loader className="animate-spin ml-2" />
-            </>
+            <>Saving<Loader className="animate-spin ml-2" /></>
           ) : (
             "Save Changes"
           )}
         </Button>
       </div>
-    </div>
+    </form>
   );
 }

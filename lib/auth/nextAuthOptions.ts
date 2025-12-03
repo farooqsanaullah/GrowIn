@@ -172,7 +172,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     // Redirect on success
     async redirect({ url, baseUrl }) {
-      return baseUrl + "/";
+      return baseUrl + "/explore";
     },
 
     //  [1] signIn → Handle OAuth user creation/account linking

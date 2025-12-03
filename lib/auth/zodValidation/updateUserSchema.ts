@@ -51,11 +51,11 @@ const experienceSchema = z.object({
   designation: z.string().min(1),
   company: z.string().min(1),
   experienceDesc: z.string().max(500).optional(),
-  expStart: z.date(),
-  expEnd: z.date(),
-}).refine(data => data.expEnd >= data.expStart, {
+  startDate: z.date(),
+  endDate: z.date(),
+}).refine(data => data.endDate >= data.startDate, {
   message: "End date must be after start date",
-  path: ["expEnd"],
+  path: ["endDate"],
 });
 
 // User update schema

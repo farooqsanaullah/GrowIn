@@ -6,7 +6,7 @@ import { StartupCreationForm } from '@/components/forms/StartupCreationForm';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { startupsApi } from '@/lib/api/startups';
+import { startupsApi } from '@/lib/helpers/api/startups';
 import type { Startup } from '@/lib/types/api';
 
 export default function EditStartupPage() {
