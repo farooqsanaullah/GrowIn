@@ -28,7 +28,6 @@ const ForgotPasswordSchema = z.object({
 
 export default function ForgotPasswordDialog() {
   const [open, setOpen] = useState(true);
-  const [sending, setSending] = useState(false);
   const [success, setSuccess] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const router = useRouter();
@@ -37,7 +36,7 @@ export default function ForgotPasswordDialog() {
     register,
     handleSubmit,
     watch,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<ForgotPasswordFormValues>({
     resolver: zodResolver(ForgotPasswordSchema),
     defaultValues: {
@@ -53,8 +52,6 @@ export default function ForgotPasswordDialog() {
     setSuccess(false);
 
     try {
-      setSending(true);
-
       const response = await fetch("/api/auth/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -71,8 +68,6 @@ export default function ForgotPasswordDialog() {
     } catch (err: any) {
       setFormError(err.message);
       toast.error(err.message || "Failed to send reset link");
-    } finally {
-      setSending(false);
     }
   };
 
@@ -92,7 +87,7 @@ export default function ForgotPasswordDialog() {
             <FloatingLabelInput
               id="email"
               label="Email"
-              disabled={sending}
+              disabled={isSubmitting}
               autoComplete="email"
               className={`bg-input text-foreground pr-10
                 ${errors.email || formError
@@ -124,10 +119,10 @@ export default function ForgotPasswordDialog() {
 
                 <Button
                   type="submit"
-                  disabled={sending}
+                  disabled={isSubmitting}
                   className="flex-1 cursor-pointer"
                 >
-                  {sending ? (
+                  {isSubmitting ? (
                     <>Sending<Loader className="animate-spin" /></>
                   ) : (
                     "Send Reset Link"
