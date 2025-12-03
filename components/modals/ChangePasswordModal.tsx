@@ -18,7 +18,7 @@ import {
   Input,
 } from "@/components/ui";
 import toast from "react-hot-toast";
-import { getPasswordStrength } from "@/lib/helpers/shared";
+import { getPasswordStrength } from "@/lib/helpers";
 
 export type ChangePasswordModalProps = {
   isOpen: boolean;

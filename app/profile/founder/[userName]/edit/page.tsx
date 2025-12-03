@@ -18,7 +18,7 @@ import { useParams } from "next/navigation";
 import { Loader } from "lucide-react";
 import { UpdateUserSchema } from "@/lib/auth/zodSchemas";
 import toast from "react-hot-toast";
-import { isExperienceEmpty } from "@/lib/helpers/shared";
+import { isExperienceEmpty } from "@/lib/helpers";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 

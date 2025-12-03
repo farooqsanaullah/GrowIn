@@ -20,8 +20,7 @@ import {
   Separator,
 } from "@/components/ui";
 import Link from "next/link";
-import Image from "next/image";
-import { getPasswordStrength } from "@/lib/helpers/shared";
+import { getPasswordStrength } from "@/lib/helpers";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
 
