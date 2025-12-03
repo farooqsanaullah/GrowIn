@@ -7,7 +7,7 @@ import { PhoneSchema,
  } from "@/lib/auth/zodSchemas";
 
 // User update schema
-export const updateUserSchema = z.object({
+export const UpdateUserSchema = z.object({
   userName: z.string().min(3, "Username too short").max(30, "Username too long").optional(),
   name: z.string().max(50, "Name too long").optional(),
   email: z.string().email("Invalid email").optional(),

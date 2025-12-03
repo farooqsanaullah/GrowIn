@@ -16,7 +16,7 @@ import Datepicker from "react-tailwindcss-datepicker";
 import "flowbite/dist/flowbite.css";
 import { useParams } from "next/navigation";
 import { Loader } from "lucide-react";
-import { updateUserSchema } from "@/lib/auth/zodSchemas/updateUserSchema.zod";
+import { UpdateUserSchema } from "@/lib/auth/zodSchemas";
 import toast from "react-hot-toast";
 import { isExperienceEmpty } from "@/lib/helpers/shared";
 import { useForm, useFieldArray } from "react-hook-form";
@@ -29,7 +29,7 @@ export default function EditProfilePage() {
   const [isUpdating, setIsUpdating] = useState(false);
 
   const { control, register, handleSubmit, setValue, watch, formState: { errors } } = useForm({
-    resolver: zodResolver(updateUserSchema),
+    resolver: zodResolver(UpdateUserSchema),
     defaultValues: {
       userName: "",
       name: "",
@@ -98,7 +98,6 @@ export default function EditProfilePage() {
   }, [user, setValue]);
 
   const onSubmit = async (data: any) => {
-    // console.log("Error: ", errors);
     console.log("Form submiting with data: ", data);
     setIsUpdating(true);
     try {
@@ -209,6 +208,7 @@ export default function EditProfilePage() {
         <FloatingLabelInput id="bio" label="Bio" {...register("bio")} />
       </section>
 
+      {/* Founder Specific */}
       <section className="space-y-6">
         <h2 className="text-xl font-bold text-foreground">Experiences</h2>
 

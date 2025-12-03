@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db/connect";
 import User from "@/lib/models/user.model";
-import { updateUserSchema } from "@/lib/auth/zodSchemas/updateUserSchema.zod";
+import { UpdateUserSchema } from "@/lib/auth/zodSchemas";
 
 const isDev = process.env.NODE_ENV === "development";
 
@@ -49,7 +49,7 @@ export async function PUT(req: NextRequest, context: API_Props) {
     const body = await req.json();
 
     // Validating body using Zod schema
-    const parsed = updateUserSchema.safeParse(body);
+    const parsed = UpdateUserSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
         { message: "Invalid input", errors: parsed.error.issues },
