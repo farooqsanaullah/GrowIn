@@ -3,7 +3,12 @@
 import { JSX, useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { SignUpSchema, SignUpSchemaType} from "@/lib/auth/zodSchemas";;
+import { 
+  EmailSchema,
+  PasswordSchema,
+  SignUpSchema, 
+  SignUpSchemaType
+} from "@/lib/auth/zodSchemas";;
 
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -15,7 +20,6 @@ import {
   Separator,
 } from "@/components/ui";
 import Link from "next/link";
-import { EMAIL_REGEX } from "@/lib/constants";
 import Image from "next/image";
 import { getPasswordStrength } from "@/lib/helpers/shared";
 import { FcGoogle } from "react-icons/fc";
@@ -62,6 +66,10 @@ export default function SignupForm({ providers }: SignupFormProps) {
   const emailValue = watch("email");
   const passwordValue = watch("password") || "";
   const confirmValue = watch("confirmPassword") || "";
+  
+  const isEmailValid = EmailSchema.safeParse(emailValue).success;
+  const isValidPassword = PasswordSchema.safeParse(passwordValue).success;
+  const isValidConfirm = passwordValue === confirmValue && confirmValue.length > 0;
   const { lengthCheck, specialCharCheck, digitCheck } = getPasswordStrength(passwordValue);
 
   useEffect(() => {
@@ -257,7 +265,7 @@ export default function SignupForm({ providers }: SignupFormProps) {
                 label="Email"
                 disabled={loadingSignup || loadingProvider}
                 className={`bg-input text-foreground pr-10 ${
-                  EMAIL_REGEX.test(emailValue)
+                  isEmailValid
                     ? "!bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
                     : "border-border"
                 }`}
@@ -277,11 +285,14 @@ export default function SignupForm({ providers }: SignupFormProps) {
                 <FloatingLabelInput 
                   id="password"
                   label="Password"
+                  autoComplete="password"
                   disabled={loadingSignup || loadingProvider}
                   className={`bg-input text-foreground pr-10 ${
-                    (lengthCheck && specialCharCheck && digitCheck)
+                    passwordValue.length === 0 
+                      ? "border-border"
+                      : isValidPassword
                       ? "!bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
-                      : "border-border"
+                      : "!bg-destructive/10 border-transparent focus-visible:border-destructive focus-visible:ring-0 shadow-none"
                   }`}
                   {...register("password")}
                 />
@@ -295,7 +306,11 @@ export default function SignupForm({ providers }: SignupFormProps) {
                   </button>
                 )}
               </div>
-              
+              {errors.password && (
+                <p className="mt-1 text-sm text-destructive">
+                  {errors.password.message}
+                </p>
+              )}
               {passwordValue.length > 0 && (
                 // Password Guide
                 <div className="mt-4 text-sm space-y-1">
@@ -310,12 +325,6 @@ export default function SignupForm({ providers }: SignupFormProps) {
                   </p>
                 </div>
               )}
-
-              {errors.password && (
-                <p className="mt-1 text-sm text-destructive">
-                  {errors.password.message}
-                </p>
-              )}
             </div>
 
             {/* Confirm Password */}
@@ -324,12 +333,14 @@ export default function SignupForm({ providers }: SignupFormProps) {
                 <FloatingLabelInput 
                   id="confirmPassword"
                   label="Confirm Password"
-                  disabled={loadingSignup || loadingProvider }
                   autoComplete="password"
+                  disabled={loadingSignup || loadingProvider }
                   className={`bg-input text-foreground pr-10 ${
-                    (confirmValue.length > 0 && passwordValue === confirmValue)
+                    confirmValue.length === 0 
+                      ? "border-border"
+                      : isValidConfirm
                       ? "!bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
-                      : "border-border"
+                      : "!bg-destructive/10 border-transparent focus-visible:border-destructive focus-visible:ring-0 shadow-none"
                   }`}
                   {...register("confirmPassword")}
                 />
