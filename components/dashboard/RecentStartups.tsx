@@ -6,17 +6,24 @@ import { Button } from "@/components/ui/button";
 import { Building2, Plus, Edit, Eye, MoreHorizontal, Users, Loader2 } from "lucide-react";
 import { startupsApi } from '@/lib/api/startups';
 import type { Startup } from '@/lib/types/api';
+import { useSession } from "next-auth/react";
 
 export function RecentStartups() {
   const [startups, setStartups] = useState<Startup[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { data: session } = useSession();
+  const founderId = session?.user?.id;
 
   useEffect(() => {
     const fetchRecentStartups = async () => {
       try {
 
-        const founderId = "673615f87cdf80bbbb5d7cd7";
+        if (!founderId) {
+          setLoading(false);
+          return;
+        }
+
         const response = await startupsApi.getByFounder(founderId, { limit: 3 });
 
         if (response.success && response.data) {

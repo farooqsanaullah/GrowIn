@@ -10,12 +10,13 @@ import {
   sanitizeStartupData,
 } from "@/lib/utils/validation";
 
-const STATIC_FOUNDER_ID = "673615f87cdf80bbbb5d7cd7";
+
 export async function GET(request: NextRequest) {
   try {
     await connectDB();
 
     const { searchParams } = new URL(request.url);
+
 
     const page = Number(searchParams.get("page") || 1);
     const limit = Number(searchParams.get("limit") || 10);
@@ -92,11 +93,13 @@ export async function POST(request: NextRequest) {
     await connectDB();
 
     const body = await request.json();
+    const founderId = request.headers.get('founderId');
+
 
     const startupData = sanitizeStartupData(body);
 
     if (!startupData.founders || startupData.founders.length === 0) {
-      startupData.founders = [STATIC_FOUNDER_ID];
+      startupData.founders = [founderId];
     }
 
     if (!startupData.investors) {
