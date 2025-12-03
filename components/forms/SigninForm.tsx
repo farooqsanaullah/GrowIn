@@ -107,6 +107,7 @@ export default function SigninForm({ providers }: SigninFormProps) {
             <FloatingLabelInput 
               id="email"
               label="Email"
+              disabled={loadingSignin || loadingProvider}
               {...register("email")}
             />
             {errors.email && (
@@ -119,6 +120,7 @@ export default function SigninForm({ providers }: SigninFormProps) {
             <FloatingLabelInput
               id="password"
               label="Password"
+              disabled={loadingSignin || loadingProvider}
               type={showPassword ? "text" : "password"}
               placeholder="••••••••"
               {...register("password")}

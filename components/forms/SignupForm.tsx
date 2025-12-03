@@ -155,6 +155,7 @@ export default function SignupForm({ providers }: SignupFormProps) {
                     type="button"
                     key={prov.name}
                     variant={"outline"}
+                    disabled={loadingProvider || loadingSignup}
                     onClick={() => {
                       setLoadingProvider(prov.id)
                       signIn(prov.id)
@@ -200,6 +201,7 @@ export default function SignupForm({ providers }: SignupFormProps) {
                     <Button
                       type="button" // Prevent form submit
                       variant={field.value === "investor" ? "default" : "outline"}
+                      disabled={loadingSignup || loadingProvider }
                       className="flex-grow cursor-pointer"
                       onClick={() => field.onChange("investor")}
                     >
@@ -209,6 +211,7 @@ export default function SignupForm({ providers }: SignupFormProps) {
                     <Button
                       type="button" // Prevent form submit
                       variant={field.value === "founder" ? "default" : "outline"}
+                      disabled={loadingSignup || loadingProvider }
                       className="flex-grow cursor-pointer"
                       onClick={() => field.onChange("founder")}
                     >
@@ -228,6 +231,7 @@ export default function SignupForm({ providers }: SignupFormProps) {
               <FloatingLabelInput 
                 id="userName"
                 label="Username"
+                disabled={loadingSignup || loadingProvider }
                 autoComplete="new-username"
                 className={`text-foreground pr-10 ${
                   isAvailable && !isChecking
@@ -261,6 +265,7 @@ export default function SignupForm({ providers }: SignupFormProps) {
               <FloatingLabelInput
                 id="email"
                 label="Email"
+                disabled={loadingSignup || loadingProvider }
                 {...register("email", { required: "Email is required" })}
                 className={`bg-input text-foreground pr-10
                   ${(EMAIL_REGEX.test(emailValue))
@@ -282,6 +287,7 @@ export default function SignupForm({ providers }: SignupFormProps) {
                 <FloatingLabelInput 
                   id="password"
                   label="Password"
+                  disabled={loadingSignup || loadingProvider }
                   autoComplete="password"
                   className={`bg-input text-foreground pr-10
                     ${(lengthCheck && specialCharCheck && digitCheck)
@@ -336,6 +342,7 @@ export default function SignupForm({ providers }: SignupFormProps) {
                 <FloatingLabelInput 
                   id="confirmPassword"
                   label="Confirm Password"
+                  disabled={loadingSignup || loadingProvider }
                   autoComplete="password"
                   className={`bg-input text-foreground pr-10
                     ${(confirmValue.length > 0 && passwordValue === confirmValue)
@@ -380,7 +387,7 @@ export default function SignupForm({ providers }: SignupFormProps) {
             {/* SignUp Button */}
             <Button
               type="submit"
-              disabled={loadingSignup}
+              disabled={loadingSignup || loadingProvider }
               className="w-full cursor-pointer text-md"
             >
               {loadingSignup ? (
