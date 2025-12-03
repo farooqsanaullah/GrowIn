@@ -3,8 +3,7 @@
 import { JSX, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { signInSchema } from "@/lib/auth/zodSchemas";
-import type { z } from "zod";
+import { SignInSchema, SignInSchemaType } from "@/lib/auth/zodSchemas";
 
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -15,8 +14,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
-
-type SigninFormValues = z.infer<typeof signInSchema>;
 
 type SigninFormProps = {
   providers: Record<string, any> | null;
@@ -40,14 +37,14 @@ export default function SigninForm({ providers }: SigninFormProps) {
     handleSubmit,
     watch,
     formState: { errors }, 
-  } = useForm<SigninFormValues>({
-    resolver: zodResolver(signInSchema),
+  } = useForm<SignInSchemaType>({
+    resolver: zodResolver(SignInSchema),
     defaultValues: { email: "", password: "" },
   });
 
   const isPassEntered = watch("password").length > 0;
 
-  const onSubmit = async (data: SigninFormValues) => {
+  const onSubmit = async (data: SignInSchemaType) => {
     try {
       setLoadingSignin(true);
       const res = await signIn("credentials", {

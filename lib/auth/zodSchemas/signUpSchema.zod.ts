@@ -1,20 +1,20 @@
 import { z } from "zod";
 import { 
-  userNameSchema,
-  emailSchema,
-  passwordSchema,
-  roleSchema
+  UserNameSchema,
+  EmailSchema,
+  PasswordSchema,
+  RoleSchema
 } from "@/lib/auth/zodSchemas";
  
-export const signUpSchema = z.object({
-  userName: userNameSchema,
-  email: emailSchema,
-  password: passwordSchema,
+export const SignUpSchema = z.object({
+  userName: UserNameSchema,
+  email: EmailSchema,
+  password: PasswordSchema,
   confirmPassword: z.string(),
-  role: roleSchema,
+  role: RoleSchema,
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords do not match",
   path: ["confirmPassword"],
 });
 
-export type SignUpSchemaType = z.infer<typeof signUpSchema>;
+export type SignUpSchemaType = z.infer<typeof SignUpSchema>;
