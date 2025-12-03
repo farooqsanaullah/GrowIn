@@ -76,8 +76,6 @@ export const PhoneSchema = z
   .regex(PHONE_REGEX, "Invalid phone number")
   .optional();
 
-export const UpdatePasswordSchema = PasswordSchema.optional();
-
 // Experience
 export const ExperienceSchema = z.object({
   designation: z.string().min(1),

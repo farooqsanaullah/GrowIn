@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { validatePassword } from "@/lib/helpers/shared";
+import { PasswordSchema } from "@/lib/auth/zodSchemas";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeClosedIcon, Loader } from "lucide-react";
 import {
   Dialog,
@@ -31,6 +33,18 @@ type FormValues = {
   confirmPassword: string;
 };
 
+// Create a combined schema for the form
+const ChangePasswordSchema = z
+  .object({
+    currentPassword: z.string().optional(), // only required in normal flow
+    newPassword: PasswordSchema,
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
 export default function ChangePasswordModal({
   isOpen,
   onClose,
@@ -49,6 +63,7 @@ export default function ChangePasswordModal({
     setError,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
+    resolver: zodResolver(ChangePasswordSchema),
     defaultValues: {
       currentPassword: "",
       newPassword: "",
@@ -62,28 +77,7 @@ export default function ChangePasswordModal({
   const { lengthCheck, specialCharCheck, digitCheck } = getPasswordStrength(newPasswordValue);
 
   const onSubmit = async (data: FormValues) => {
-    const { currentPassword, newPassword, confirmPassword } = data;
-
-    const currentPasswordError =
-      !isForgotPasswordFlow ? validatePassword(currentPassword || "") : null;
-    const newPasswordError = validatePassword(newPassword);
-    const confirmPasswordError = validatePassword(confirmPassword);
-
-    if (currentPasswordError) setError("currentPassword", { message: currentPasswordError });
-    if (newPasswordError) setError("newPassword", { message: newPasswordError });
-    if (confirmPasswordError) setError("confirmPassword", { message: confirmPasswordError });
-
-    if (
-      currentPasswordError ||
-      newPasswordError ||
-      confirmPasswordError
-    )
-      return;
-
-    if (newPassword !== confirmPassword) {
-      setError("confirmPassword", { message: "Passwords do not match" });
-      return;
-    }
+    const { currentPassword, newPassword } = data;
 
     try {
       const url = isForgotPasswordFlow
@@ -126,8 +120,8 @@ export default function ChangePasswordModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md"
-        onInteractOutside={(event) => event.preventDefault()} // Prevent click outside
-        onEscapeKeyDown={(event) => event.preventDefault()}   // Prevent Esc
+        onInteractOutside={(event) => event.preventDefault()}
+        onEscapeKeyDown={(event) => event.preventDefault()}
       >
         <DialogHeader>
           <DialogTitle className="text-xl text-center">Change Password</DialogTitle>
@@ -143,12 +137,7 @@ export default function ChangePasswordModal({
                   type={showCurrentPassword ? "text" : "password"}
                   placeholder="Current password"
                   autoComplete="current-password"
-                  {...register("currentPassword", {
-                    validate: (value) =>
-                      isForgotPasswordFlow
-                        ? true
-                        : validatePassword(value || "") || true,
-                  })}
+                  {...register("currentPassword")}
                   className={`bg-input text-foreground pr-10
                   ${(currentPasswordValue && currentPasswordValue.length >= 8)
                       ? "bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
@@ -183,9 +172,7 @@ export default function ChangePasswordModal({
                 type={showNewPassword ? "text" : "password"}
                 placeholder="••••••••"
                 autoComplete="new-password"
-                {...register("newPassword", {
-                  validate: (value) => validatePassword(value) || true,
-                })}
+                {...register("newPassword")}
                 className={`bg-input text-foreground pr-10
                   ${(lengthCheck && specialCharCheck && digitCheck)
                       ? "bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
@@ -232,14 +219,7 @@ export default function ChangePasswordModal({
                 type={showConfirmPassword ? "text" : "password"}
                 placeholder="••••••••"
                 autoComplete="new-password"
-                {...register("confirmPassword", {
-                  validate: (value) => {
-                    const err = validatePassword(value);
-                    if (err) return err;
-                    if (value !== newPasswordValue) return "Passwords do not match";
-                    return true;
-                  },
-                })}
+                {...register("confirmPassword")}
                 className={`bg-input text-foreground pr-10
                   ${(confirmPasswordValue.length > 0 && newPasswordValue === confirmPasswordValue)
                       ? "bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
