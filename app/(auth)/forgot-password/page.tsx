@@ -13,7 +13,7 @@ import {
   DialogTitle, 
   DialogFooter 
 } from "@/components/ui/dialog";
-import { Input, Button, Label } from "@/components/ui";
+import { Button, FloatingLabelInput } from "@/components/ui";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -28,7 +28,7 @@ const ForgotPasswordSchema = z.object({
 
 export default function ForgotPasswordDialog() {
   const [open, setOpen] = useState(true);
-  const [loading, setLoading] = useState(false);
+  const [sending, setSending] = useState(false);
   const [success, setSuccess] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const router = useRouter();
@@ -53,7 +53,7 @@ export default function ForgotPasswordDialog() {
     setSuccess(false);
 
     try {
-      setLoading(true);
+      setSending(true);
 
       const response = await fetch("/api/auth/forgot-password", {
         method: "POST",
@@ -63,7 +63,7 @@ export default function ForgotPasswordDialog() {
 
       if (!response.ok) {
         const errData = await response.json();
-        throw new Error(errData.error || "Failed to send reset link");
+        throw new Error(errData.message || "Failed to send reset link");
       }
 
       setSuccess(true);
@@ -72,7 +72,7 @@ export default function ForgotPasswordDialog() {
       setFormError(err.message);
       toast.error(err.message || "Failed to send reset link");
     } finally {
-      setLoading(false);
+      setSending(false);
     }
   };
 
@@ -87,32 +87,30 @@ export default function ForgotPasswordDialog() {
           <DialogTitle className="text-xl text-center">Forgot Password</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <Label htmlFor="email" className="text-foreground text-md">Email</Label>
-            <Input
+            <FloatingLabelInput
               id="email"
-              type="email"
-              placeholder="Enter your email"
+              label="Email"
+              disabled={sending}
               autoComplete="email"
-              {...register("email")}
-              className={`mt-2 bg-input text-foreground pr-10
-                ${errors.email
+              className={`bg-input text-foreground pr-10
+                ${errors.email || formError
                   ? "!bg-destructive/10 border-transparent focus-visible:border-destructive focus-visible:ring-0 shadow-none"
                   : isEmailValid
-                  ? "bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
+                  ? "!bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
                   : "border-border"
-                }
-              `}
+              }`}
+              {...register("email")}
             />
-            {errors.email && (
-              <p className="text-destructive text-sm mt-1">{errors.email.message}</p>
+            {(errors.email || formError) && (
+              <p className="text-destructive text-sm pl-1 mt-1">
+                {errors.email?.message || formError}
+              </p>
             )}
           </div>
 
-          {formError && <p className="text-destructive text-sm">{formError}</p>}
-
-          <DialogFooter className="mt-8">
+          <DialogFooter className="mt-4">
             <div className="w-full">
               <div className="flex flex-col sm:flex-row gap-2">
                 <Button
@@ -126,10 +124,10 @@ export default function ForgotPasswordDialog() {
 
                 <Button
                   type="submit"
-                  disabled={loading}
+                  disabled={sending}
                   className="flex-1 cursor-pointer"
                 >
-                  {loading ? (
+                  {sending ? (
                     <>Sending<Loader className="animate-spin" /></>
                   ) : (
                     "Send Reset Link"
