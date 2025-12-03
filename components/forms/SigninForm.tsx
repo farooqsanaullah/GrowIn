@@ -2,6 +2,10 @@
 
 import { JSX, useState } from "react";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { signInSchema } from "@/lib/auth/zodSchemas";
+import type { z } from "zod";
+
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Button, FloatingLabelInput, Separator } from "@/components/ui";
@@ -12,10 +16,7 @@ import Image from "next/image";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
 
-type SigninFormValues = {
-  email: string;
-  password: string;
-};
+type SigninFormValues = z.infer<typeof signInSchema>;
 
 type SigninFormProps = {
   providers: Record<string, any> | null;
@@ -39,6 +40,7 @@ export default function SigninForm({ providers }: SigninFormProps) {
     watch,
     formState: { errors }, 
   } = useForm<SigninFormValues>({
+    resolver: zodResolver(signInSchema),
     defaultValues: { email: "", password: "" },
   });
 
@@ -98,12 +100,13 @@ export default function SigninForm({ providers }: SigninFormProps) {
       <div className="w-full max-w-md rounded-lg border border-border bg-card p-8 shadow-sm">
         <h1 className="mb-6 text-left text-2xl text-foreground">Sign In for GrowIn</h1>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          
           {/* Email */}
           <div>
             <FloatingLabelInput 
               id="email"
               label="Email"
-              {...register("email", { required: "Email is required" })}
+              {...register("email")}
             />
             {errors.email && (
               <p className="mt-1 text-sm text-destructive">{errors.email.message}</p>
@@ -117,11 +120,12 @@ export default function SigninForm({ providers }: SigninFormProps) {
               label="Password"
               type={showPassword ? "text" : "password"}
               placeholder="••••••••"
-              {...register("password", { required: "Password is required" })}
+              {...register("password")}
             />
             {errors.password && (
               <p className="mt-1 text-sm text-destructive">{errors.password.message}</p>
             )}
+
             {isPassEntered && (
               <button
                 type="button"
