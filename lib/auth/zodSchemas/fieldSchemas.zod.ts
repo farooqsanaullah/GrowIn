@@ -8,7 +8,8 @@ import {
   PHONE_REGEX,
 } from "@/lib/constants";
 
-export const userNameSchema = z
+// Username
+export const UserNameSchema = z
   .string()
   .trim()
   .min(
@@ -20,28 +21,31 @@ export const userNameSchema = z
     `Username must not exceed ${USERNAME_MAX_LENGTH} characters.`
   );
 
-export const emailSchema = z
+// Email
+export const EmailSchema = z
   .string()
   .trim()
   .email("Please enter a valid email address.");
 
-export const passwordSchema = z
+// Password
+export const PasswordSchema = z
   .string()
   .min(
     PASSWORD_MIN_LENGTH,
     `Password must be at least ${PASSWORD_MIN_LENGTH} characters long.`
   )
-  .refine((val) => PASSWORD_SPECIAL_CHAR_REGEX.test(val), "Password must contain at least one special character.")
-  .refine((val) => /\d/.test(val), "Password must contain at least one number.");
+  .regex(/\d/, "Password must include 1 digit")
+  .regex(PASSWORD_SPECIAL_CHAR_REGEX, "Password must include 1 special character");
 
-export const roleSchema = z
+// Role
+export const RoleSchema = z
   .enum(ALLOWED_ROLES)
   .refine((val) => ALLOWED_ROLES.includes(val), {
     message: `Role must be one of: ${ALLOWED_ROLES.join(", ")}`,
 });
 
-// Social links schema
-export const socialLinksSchema = z.object({
+// Social links
+export const SocialLinksSchema = z.object({
   twitter: z
     .string()
     .url("Invalid Twitter URL")
@@ -60,29 +64,22 @@ export const socialLinksSchema = z.object({
     .optional(),
 }).optional();
 
-// Funding range schema
-export const fundingRangeSchema = z.object({
+// Funding range
+export const FundingRangeSchema = z.object({
   min: z.number().min(0, "Minimum funding must be positive").optional(),
   max: z.number().min(0, "Maximum funding must be positive").optional(),
 }).optional();
 
-// Phone schema using regex for now (matches E.164 or common formats)
-export const phoneSchema = z
+// Phone (regex matches E.164 | common formats)
+export const PhoneSchema = z
   .string()
   .regex(PHONE_REGEX, "Invalid phone number")
   .optional();
 
-export const updatePasswordSchema = z
-  .string()
-  .min(
-    PASSWORD_MIN_LENGTH,
-    `Password must be at least ${PASSWORD_MIN_LENGTH} characters long.`
-  )
-  .refine((val) => PASSWORD_SPECIAL_CHAR_REGEX.test(val), "Password must contain at least one special character.")
-  .refine((val) => /\d/.test(val), "Password must contain at least one number.")
-  .optional();
+export const UpdatePasswordSchema = PasswordSchema.optional();
 
-export const experienceSchema = z.object({
+// Experience
+export const ExperienceSchema = z.object({
   designation: z.string().min(1),
   company: z.string().min(1),
   experienceDesc: z.string().max(500).optional(),
