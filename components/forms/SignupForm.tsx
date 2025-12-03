@@ -39,7 +39,8 @@ const providerIcons: { [key: string]: JSX.Element } = {
 
 export default function SignupForm({ providers }: SignupFormProps) {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
+  const [loadingSignup, setLoadingSignup] = useState(false);
+  const [loadingProvider, setLoadingProvider] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
@@ -91,7 +92,7 @@ export default function SignupForm({ providers }: SignupFormProps) {
 
   const onSubmit = async (data: SignupFormValues) => {
     try {
-      setIsLoading(true);
+      setLoadingSignup(true);
 
       const res = await fetch("/api/auth/signup", {
         method: "POST",
@@ -119,7 +120,7 @@ export default function SignupForm({ providers }: SignupFormProps) {
       isDev && console.error("Signup error:", error);
       toast.error("Something went wrong");
     } finally {
-      setIsLoading(false);
+      setLoadingSignup(false);
     }
   };
 
@@ -154,11 +155,24 @@ export default function SignupForm({ providers }: SignupFormProps) {
                     type="button"
                     key={prov.name}
                     variant={"outline"}
-                    onClick={() => signIn(prov.id)}
+                    onClick={() => {
+                      setLoadingProvider(prov.id)
+                      signIn(prov.id)
+                    }}
                     className="w-full bg-background text-foreground hover:bg-foreground hover:text-background border-border hover:border-transparent cursor-pointer"
                   >
-                    {providerIcons[prov.id]}
-                    Sign in with {prov.name}
+                    {loadingProvider === prov.id ? (
+                      <>
+                        {providerIcons[prov.id]}
+                        Redirecting
+                        <Loader className="w-4 h-4 animate-spin ml-2" />
+                      </>
+                    ) : (
+                      <>
+                        {providerIcons[prov.id]}
+                        Sign in with {prov.name}
+                      </>
+                    )}
                   </Button>
                 ))}
             </div>
@@ -250,7 +264,7 @@ export default function SignupForm({ providers }: SignupFormProps) {
                 {...register("email", { required: "Email is required" })}
                 className={`bg-input text-foreground pr-10
                   ${(EMAIL_REGEX.test(emailValue))
-                      ? "bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
+                      ? "!bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
                       : "border-border"
                   }
                 `}
@@ -271,7 +285,7 @@ export default function SignupForm({ providers }: SignupFormProps) {
                   autoComplete="password"
                   className={`bg-input text-foreground pr-10
                     ${(lengthCheck && specialCharCheck && digitCheck)
-                        ? "bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
+                        ? "!bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
                         : "border-border"
                   }`}
                   {...register("password", {
@@ -325,7 +339,7 @@ export default function SignupForm({ providers }: SignupFormProps) {
                   autoComplete="password"
                   className={`bg-input text-foreground pr-10
                     ${(confirmValue.length > 0 && passwordValue === confirmValue)
-                        ? "bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
+                        ? "!bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
                         : "border-border"
                   }`}
                   {...register("confirmPassword", {
@@ -366,10 +380,10 @@ export default function SignupForm({ providers }: SignupFormProps) {
             {/* SignUp Button */}
             <Button
               type="submit"
-              disabled={isLoading}
+              disabled={loadingSignup}
               className="w-full cursor-pointer text-md"
             >
-              {isLoading ? (
+              {loadingSignup ? (
                 <>Signing up<Loader className="animate-spin ml-2" /></>
               ) : (
                 "Sign Up"

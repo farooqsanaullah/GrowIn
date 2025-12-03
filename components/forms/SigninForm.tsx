@@ -31,7 +31,8 @@ const providerIcons: { [key: string]: JSX.Element } = {
 
 export default function SigninForm({ providers }: SigninFormProps) {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
+  const [loadingSignin, setLoadingSignin] = useState(false);
+  const [loadingProvider, setLoadingProvider] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const { 
@@ -48,7 +49,7 @@ export default function SigninForm({ providers }: SigninFormProps) {
 
   const onSubmit = async (data: SigninFormValues) => {
     try {
-      setIsLoading(true);
+      setLoadingSignin(true);
       const res = await signIn("credentials", {
         redirect: false,
         email: data.email,
@@ -76,7 +77,7 @@ export default function SigninForm({ providers }: SigninFormProps) {
       isDev && console.error("Login error:", error);
       toast.error("Something went wrong");
     } finally {
-      setIsLoading(false);
+      setLoadingSignin(false);
     }
   };
 
@@ -150,11 +151,11 @@ export default function SigninForm({ providers }: SigninFormProps) {
           {/* SignIn Button */}
           <Button
             type="submit"
-            disabled={isLoading}
+            disabled={loadingSignin || loadingProvider}
             className="w-full cursor-pointer bg-primary text-md text-primary-foreground hover:bg-primary/90"
           >
-            {isLoading ? (
-              <>Signing in<Loader className="animate-spin ml-2" /></>
+            {loadingSignin ? (
+              <>Signing in<Loader className="animate-spin" /></>
             ) : (
               "Sign In"
             )}
@@ -180,11 +181,25 @@ export default function SigninForm({ providers }: SigninFormProps) {
                       type="button"
                       key={prov.name}
                       variant={"outline"}
-                      onClick={() => signIn(prov.id)}
+                      disabled={loadingProvider || loadingSignin}
+                      onClick={() => {
+                        setLoadingProvider(prov.id)
+                        signIn(prov.id)
+                      }}
                       className="w-full bg-background text-foreground hover:bg-foreground hover:text-background border-border hover:border-transparent cursor-pointer"
                     >
-                      {providerIcons[prov.id]}
-                      Sign in with {prov.name}
+                      {loadingProvider === prov.id ? (
+                        <>
+                          {providerIcons[prov.id]}
+                          Redirecting
+                          <Loader className="w-4 h-4 animate-spin ml-2" />
+                        </>
+                      ) : (
+                        <>
+                          {providerIcons[prov.id]}
+                          Sign in with {prov.name}
+                        </>
+                      )}
                     </Button>
                   ))}
               </div>
