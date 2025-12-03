@@ -2,6 +2,9 @@
 
 import { JSX, useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { SignUpSchema, SignUpSchemaType} from "@/lib/auth/zodSchemas";;
+
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
@@ -17,14 +20,6 @@ import Image from "next/image";
 import { getPasswordStrength } from "@/lib/helpers/shared";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
-
-type SignupFormValues = {
-  userName: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-  role: "investor" | "founder";
-};
 
 type SignupFormProps = {
   providers: Record<string, any> | null;
@@ -52,7 +47,8 @@ export default function SignupForm({ providers }: SignupFormProps) {
     watch,
     control,
     formState: { errors },
-  } = useForm<SignupFormValues>({
+  } = useForm<SignUpSchemaType>({
+    resolver: zodResolver(SignUpSchema),
     defaultValues: {
       userName: "",
       email: "",
@@ -90,7 +86,7 @@ export default function SignupForm({ providers }: SignupFormProps) {
     return () => clearTimeout(delayDebounceFn); // cleanup previous timeout
   }, [userNameValue]);
 
-  const onSubmit = async (data: SignupFormValues) => {
+  const onSubmit = async (data: SignUpSchemaType) => {
     try {
       setLoadingSignup(true);
 
@@ -131,10 +127,9 @@ export default function SignupForm({ providers }: SignupFormProps) {
         className="w-1/2 relative bg-cover bg-center"
         style={{ backgroundImage: "url('/signup-bg.jpg')" }}
       >
-        {/* Black overlay with 50% opacity and blur*/}
+        {/* Black overlay */}
         <div className="absolute inset-0 bg-black/60"></div>
 
-        {/* Centered content */}
         <div className="relative flex h-full items-center justify-center">
           <p className="text-white text-2xl font-semibold">Create your free account</p>
         </div>
@@ -194,12 +189,11 @@ export default function SignupForm({ providers }: SignupFormProps) {
               name="role"
               control={control}
               defaultValue="investor"
-              rules={{ required: "Role is required" }}
               render={({ field }) => (
                 <div className="flex flex-col gap-1">
                   <div className="flex gap-2">
                     <Button
-                      type="button" // Prevent form submit
+                      type="button"
                       variant={field.value === "investor" ? "default" : "outline"}
                       disabled={loadingSignup || loadingProvider }
                       className="flex-grow cursor-pointer"
@@ -209,7 +203,7 @@ export default function SignupForm({ providers }: SignupFormProps) {
                     </Button>
 
                     <Button
-                      type="button" // Prevent form submit
+                      type="button"
                       variant={field.value === "founder" ? "default" : "outline"}
                       disabled={loadingSignup || loadingProvider }
                       className="flex-grow cursor-pointer"
@@ -231,20 +225,16 @@ export default function SignupForm({ providers }: SignupFormProps) {
               <FloatingLabelInput 
                 id="userName"
                 label="Username"
-                disabled={loadingSignup || loadingProvider }
+                disabled={loadingSignup || loadingProvider}
                 autoComplete="new-username"
                 className={`text-foreground pr-10 ${
                   isAvailable && !isChecking
                     ? "!bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
+                    : isAvailable === false && !isChecking 
+                    ? "!bg-destructive/10 border-transparent focus-visible:border-destructive focus-visible:ring-0 shadow-none"
                     : "bg-input border-border"
                 }`}
-                {...register("userName", { 
-                  required: "Username is required",
-                  minLength: { value: 3, message: "Username must be at least 3 characters long" },
-                  maxLength: { value: 30, message: "Username must not exceed 30 characters" },
-                  // trim input on change
-                  setValueAs: (value) => value.trim(),
-                })}
+                {...register("userName")}
               />
               {isChecking && (
                 <Loader className="animate-spin absolute right-2 top-3.5 w-5 h-5 text-muted-foreground" />
@@ -265,14 +255,14 @@ export default function SignupForm({ providers }: SignupFormProps) {
               <FloatingLabelInput
                 id="email"
                 label="Email"
-                disabled={loadingSignup || loadingProvider }
-                {...register("email", { required: "Email is required" })}
-                className={`bg-input text-foreground pr-10
-                  ${(EMAIL_REGEX.test(emailValue))
-                      ? "!bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
-                      : "border-border"
-                  }
-                `}
+                disabled={loadingSignup || loadingProvider}
+                className={`bg-input text-foreground pr-10 ${
+                  EMAIL_REGEX.test(emailValue)
+                    ? "!bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
+                    : "border-border"
+                }`}
+                {...register("email")}
+
               />
               {errors.email && (
                 <p className="mt-1 text-sm text-destructive">
@@ -287,21 +277,13 @@ export default function SignupForm({ providers }: SignupFormProps) {
                 <FloatingLabelInput 
                   id="password"
                   label="Password"
-                  disabled={loadingSignup || loadingProvider }
-                  autoComplete="password"
-                  className={`bg-input text-foreground pr-10
-                    ${(lengthCheck && specialCharCheck && digitCheck)
-                        ? "!bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
-                        : "border-border"
+                  disabled={loadingSignup || loadingProvider}
+                  className={`bg-input text-foreground pr-10 ${
+                    (lengthCheck && specialCharCheck && digitCheck)
+                      ? "!bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
+                      : "border-border"
                   }`}
-                  {...register("password", {
-                    required: "Password is required",
-                    validate: {
-                      hasLength: (value) => value.length >= 8, 
-                      hasDigit: (value) => /\d/.test(value),
-                      hasSpecialChar: (value) => /[!@#$%^&*(),.?\":{}|<>]/.test(value),
-                    },
-                  })}
+                  {...register("password")}
                 />
                 {passwordValue.length > 0 && (
                   <button
@@ -344,16 +326,12 @@ export default function SignupForm({ providers }: SignupFormProps) {
                   label="Confirm Password"
                   disabled={loadingSignup || loadingProvider }
                   autoComplete="password"
-                  className={`bg-input text-foreground pr-10
-                    ${(confirmValue.length > 0 && passwordValue === confirmValue)
-                        ? "!bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
-                        : "border-border"
+                  className={`bg-input text-foreground pr-10 ${
+                    (confirmValue.length > 0 && passwordValue === confirmValue)
+                      ? "!bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
+                      : "border-border"
                   }`}
-                  {...register("confirmPassword", {
-                    required: "Please confirm your password",
-                    validate: (value) =>
-                      value === watch("password") || "Passwords do not match",
-                  })}
+                  {...register("confirmPassword")}
                 />
                 {confirmValue.length > 0 && (
                   <button
