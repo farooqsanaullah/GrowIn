@@ -1,9 +1,15 @@
+export interface Founder {
+  _id: string;
+  name: string;
+  role: string;
+}
+
 export interface Startup {
   _id: string;
   title: string;
   description: string;
   pitch: string[];
-  founders: string[];
+  founders: Founder[];       // <-- changed from string[] to Founder[]
   investors: string[];
   badges: string[];
   categoryType: string;
@@ -24,4 +30,3 @@ export interface Startup {
   profilePic: string;
   totalRaised?: number;
 }
-
