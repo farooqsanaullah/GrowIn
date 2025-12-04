@@ -187,6 +187,24 @@ userSchema.pre("save", function (next) {
   next();
 });
 
-// Prevent model overwrite upon hot reload in development
+
+userSchema.index({ role: 1, city: 1, country: 1 });
+
+
+userSchema.index({ email: 1, provider: 1 });
+
+
+userSchema.index({ role: 1, isVerified: 1 });
+
+
+userSchema.index({ userName: 1, role: 1 });
+
+
+userSchema.index({ role: 1, 'fundingRange.min': 1, 'fundingRange.max': 1 });
+
+
+userSchema.index({ role: 1, createdAt: -1 });
+
+
 const User = models.User || model<IUser>("User", userSchema);
 export default User;
