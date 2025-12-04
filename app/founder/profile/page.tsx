@@ -1,149 +1,189 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { User, Camera, Save, MapPin, Link as LinkIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+import Image from "next/image";
+import {
+  Button,
+  SkillsInput,
+  FloatingLabelInput,
+  FloatingCountryInput,
+  FloatingRegionInput,
+  FloatingPhoneInput,
+  FloatingLabel,
+  Skeleton,
+} from "@/components/ui";
+import Datepicker from "react-tailwindcss-datepicker";
 import { useSession } from "next-auth/react";
+import { Loader } from "lucide-react";
+import { updateUserSchema } from "@/lib/auth/zodValidation/updateUserSchema";
+import toast from "react-hot-toast";
+import { isExperienceEmpty } from "@/lib/helpers/shared/validation";
+import { useForm, useFieldArray } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-interface UserProfile {
-  _id: string;
-  userName: string;
-  name: string;
-  email: string;
-  phone?: string;
-  bio?: string;
-  city: string;
-  country: string;
-  skills?: string[];
-  profileImage?: string;
-  designation?: string;
-  company?: string;
-  experiences?: any[];
-  createdAt?: string;
-}
-
-export default function ProfilePage() {
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
+export default function EditProfilePage() {
   const { data: session } = useSession();
+  const [user, setUser] = useState<any>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  
-  const [formData, setFormData] = useState({
-    name: "",
-    userName: "",
-    email: "",
-    phone: "",
-    bio: "",
-    city: "",
-    country: "",
-    skills: [] as string[],
-    designation: "",
-    company: "",
-    website: "",
-    linkedin: "",
-    twitter: "",
+  const { control, register, handleSubmit, setValue, watch, formState: { errors } } = useForm({
+    resolver: zodResolver(updateUserSchema),
+    defaultValues: {
+      userName: "",
+      name: "",
+      email: "",
+      profileImage: "",
+      bio: "",
+      phone: "",
+      country: "",
+      city: "",
+      experiences: [
+        {
+          designation: "",
+          company: "",
+          experienceDesc: "",
+          startDate: new Date(),
+          endDate: new Date(),
+        },
+      ],
+      skills: [] as string[],
+    },
   });
 
-  // Fetch user profile
+  const { fields: experiencesFields, append, remove, update } = useFieldArray({
+    control,
+    name: "experiences",
+  });
+
+  const formData = watch();
+
+  // Fetching User From API
   useEffect(() => {
-    const fetchProfile = async () => {
+    async function fetchUser() {
+      if (!session?.user?.id) {
+        setIsLoading(false);
+        return;
+      }
+
       try {
-        const response = await fetch(`/api/profile/${session?.user?.id}`);
-        if (response.ok) {
-          const data = await response.json();
-          setProfile(data.user);
-          setFormData({
-            name: data.user.name || "",
-            userName: data.user.userName || "",
-            email: data.user.email || "",
-            phone: data.user.phone || "",
-            bio: data.user.bio || "",
-            city: data.user.city || "",
-            country: data.user.country || "",
-            skills: data.user.skills || [],
-            designation: data.user.designation || "",
-            company: data.user.company || "",
-            website: data.user.socialLinks?.website || "",
-            linkedin: data.user.socialLinks?.linkedin || "",
-            twitter: data.user.socialLinks?.twitter || "",
-          });
+        const res = await fetch(`/api/profile/${session.user.id}`, {
+          method: "GET",
+        });
+        
+        if (!res.ok) {
+          toast.error("Failed to fetch profile");
+          setIsLoading(false);
+          return;
         }
+
+        const data = await res.json();
+        setUser(data.data.user);
       } catch (error) {
-        console.error("Error fetching profile:", error);
+        console.error("Error fetching user:", error);
+        toast.error("Error fetching profile");
       } finally {
         setIsLoading(false);
       }
-    };
-
-    fetchProfile();
+    }
+    
+    fetchUser();
   }, [session?.user?.id]);
 
-  const handleInputChange = (field: string, value: string | string[]) => {
-    setFormData((prev: any) => ({ ...prev, [field]: value }));
-  };
+  // Populate form when user data arrives
+  useEffect(() => {
+    if (!user) return;
 
-  const handleSkillsChange = (value: string) => {
-    const skillsArray = value.split(",").map(skill => skill.trim()).filter(Boolean);
-    setFormData((prev: any) => ({ ...prev, skills: skillsArray }));
-  };
+    setValue("userName", user.userName ?? "");
+    setValue("name", user.name ?? "");
+    setValue("email", user.email ?? "");
+    setValue("profileImage", user.profileImage ?? "");
+    setValue("bio", user.bio ?? "");
+    setValue("phone", user.phone ?? "");
+    setValue("country", user.country ?? "");
+    setValue("city", user.city ?? "");
+    
+    // Handle experiences - if user has experiences, use them, otherwise start with one empty experience
+    if (user.experiences && user.experiences.length > 0) {
+      setValue("experiences", user.experiences.map((exp: any) => ({
+        designation: exp.designation ?? "",
+        startDate: exp.startDate ? new Date(exp.startDate) : new Date(),
+        endDate: exp.endDate ? new Date(exp.endDate) : new Date(),
+        company: exp.company ?? "",
+        experienceDesc: exp.experienceDesc ?? "",
+      })));
+    } else {
+      setValue("experiences", [
+        {
+          designation: user.designation ?? "",
+          startDate: user.startDate ? new Date(user.startDate) : new Date(),
+          endDate: user.endDate ? new Date(user.endDate) : new Date(),
+          company: user.company ?? "",
+          experienceDesc: user.experienceDesc ?? "",
+        },
+      ]);
+    }
+    
+    setValue("skills", user.skills ?? []);
+  }, [user, setValue]);
 
-  const handleSave = async () => {
-    setIsSaving(true);
+  const onSubmit = async (data: any) => {
+    console.log("Form submiting with data: ", data);
+    setIsUpdating(true);
     
     try {
-      const updateData = {
-        name: formData.name,
-        userName: formData.userName,
-        phone: formData.phone,
-        bio: formData.bio,
-        city: formData.city,
-        country: formData.country,
-        skills: formData.skills,
-        designation: formData.designation,
-        company: formData.company,
-        socialLinks: {
-          website: formData.website,
-          linkedin: formData.linkedin,
-          twitter: formData.twitter,
-        }
-      };
-
-      const response = await fetch(`/api/profile/${session?.user?.id}`, {
+      const res = await fetch(`/api/profile/${session?.user?.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(updateData),
+        body: JSON.stringify(data),
       });
 
-      if (response.ok) {
-        const updatedData = await response.json();
-        setProfile(updatedData.user);
-        setIsEditing(false);
-        console.log("Profile saved successfully:", updatedData);
+      if (!res.ok) {
+        const err = await res.json();
+        toast.error(err.message || "Failed to update profile");
       } else {
-        const error = await response.json();
-        console.error("Error saving profile:", error);
+        const result = await res.json();
+        toast.success("Profile updated successfully");
+        setUser(result.user);
       }
-    } catch (error) {
-      console.error("Error saving profile:", error);
+    } catch (err) {
+      console.error("Update error:", err);
+      toast.error("Something went wrong");
     } finally {
-      setIsSaving(false);
+      setIsUpdating(false);
     }
   };
 
+  const handleAddExperience = () => {
+    const lastExp = experiencesFields[experiencesFields.length - 1];
+
+    // Preventing to add a new empty field set
+    if (isExperienceEmpty(lastExp)) {
+      toast.error("Fill the current experience first.");
+      return;
+    }
+
+    append({
+      designation: "",
+      startDate: new Date(),
+      endDate: new Date(),
+      company: "",
+      experienceDesc: "",
+    });
+  };
+
+  const handleRemoveExperience = (index: number) => remove(index);
+
   if (isLoading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-10">
         <div className="animate-pulse">
           <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
           <div className="h-4 bg-gray-200 rounded w-1/2 mb-8"></div>
           <div className="space-y-4">
+            <div className="h-32 bg-gray-200 rounded"></div>
             <div className="h-32 bg-gray-200 rounded"></div>
             <div className="h-32 bg-gray-200 rounded"></div>
           </div>
@@ -152,7 +192,15 @@ export default function ProfilePage() {
     );
   }
 
-  if (!profile) {
+  if (!session?.user) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-muted-foreground">Please sign in to view your profile</p>
+      </div>
+    );
+  }
+
+  if (!user) {
     return (
       <div className="text-center py-8">
         <p className="text-muted-foreground">Profile not found</p>
@@ -161,324 +209,208 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Profile</h1>
-          <p className="text-muted-foreground">Manage your personal information and public profile</p>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-10">
+      <h1 className="text-3xl font-semibold text-primary">Edit Profile</h1>
+
+      {/* PROFILE IMAGE */}
+      <div className="flex items-center gap-6">
+        {formData.profileImage ? (
+          <Image
+            src={formData.profileImage}
+            alt="Profile"
+            width={90}
+            height={90}
+            className="rounded-full border transition-opacity duration-300 opacity-0"
+            onLoadingComplete={(img) => (img.style.opacity = "1")}
+          />
+        ) : (
+          <Skeleton className="w-[90px] h-[90px] rounded-full" />
+        )}
+
+        <Button type="button" className="cursor-pointer" variant="secondary">
+          Change Photo
+        </Button>
+      </div>
+
+      {/* BASIC INFO */}
+      <section className="space-y-6">
+        <h2 className="text-xl font-semibold text-foreground">Basic Information</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FloatingLabelInput 
+            id="username" 
+            label="Username" 
+            {...register("userName")}
+          />
+
+          <FloatingLabelInput 
+            id="fullName" 
+            label="Full Name" 
+            {...register("name")}
+          />
+
+          <FloatingLabelInput
+            id="email"
+            label="Email"
+            disabled
+            className="bg-muted opacity-70"
+            {...register("email")}
+          />
+
+          <FloatingPhoneInput
+            label="Phone"
+            value={formData?.phone || ""}
+            onChange={(val) => setValue("phone", val)}
+          />
+
+          <FloatingCountryInput
+            label="Country"
+            value={formData?.country || ""}
+            onChange={(val) => {
+              setValue("country", val);
+              setValue("city", "");
+            }}
+          />
+
+          <FloatingRegionInput
+            label="City"
+            country={formData?.country || ""}
+            value={formData?.city || ""}
+            onChange={(val) => setValue("city", val)}
+          />
         </div>
-        <div className="flex space-x-2">
-          {isEditing ? (
+
+        <FloatingLabelInput 
+          id="bio" 
+          label="Bio" 
+          {...register("bio")}
+        />
+      </section>
+
+      {/* Founder Specific */}
+      <section className="space-y-6">
+        <h2 className="text-xl font-bold text-foreground">Experiences</h2>
+
+        {/* Ribbon for previous experiences */}
+        {experiencesFields.length > 1 && (
+          <div className="space-y-2 max-h-60 overflow-y-auto pr-1 shadow-sm">
+            {experiencesFields.slice(0, -1).map((exp, index) => (
+              <div
+                key={exp.id}
+                className="p-3 rounded bg-gray-100 border flex justify-between items-start"
+              >
+                <div>
+                  <p className="font-semibold">{exp.designation || "No designation"}</p>
+                  <p>{exp.company || "No company"}</p>
+                  <p>
+                    {exp.startDate?.toString().slice(0, 15)} - {exp.endDate?.toString().slice(0, 15)}
+                  </p>
+                </div>
+                {/* Remove button */}
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => handleRemoveExperience(index)}
+                  className="border-none text-destructive hover:text-background hover:bg-destructive/60 cursor-pointer"
+                >
+                  Remove
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Editable inputs for last experience */}
+        {experiencesFields.slice(-1).map((exp, index) => {
+          const realIndex = experiencesFields.length - 1;
+          return (
+            <div key={exp.id} className="space-y-4">
+              {/* Designation */}
+              <FloatingLabelInput
+                id="designation"
+                label="Designation"
+                value={exp.designation || ""}
+                onChange={(e) => update(realIndex, { ...exp, designation: e.target.value })}
+              />
+
+              {/* Duration */}
+              <div className="space-y-2 relative z-10">
+                <Datepicker
+                  value={{ startDate: exp.startDate, endDate: exp.endDate }}
+                  onChange={(range) =>
+                    update(realIndex, {
+                      ...exp,
+                      startDate: range?.startDate || new Date(),
+                      endDate: range?.endDate || new Date(),
+                    })
+                  }
+                  displayFormat="MM/DD/YYYY"
+                  separator="-"
+                  startFrom={exp.startDate}
+                  inputClassName="peer w-full rounded-md border border-input h-9 text-sm cursor-pointer"
+                />
+                <FloatingLabel
+                  htmlFor="experiences"
+                  className="bg-background absolute left-2 top-2 text-gray-500 text-sm pointer-events-none"
+                >
+                  Experience Duration
+                </FloatingLabel>
+              </div>
+
+              {/* Company Name */}
+              <FloatingLabelInput
+                id="company"
+                label="Company Name"
+                value={exp.company || ""}
+                onChange={(e) => update(realIndex, { ...exp, company: e.target.value })}
+              />
+
+              {/* Experience Description */}
+              <FloatingLabelInput
+                id="desc"
+                label="Experience Description"
+                value={exp.experienceDesc || ""}
+                onChange={(e) => update(realIndex, { ...exp, experienceDesc: e.target.value })}
+              />
+            </div>
+          );
+        })}
+
+        {/* Add New Field Button */}
+        <div className="flex justify-end">
+          <Button 
+            type="button" 
+            variant="ghost" 
+            className="cursor-pointer" 
+            onClick={handleAddExperience}
+          >
+            Add New Field
+          </Button>
+        </div>
+
+        {/* Skills */}
+        <SkillsInput 
+          skills={formData?.skills || []} 
+          setSkills={(val) => setValue("skills", val)} 
+        />
+      </section>
+
+      {/* Update Button */}
+      <div className="flex justify-end">
+        <Button 
+          type="submit" 
+          disabled={isUpdating} 
+          className="w-full md:w-auto cursor-pointer"
+        >
+          {isUpdating ? (
             <>
-              <Button variant="outline" onClick={() => setIsEditing(false)} disabled={isSaving}>
-                Cancel
-              </Button>
-              <Button onClick={handleSave} disabled={isSaving}>
-                <Save className="h-4 w-4 mr-2" />
-                {isSaving ? "Saving..." : "Save Changes"}
-              </Button>
+              Saving
+              <Loader className="animate-spin ml-2" />
             </>
           ) : (
-            <Button onClick={() => setIsEditing(true)}>
-              Edit Profile
-            </Button>
+            "Save Changes"
           )}
-        </div>
+        </Button>
       </div>
-
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2 space-y-6">
-          {/* Basic Information */}
-          <div className="bg-card rounded-lg border border-border p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-card-foreground mb-4">Basic Information</h2>
-            
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
-                {isEditing ? (
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => handleInputChange("name", e.target.value)}
-                  />
-                ) : (
-                  <p className="text-sm text-card-foreground font-medium">{formData.name}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="userName">Username</Label>
-                {isEditing ? (
-                  <Input
-                    id="userName"
-                    value={formData.userName}
-                    onChange={(e) => handleInputChange("userName", e.target.value)}
-                  />
-                ) : (
-                  <p className="text-sm text-card-foreground font-medium">@{formData.userName}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <p className="text-sm text-card-foreground font-medium">{formData.email}</p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone</Label>
-                {isEditing ? (
-                  <Input
-                    id="phone"
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange("phone", e.target.value)}
-                  />
-                ) : (
-                  <p className="text-sm text-card-foreground font-medium">{formData.phone || "Not provided"}</p>
-                )}
-              </div>
-            </div>
-
-            <div className="mt-4 space-y-2">
-              <Label htmlFor="bio">Bio</Label>
-              {isEditing ? (
-                <Textarea
-                  id="bio"
-                  rows={4}
-                  value={formData.bio}
-                  onChange={(e) => handleInputChange("bio", e.target.value)}
-                  placeholder="Tell us about yourself..."
-                />
-              ) : (
-                <p className="text-sm text-muted-foreground">{formData.bio || "No bio provided"}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Location & Experience */}
-          <div className="bg-card rounded-lg border border-border p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-card-foreground mb-4">Location & Experience</h2>
-            
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="city">City</Label>
-                {isEditing ? (
-                  <Input
-                    id="city"
-                    value={formData.city}
-                    onChange={(e) => handleInputChange("city", e.target.value)}
-                  />
-                ) : (
-                  <p className="text-sm text-card-foreground font-medium flex items-center">
-                    <MapPin className="h-4 w-4 mr-1 text-muted-foreground" />
-                    {formData.city || "Not specified"}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="country">Country</Label>
-                {isEditing ? (
-                  <Input
-                    id="country"
-                    value={formData.country}
-                    onChange={(e) => handleInputChange("country", e.target.value)}
-                  />
-                ) : (
-                  <p className="text-sm text-card-foreground font-medium">{formData.country || "Not specified"}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="designation">Current Position</Label>
-                {isEditing ? (
-                  <Input
-                    id="designation"
-                    value={formData.designation}
-                    onChange={(e) => handleInputChange("designation", e.target.value)}
-                  />
-                ) : (
-                  <p className="text-sm text-card-foreground font-medium">{formData.designation || "Not specified"}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="company">Company</Label>
-                {isEditing ? (
-                  <Input
-                    id="company"
-                    value={formData.company}
-                    onChange={(e) => handleInputChange("company", e.target.value)}
-                  />
-                ) : (
-                  <p className="text-sm text-card-foreground font-medium">{formData.company || "Not specified"}</p>
-                )}
-              </div>
-            </div>
-
-            <div className="mt-4 space-y-2">
-              <Label htmlFor="skills">Skills</Label>
-              {isEditing ? (
-                <Input
-                  id="skills"
-                  value={formData.skills.join(", ")}
-                  onChange={(e) => handleSkillsChange(e.target.value)}
-                  placeholder="Enter skills separated by commas"
-                />
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {formData.skills.length > 0 ? (
-                    formData.skills.map((skill, index) => (
-                      <span
-                        key={index}
-                        className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary"
-                      >
-                        {skill}
-                      </span>
-                    ))
-                  ) : (
-                    <p className="text-sm text-muted-foreground">No skills listed</p>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Social Links */}
-          <div className="bg-card rounded-lg border border-border p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-card-foreground mb-4">Social Links</h2>
-            
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="website">Website</Label>
-                {isEditing ? (
-                  <Input
-                    id="website"
-                    value={formData.website}
-                    onChange={(e) => handleInputChange("website", e.target.value)}
-                    placeholder="https://yourwebsite.com"
-                  />
-                ) : (
-                  formData.website ? (
-                    <p className="text-sm text-card-foreground font-medium flex items-center">
-                      <LinkIcon className="h-4 w-4 mr-1 text-muted-foreground" />
-                      <a href={formData.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                        {formData.website}
-                      </a>
-                    </p>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">No website provided</p>
-                  )
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="linkedin">LinkedIn</Label>
-                {isEditing ? (
-                  <Input
-                    id="linkedin"
-                    value={formData.linkedin}
-                    onChange={(e) => handleInputChange("linkedin", e.target.value)}
-                    placeholder="https://linkedin.com/in/username"
-                  />
-                ) : (
-                  formData.linkedin ? (
-                    <p className="text-sm text-card-foreground font-medium">
-                      <a href={formData.linkedin} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                        {formData.linkedin}
-                      </a>
-                    </p>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">No LinkedIn provided</p>
-                  )
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="twitter">Twitter</Label>
-                {isEditing ? (
-                  <Input
-                    id="twitter"
-                    value={formData.twitter}
-                    onChange={(e) => handleInputChange("twitter", e.target.value)}
-                    placeholder="https://twitter.com/username"
-                  />
-                ) : (
-                  formData.twitter ? (
-                    <p className="text-sm text-card-foreground font-medium">
-                      <a href={formData.twitter} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                        {formData.twitter}
-                      </a>
-                    </p>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">No Twitter provided</p>
-                  )
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Sidebar */}
-        <div className="space-y-6">
-          <div className="bg-card rounded-lg border border-border p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-card-foreground mb-4">Profile Photo</h3>
-            <div className="flex flex-col items-center space-y-4">
-              <div className="relative">
-                {profile.profileImage ? (
-                  <img 
-                    src={profile.profileImage} 
-                    alt={profile.name}
-                    className="w-24 h-24 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center">
-                    <User className="h-10 w-10 text-primary" />
-                  </div>
-                )}
-                {isEditing && (
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="absolute -bottom-1 -right-1 rounded-full h-8 w-8"
-                  >
-                    <Camera className="h-3 w-3" />
-                  </Button>
-                )}
-              </div>
-              {isEditing && (
-                <Button variant="outline" size="sm">
-                  <Camera className="h-4 w-4 mr-2" />
-                  Change Photo
-                </Button>
-              )}
-            </div>
-          </div>
-
-          <div className="bg-card rounded-lg border border-border p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-card-foreground mb-4">Account Status</h3>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Email Verified</span>
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                  Verified
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Profile Complete</span>
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                  85%
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Member Since</span>
-                <span className="text-sm text-card-foreground font-medium">
-                  {profile.createdAt ? new Date(profile.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Recently'}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    </form>
   );
 }
