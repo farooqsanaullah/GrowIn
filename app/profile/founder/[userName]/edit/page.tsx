@@ -19,16 +19,27 @@ import { Loader } from "lucide-react";
 import { UpdateUserSchema } from "@/lib/auth/zodSchemas";
 import toast from "react-hot-toast";
 import { isExperienceEmpty } from "@/lib/helpers";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 export default function EditProfilePage() {
   const params = useParams();
   const userName = params.userName;
+
   const [user, setUser] = useState<any>(null);
   const [isUpdating, setIsUpdating] = useState(false);
 
-  const { control, register, handleSubmit, setValue, watch, formState: { errors } } = useForm({
+  // Local state for new experiences
+  const [addedExperiences, setAddedExperiences] = useState<any[]>([]);
+  const [newExperience, setNewExperience] = useState({
+    designation: "",
+    company: "",
+    experienceDesc: "",
+    startDate: new Date(),
+    endDate: new Date(),
+  });
+
+  const { register, handleSubmit, setValue, watch } = useForm({
     resolver: zodResolver(UpdateUserSchema),
     defaultValues: {
       userName: "",
@@ -39,22 +50,8 @@ export default function EditProfilePage() {
       phone: "",
       country: "",
       city: "",
-      experiences: [
-        {
-          designation: "",
-          company: "",
-          experienceDesc: "",
-          startDate: new Date(),
-          endDate: new Date(),
-        },
-      ],
       skills: [] as string[],
     },
-  });
-
-  const { fields: experiencesFields, append, remove, update } = useFieldArray({
-    control,
-    name: "experiences",
   });
 
   const formData = watch();
@@ -66,14 +63,13 @@ export default function EditProfilePage() {
         method: "GET",
       });
       if (!res.ok) return;
-
       const data = await res.json();
       setUser(data.user);
     }
     fetchUser();
   }, [userName]);
 
-  // Populate form when user data arrives
+  // Populate form
   useEffect(() => {
     if (!user) return;
 
@@ -85,62 +81,55 @@ export default function EditProfilePage() {
     setValue("phone", user.phone ?? "");
     setValue("country", user.country ?? "");
     setValue("city", user.city ?? "");
-    setValue("experiences", [
-      {
-        designation: user.designation ?? "",
-        startDate: user.startDate ? new Date(user.startDate) : new Date(),
-        endDate: user.endDate ? new Date(user.endDate) : new Date(),
-        company: user.company ?? "",
-        experienceDesc: user.experienceDesc ?? "",
-      },
-    ]);
+    setAddedExperiences(
+      user.experiences?.map((exp: any) => ({
+        ...exp,
+        startDate: exp.startDate ? new Date(exp.startDate) : new Date(),
+        endDate: exp.endDate ? new Date(exp.endDate) : new Date(),
+      })) || []
+    );
     setValue("skills", user.skills ?? []);
   }, [user, setValue]);
 
   const onSubmit = async (data: any) => {
-    console.log("Form submiting with data: ", data);
     setIsUpdating(true);
     try {
       const res = await fetch(`/api/profile/${data.userName}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...data, experiences: addedExperiences }),
       });
-
       if (!res.ok) {
         const err = await res.json();
         toast.error(err.message || "Failed to update profile");
       } else {
         toast.success("Profile updated successfully");
       }
-    } catch (err) {
-      toast.error("Something went wrong");
+    } catch (err: any) {
+      toast.error(err || "Something went wrong");
     } finally {
       setIsUpdating(false);
     }
   };
 
   const handleAddExperience = () => {
-    const lastExp = experiencesFields[experiencesFields.length - 1];
-
-    // Preventing to add a new empty field set
-    if (isExperienceEmpty(lastExp)) {
-      toast.error("Fill the current experience first.");
+    if (isExperienceEmpty(newExperience)) {
+      toast.error("Fill the current experience first!");
       return;
     }
-
-    append({
+    setAddedExperiences([...addedExperiences, newExperience]);
+    setNewExperience({
       designation: "",
-      startDate: new Date(),
-      endDate: new Date(),
       company: "",
       experienceDesc: "",
+      startDate: new Date(),
+      endDate: new Date(),
     });
   };
 
-  const handleRemoveExperience = (index: number) => remove(index);
+  const handleRemoveExperience = (index: number) => {
+    setAddedExperiences(addedExperiences.filter((_, i) => i !== index));
+  };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="max-w-5xl mx-auto p-6 space-y-10">
@@ -160,7 +149,6 @@ export default function EditProfilePage() {
         ) : (
           <Skeleton className="w-[90px] h-[90px] rounded-full" />
         )}
-
         <Button className="cursor-pointer" variant="secondary">
           Change Photo
         </Button>
@@ -171,9 +159,7 @@ export default function EditProfilePage() {
         <h2 className="text-xl font-semibold text-foreground">Basic Information</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FloatingLabelInput id="username" label="Username" {...register("userName")} />
-
           <FloatingLabelInput id="fullName" label="Full Name" {...register("name")} />
-
           <FloatingLabelInput
             id="email"
             label="Email"
@@ -181,13 +167,11 @@ export default function EditProfilePage() {
             className="bg-muted opacity-70"
             {...register("email")}
           />
-
           <FloatingPhoneInput
             label="Phone"
             value={formData?.phone || ""}
             onChange={(val) => setValue("phone", val)}
           />
-
           <FloatingCountryInput
             label="Country"
             value={formData?.country || ""}
@@ -196,7 +180,6 @@ export default function EditProfilePage() {
               setValue("city", "");
             }}
           />
-
           <FloatingRegionInput
             label="City"
             country={formData?.country || ""}
@@ -204,26 +187,24 @@ export default function EditProfilePage() {
             onChange={(val) => setValue("city", val)}
           />
         </div>
-
-        <FloatingLabelInput id="bio" label="Bio" {...register("bio")} />
       </section>
 
       {/* Founder Specific */}
       <section className="space-y-6">
         <h2 className="text-xl font-bold text-foreground">Experiences</h2>
 
-        {/* Ribbon for previous experiences */}
+        {/* Ribbon for added experiences */}
         <div className="space-y-2 max-h-60 overflow-y-auto pr-1 shadow-sm">
-          {experiencesFields.slice(0, -1).map((exp, index) => (
+          {addedExperiences.map((exp, index) => (
             <div
-              key={exp.id}
+              key={index}
               className="p-3 rounded bg-gray-100 border flex justify-between items-start"
             >
               <div>
                 <p className="font-semibold">{exp.designation}</p>
                 <p>{exp.company}</p>
                 <p>
-                  {exp.startDate?.toString().slice(0, 15)} - {exp.endDate?.toString().slice(0, 15)}
+                  {exp.startDate.toDateString()} - {exp.endDate.toDateString()}
                 </p>
               </div>
               {/* Remove button */}
@@ -239,71 +220,71 @@ export default function EditProfilePage() {
           ))}
         </div>
 
-        {/* Editable inputs for last experience */}
-        {experiencesFields.slice(-1).map((exp, index) => (
-          <div key={exp.id} className="space-y-4">
-            {/* Designation */}
-            <FloatingLabelInput
-              id="designation"
-              label="Designation"
-              value={exp.designation}
-              onChange={(e) => update(index, { ...exp, designation: e.target.value })}
+        {/* New Experience Input */}
+        <div className="space-y-4">
+          {/* Designation */}
+          <FloatingLabelInput
+            id="designation"
+            label="Designation"
+            value={newExperience.designation}
+            onChange={(e) =>
+              setNewExperience({ ...newExperience, designation: e.target.value })
+            }
+          />
+          {/* Company Name */}
+          <FloatingLabelInput
+            label="Company"
+            value={newExperience.company}
+            onChange={(e) =>
+              setNewExperience({ ...newExperience, company: e.target.value })
+            }
+          />
+          {/* Experience Description */}
+          <FloatingLabelInput
+            label="Experience Description"
+            value={newExperience.experienceDesc}
+            onChange={(e) =>
+              setNewExperience({ ...newExperience, experienceDesc: e.target.value })
+            }
+          />
+          {/* Duration */}
+          <div className="space-y-2 relative z-[9999]">
+            <Datepicker
+              value={{ startDate: newExperience.startDate, endDate: newExperience.endDate }}
+              onChange={(range) =>
+                setNewExperience({
+                  ...newExperience,
+                  startDate: range?.startDate || new Date(),
+                  endDate: range?.endDate || new Date(),
+                })
+              }
+              displayFormat="MM/DD/YYYY"
+              separator="-"
+              inputClassName="peer w-full rounded-md border border-input h-9 text-sm cursor-pointer"
             />
-
-            {/* Duration */}
-            <div className="space-y-2 relative z-[9999]">
-              <Datepicker
-                value={{ startDate: exp.startDate, endDate: exp.endDate }}
-                onChange={(range) =>
-                  update(index, {
-                    ...exp,
-                    startDate: range?.startDate || new Date(),
-                    endDate: range?.endDate || new Date(),
-                  })
-                }
-                displayFormat="MM/DD/YYYY"
-                separator="-"
-                startFrom={exp.startDate}
-                inputClassName="peer w-full rounded-md border border-input h-9 text-sm cursor-pointer"
-              />
-              <FloatingLabel
-                htmlFor="experiences"
-                className="bg-background absolute left-2 top-2 text-gray-500 text-sm pointer-events-none"
-              >
-                Experience Duration
-              </FloatingLabel>
-            </div>
-
-            {/* Company Name */}
-            <FloatingLabelInput
-              id="company"
-              label="Company Name"
-              value={exp.company}
-              onChange={(e) => update(index, { ...exp, company: e.target.value })}
-            />
-
-            {/* Experience Description */}
-            <FloatingLabelInput
-              id="desc"
-              label="Experience Description"
-              value={exp.experienceDesc}
-              onChange={(e) => update(index, { ...exp, experienceDesc: e.target.value })}
-            />
+            <FloatingLabel
+              htmlFor="experiences"
+              className="bg-background absolute left-2 top-2 text-gray-500 text-sm pointer-events-none"
+            >
+              Experience Duration
+            </FloatingLabel>
           </div>
-        ))}
-
+        </div>
         {/* Add New Field Button */}
         <div className="flex justify-end">
-          <Button type="button" variant="ghost" className="cursor-pointer" onClick={handleAddExperience}>
+          <Button type="button" variant="ghost" className="cursor-pointer shadow-sm" onClick={handleAddExperience}>
             Add New Field
           </Button>
         </div>
 
         {/* Skills */}
-        <SkillsInput skills={formData?.skills || []} setSkills={(val) => setValue("skills", val)} />
+        <SkillsInput
+          skills={formData?.skills || []}
+          setSkills={(val) => setValue("skills", val)}
+        />
       </section>
 
-      {/* Update Button */}
+      {/* Save Button */}
       <div className="flex justify-end">
         <Button 
           type="submit" 
