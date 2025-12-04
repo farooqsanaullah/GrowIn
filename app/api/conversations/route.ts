@@ -16,10 +16,10 @@ export async function GET(request: NextRequest) {
 
     const conversations = await Conversation.find({
       'participants.userId': user.id,
-      'metadata.isArchived': false,
     })
-      .sort({ 'lastMessage.sentAt': -1 })
-      .populate('participants.userId', 'name email avatar')
+      .sort({ lastMessageAt: -1 })
+      .populate('participants.userId', 'name email avatar role')
+      .populate('startupId', 'name')
       .limit(50)
       .lean<IConversation[]>();
 
@@ -30,9 +30,6 @@ export async function GET(request: NextRequest) {
   }
 }
 
-
-
-
 export async function POST(request: NextRequest) {
   try {
     const user = await getCurrentUser();
@@ -40,7 +37,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Parse JSON properly
     const body: CreateConversationRequest = await request.json();
     const { recipientId, recipientRole, startupId } = body;
 
@@ -70,7 +66,9 @@ export async function POST(request: NextRequest) {
     const existingConversation = await Conversation.findOne({
       'participants.userId': { $all: [userObjectId, recipientObjectId] },
       startupId: startupObjectId,
-    }).lean<IConversation>();
+    })
+      .populate('participants.userId', 'name email avatar role')
+      .lean<IConversation>();
 
     if (existingConversation) {
       return NextResponse.json({ conversation: existingConversation });
@@ -85,12 +83,22 @@ export async function POST(request: NextRequest) {
       createdBy: userObjectId,
       startupId: startupObjectId,
       isTeamChat: false,
-      lastMessage: '',
+      lastMessage: {
+        content: '',
+        sentAt: new Date(),
+        senderId: userObjectId,
+      },
       lastMessageAt: new Date(),
       createdAt: new Date(),
     });
 
-    return NextResponse.json({ conversation }, { status: 201 });
+    // Populate and return
+    const populatedConversation = await Conversation.findById(conversation._id)
+      .populate('participants.userId', 'name email avatar role')
+      .populate('startupId', 'name')
+      .lean<IConversation>();
+
+    return NextResponse.json({ conversation: populatedConversation }, { status: 201 });
   } catch (error: any) {
     console.error('Error creating conversation:', error);
     if (error.name === 'ValidationError') {
