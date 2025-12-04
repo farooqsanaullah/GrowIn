@@ -136,10 +136,31 @@ const startupSchema = new Schema<IStartup>(
   }
 );
 
+
 startupSchema.index({ title: "text", description: "text" });
+
+
 startupSchema.index({ categoryType: 1, industry: 1 });
 startupSchema.index({ founders: 1 });
 startupSchema.index({ createdAt: -1 });
+
+
+startupSchema.index({ status: 1, categoryType: 1, industry: 1 });
+
+
+startupSchema.index({ status: 1, createdAt: -1 });
+
+
+startupSchema.index({ categoryType: 1, industry: 1, avgRating: -1 });
+
+
+startupSchema.index({ founders: 1, status: 1, createdAt: -1 });
+
+
+startupSchema.index({ industry: 1, avgRating: -1, createdAt: -1 });
+
+
+startupSchema.index({ status: 1, avgRating: -1 });
 
 const Startup = models.Startup || model<IStartup>("Startup", startupSchema);
 export default Startup;
