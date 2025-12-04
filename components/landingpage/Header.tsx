@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { useSession, signOut } from "next-auth/react";
+import { usePathname } from "next/navigation";
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -10,6 +11,7 @@ const Header = () => {
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const { data: session } = useSession();
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
 
   // Custom color scheme
   const colors = {
@@ -61,30 +63,38 @@ const Header = () => {
         <div className="flex justify-between items-center h-16 lg:h-20">
           {/* Logo */}
           <div className="flex items-center space-x-3">
-            <img src="/logo.png" alt="GrowIn Logo" width={200} height={120} />
+            <Link href="/">
+              <img src="/logo.png" alt="GrowIn Logo" width={200} height={120} />
+            </Link>
           </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             {navItems.map((item) => (
+
               <Link
                 key={item.name}
                 href={item.href}
-                className="text-sm lg:text-base font-medium transition-all duration-300 hover:scale-105 relative group"
-                style={{ color: colors.textSecondary }}
+                className={`text-sm lg:text-base font-medium transition-all duration-300 hover:scale-105 relative group ${pathname === item.href ? "text-primary" : ""
+                  }`}
+                style={{ color: pathname === item.href ? colors.textPrimary : colors.textSecondary }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.color = colors.textPrimary;
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.color = colors.textSecondary;
+                  if (pathname !== item.href) {
+                    e.currentTarget.style.color = colors.textSecondary;
+                  }
                 }}
               >
                 {item.name}
                 <span
-                  className="absolute -bottom-1 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full"
+                  className={`absolute -bottom-1 left-0 h-0.5 transition-all duration-300 
+      ${pathname === item.href ? "w-full" : "w-0 group-hover:w-full"}`}
                   style={{ backgroundColor: colors.textPrimary }}
                 ></span>
               </Link>
+
             ))}
           </div>
 
@@ -110,16 +120,16 @@ const Header = () => {
                   }}
                 >
                   {/* User Avatar */}
-                  <div 
+                  <div
                     className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold text-white"
                     style={{
                       background: `linear-gradient(135deg, ${colors.textPrimary}, ${colors.textSecondary})`,
                     }}
                   >
                     {session.user?.image ? (
-                      <img 
-                        src={session.user.image} 
-                        alt={session.user.name || 'User'} 
+                      <img
+                        src={session.user.image}
+                        alt={session.user.name || 'User'}
                         className="w-8 h-8 rounded-full"
                       />
                     ) : (
@@ -129,11 +139,11 @@ const Header = () => {
                   <span className="text-sm font-medium" style={{ color: colors.textPrimary }}>
                     {session.user?.name || session.user?.email?.split('@')[0] || 'User'}
                   </span>
-                  <svg 
+                  <svg
                     className={`w-4 h-4 transition-transform duration-200 ${isProfileDropdownOpen ? 'rotate-180' : ''}`}
                     style={{ color: colors.textSecondary }}
-                    fill="none" 
-                    stroke="currentColor" 
+                    fill="none"
+                    stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -142,7 +152,7 @@ const Header = () => {
 
                 {/* Dropdown Menu */}
                 {isProfileDropdownOpen && (
-                  <div 
+                  <div
                     className="absolute right-0 mt-2 w-56 rounded-lg shadow-lg border z-10"
                     style={{
                       backgroundColor: colors.bgPrimary,
@@ -184,7 +194,7 @@ const Header = () => {
                         </svg>
                         Dashboard
                       </Link>
-                      
+
                       <Link
                         href={`/${session.user?.role}/profile`}
                         className="flex items-center px-4 py-2 text-sm transition-colors duration-200"
@@ -204,7 +214,7 @@ const Header = () => {
                         </svg>
                         Profile
                       </Link>
-                      
+
                       <Link
                         href={`/${session.user?.role}/settings`}
                         className="flex items-center px-4 py-2 text-sm transition-colors duration-200"
@@ -225,7 +235,7 @@ const Header = () => {
                         </svg>
                         Settings
                       </Link>
-                      
+
                       {/* Logout */}
                       <hr className="my-1" style={{ borderColor: colors.textMuted + "20" }} />
                       <button
@@ -381,16 +391,16 @@ const Header = () => {
                 <>
                   {/* User Info */}
                   <div className="flex items-center space-x-3 p-3 rounded-lg" style={{ backgroundColor: colors.bgSecondary + "30" }}>
-                    <div 
+                    <div
                       className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold text-white"
                       style={{
                         background: `linear-gradient(135deg, ${colors.textPrimary}, ${colors.textSecondary})`,
                       }}
                     >
                       {session.user?.image ? (
-                        <img 
-                          src={session.user.image} 
-                          alt={session.user.name || 'User'} 
+                        <img
+                          src={session.user.image}
+                          alt={session.user.name || 'User'}
                           className="w-10 h-10 rounded-full"
                         />
                       ) : (
