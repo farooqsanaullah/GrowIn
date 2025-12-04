@@ -1,167 +1,164 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { User, Camera, Save, MapPin, Link as LinkIcon, DollarSign } from "lucide-react";
-import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import Image from "next/image";
+import {
+  Button,
+  DualRangeSlider,
+  FloatingLabelInput,
+  FloatingCountryInput,
+  FloatingRegionInput,
+  FloatingPhoneInput,
+  Skeleton,
+} from "@/components/ui";
 import { useSession } from "next-auth/react";
+import { Loader } from "lucide-react";
+import { updateUserSchema } from "@/lib/auth/zodValidation/updateUserSchema";
+import toast from "react-hot-toast";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-interface InvestorProfile {
-  _id: string;
-  userName: string;
-  name: string;
-  email: string;
-  phone?: string;
-  bio?: string;
-  city: string;
-  country: string;
-  profileImage?: string;
-  fundingRange?: {
-    min: number;
-    max: number;
-  };
-  socialLinks?: {
-    linkedin?: string;
-    twitter?: string;
-    website?: string;
-  };
-  investmentFocus?: string[];
-  experience?: string;
-  createdAt?: string;
-}
-
-export default function InvestorProfilePage() {
-  const [isEditing, setIsEditing] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
+export default function EditProfilePage() {
   const { data: session } = useSession();
-  const params = useParams();
-  
-  const [profile, setProfile] = useState<InvestorProfile | null>(null);
-  const [formData, setFormData] = useState({
-    name: "",
-    userName: "",
-    email: "",
-    phone: "",
-    bio: "",
-    city: "",
-    country: "",
-    fundingRange: {
-      min: 5000,
-      max: 100000,
+  const [user, setUser] = useState<any>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const { control, register, handleSubmit, setValue, watch, formState: { errors } } = useForm({
+    resolver: zodResolver(updateUserSchema),
+    defaultValues: {
+      userName: "",
+      name: "",
+      email: "",
+      profileImage: "",
+      bio: "",
+      phone: "",
+      country: "",
+      city: "",
+      fundingRange: { min: 0, max: 0 },
     },
-    socialLinks: {
-      linkedin: "",
-      twitter: "",
-      website: "",
-    },
-    investmentFocus: [] as string[],
-    experience: "",
   });
 
-  // Fetch investor profile
+  const formData = watch();
+
+  // INVESTOR INFO
+  const [fundingRange, setFundingRange] = useState([0, 0]);
+  const [manual, setManual] = useState({ min: 0, max: 0 });
+
+  // Fetching User From API
   useEffect(() => {
-    const fetchProfile = async () => {
+    async function fetchUser() {
+      if (!session?.user?.id) {
+        setIsLoading(false);
+        return;
+      }
+
       try {
-        const response = await fetch(`/api/profile/${session?.user?.id}`);
-        if (response.ok) {
-          const data = await response.json();
-          setProfile(data.user);
-          setFormData({
-            name: data.user.name || "",
-            userName: data.user.userName || "",
-            email: data.user.email || "",
-            phone: data.user.phone || "",
-            bio: data.user.bio || "",
-            city: data.user.city || "",
-            country: data.user.country || "",
-            fundingRange: data.user.fundingRange || { min: 5000, max: 100000 },
-            socialLinks: {
-              linkedin: data.user.socialLinks?.linkedin || "",
-              twitter: data.user.socialLinks?.twitter || "",
-              website: data.user.socialLinks?.website || "",
-            },
-            investmentFocus: data.user.investmentFocus || [],
-            experience: data.user.experience || "",
-          });
+        const res = await fetch(`/api/profile/${session.user.id}`, {
+          method: "GET",
+        });
+        
+        if (!res.ok) {
+          toast.error("Failed to fetch profile");
+          setIsLoading(false);
+          return;
         }
+
+        const data = await res.json();
+        setUser(data.data.user);
       } catch (error) {
-        console.error("Error fetching profile:", error);
+        console.error("Error fetching user:", error);
+        toast.error("Error fetching profile");
       } finally {
         setIsLoading(false);
       }
-    };
-
-    fetchProfile();
+    }
+    
+    fetchUser();
   }, [session?.user?.id]);
 
-  const handleInputChange = (field: string, value: any) => {
-    setFormData((prev: any) => ({ ...prev, [field]: value }));
+  // Populate form when user data arrives
+  useEffect(() => {
+    if (!user) return;
+
+    setValue("userName", user.userName ?? "");
+    setValue("name", user.name ?? "");
+    setValue("email", user.email ?? "");
+    setValue("profileImage", user.profileImage ?? "");
+    setValue("bio", user.bio ?? "");
+    setValue("phone", user.phone ?? "");
+    setValue("country", user.country ?? "");
+    setValue("city", user.city ?? "");
+
+    // ---- FUNDING RANGE ----
+    const min = user?.fundingRange?.min ?? 0;
+    const max = user?.fundingRange?.max ?? 0;
+
+    setFundingRange([min, max]);
+    setValue("fundingRange.min", min);
+    setValue("fundingRange.max", max);
+  }, [user, setValue]);
+
+  useEffect(() => {
+    const [min, max] = fundingRange;
+
+    // Update RHF values
+    setValue("fundingRange.min", min);
+    setValue("fundingRange.max", max);
+
+    // Keeping manual input synced
+    setManual({ min, max });
+  }, [fundingRange, setValue]);
+
+  const handleMinChange = (val: number) => {
+    const min = Math.min(val, manual.max);
+    setManual(prev => ({ ...prev, min }));
+    setFundingRange([min, manual.max]);
   };
 
-  const handleSocialLinksChange = (platform: string, value: string) => {
-    setFormData((prev: any) => ({
-      ...prev,
-      socialLinks: {
-        ...prev.socialLinks,
-        [platform]: value
-      }
-    }));
+  const handleMaxChange = (val: number) => {
+    const max = Math.max(val, manual.min);
+    setManual(prev => ({ ...prev, max }));
+    setFundingRange([manual.min, max]);
   };
 
-  const handleFundingRangeChange = (field: 'min' | 'max', value: number) => {
-    setFormData((prev: any) => ({
-      ...prev,
-      fundingRange: {
-        ...prev.fundingRange,
-        [field]: value
-      }
-    }));
-  };
-
-  const handleInvestmentFocusChange = (value: string) => {
-    const focusArray = value.split(",").map(focus => focus.trim()).filter(Boolean);
-    setFormData((prev: any) => ({ ...prev, investmentFocus: focusArray }));
-  };
-
-  const handleSave = async () => {
-    setIsSaving(true);
+  const onSubmit = async (data: any) => {
+    console.log("Form submiting with data: ", data);
+    setIsUpdating(true);
     
     try {
-      const response = await fetch(`/api/profile/${session?.user?.id}`, {
+      const res = await fetch(`/api/profile/${session?.user?.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(data),
       });
 
-      if (response.ok) {
-        const updatedData = await response.json();
-        setProfile(updatedData.user);
-        setIsEditing(false);
-        console.log("Profile saved successfully:", updatedData);
+      if (!res.ok) {
+        const err = await res.json();
+        toast.error(err.message || "Failed to update profile");
       } else {
-        const error = await response.json();
-        console.error("Error saving profile:", error);
+        const result = await res.json();
+        toast.success("Profile updated successfully");
+        setUser(result.user);
       }
-    } catch (error) {
-      console.error("Error saving profile:", error);
+    } catch (err) {
+      console.error("Update error:", err);
+      toast.error("Something went wrong");
     } finally {
-      setIsSaving(false);
+      setIsUpdating(false);
     }
   };
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-10">
         <div className="animate-pulse">
           <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
           <div className="h-4 bg-gray-200 rounded w-1/2 mb-8"></div>
           <div className="space-y-4">
+            <div className="h-32 bg-gray-200 rounded"></div>
             <div className="h-32 bg-gray-200 rounded"></div>
             <div className="h-32 bg-gray-200 rounded"></div>
           </div>
@@ -170,7 +167,15 @@ export default function InvestorProfilePage() {
     );
   }
 
-  if (!profile) {
+  if (!session?.user) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-muted-foreground">Please sign in to view your profile</p>
+      </div>
+    );
+  }
+
+  if (!user) {
     return (
       <div className="text-center py-8">
         <p className="text-muted-foreground">Profile not found</p>
@@ -178,373 +183,138 @@ export default function InvestorProfilePage() {
     );
   }
 
-  const formatCurrency = (amount: number) => {
-    if (amount >= 1000000) {
-      return `$${(amount / 1000000).toFixed(1)}M`;
-    } else if (amount >= 1000) {
-      return `$${(amount / 1000).toFixed(0)}K`;
-    }
-    return `$${amount}`;
-  };
-
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Profile</h1>
-          <p className="text-muted-foreground">Manage your investor profile and preferences</p>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-10">
+      <h1 className="text-3xl font-semibold text-primary">Edit Profile</h1>
+
+      {/* PROFILE IMAGE */}
+      <div className="flex items-center gap-6">
+        {formData.profileImage ? (
+          <Image
+            src={formData.profileImage}
+            alt="Profile"
+            width={90}
+            height={90}
+            className="rounded-full border transition-opacity duration-300 opacity-0"
+            onLoadingComplete={(img) => (img.style.opacity = "1")}
+          />
+        ) : (
+          <Skeleton className="w-[90px] h-[90px] rounded-full" />
+        )}
+
+        <Button type="button" className="cursor-pointer" variant="secondary">
+          Change Photo
+        </Button>
+      </div>
+
+      {/* BASIC INFO */}
+      <section className="space-y-6">
+        <h2 className="text-xl font-semibold text-foreground">Basic Information</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FloatingLabelInput 
+            id="username" 
+            label="Username" 
+            {...register("userName")} 
+          />
+
+          <FloatingLabelInput 
+            id="fullName" 
+            label="Full Name" 
+            {...register("name")} 
+          />
+
+          <FloatingLabelInput
+            id="email"
+            label="Email"
+            disabled
+            className="bg-muted opacity-70"
+            {...register("email")}
+          />
+
+          <FloatingPhoneInput
+            label="Phone"
+            value={formData?.phone || ""}
+            onChange={(val) => setValue("phone", val)}
+          />
+
+          <FloatingCountryInput
+            label="Country"
+            value={formData?.country || ""}
+            onChange={(val) => {
+              setValue("country", val);
+              setValue("city", "");
+            }}
+          />
+
+          <FloatingRegionInput
+            label="City"
+            country={formData?.country || ""}
+            value={formData?.city || ""}
+            onChange={(val) => setValue("city", val)}
+          />
         </div>
-        <div className="flex space-x-2">
-          {isEditing ? (
+
+        <FloatingLabelInput 
+          id="bio" 
+          label="Bio" 
+          {...register("bio")} 
+        />
+      </section>
+
+      {/* Investor Specific */}
+      <section className="space-y-6">
+        <h2 className="text-xl font-bold text-foreground">Funding Range</h2>
+
+        <div className="flex gap-4 items-end">
+          <DualRangeSlider
+            label={(val) => `$${val}k`}
+            value={fundingRange}
+            onValueChange={setFundingRange}
+            min={0}
+            max={500}
+            step={5}
+            className="cursor-pointer"
+          />
+
+          <div className="flex gap-4 items-end">
+            <FloatingLabelInput
+              id="funding-min"
+              label="Min"
+              type="number"
+              value={manual.min}
+              onChange={(e) => handleMinChange(Number(e.target.value))}
+              className="w-24"
+            />
+
+            <FloatingLabelInput
+              id="funding-max"
+              label="Max"
+              type="number"
+              value={manual.max}
+              onChange={(e) => handleMaxChange(Number(e.target.value))}
+              className="w-24"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Update Button */}
+      <div className="flex justify-end">
+        <Button 
+          type="submit" 
+          disabled={isUpdating} 
+          className="w-full md:w-auto cursor-pointer"
+        >
+          {isUpdating ? (
             <>
-              <Button variant="outline" onClick={() => setIsEditing(false)} disabled={isSaving}>
-                Cancel
-              </Button>
-              <Button onClick={handleSave} disabled={isSaving}>
-                <Save className="h-4 w-4 mr-2" />
-                {isSaving ? "Saving..." : "Save Changes"}
-              </Button>
+              Saving
+              <Loader className="animate-spin ml-2" />
             </>
           ) : (
-            <Button onClick={() => setIsEditing(true)}>
-              Edit Profile
-            </Button>
+            "Save Changes"
           )}
-        </div>
+        </Button>
       </div>
-
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2 space-y-6">
-          {/* Basic Information */}
-          <div className="bg-card rounded-lg border border-border p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-card-foreground mb-4">Basic Information</h2>
-            
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
-                {isEditing ? (
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => handleInputChange("name", e.target.value)}
-                  />
-                ) : (
-                  <p className="text-sm text-card-foreground font-medium">{formData.name}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="userName">Username</Label>
-                {isEditing ? (
-                  <Input
-                    id="userName"
-                    value={formData.userName}
-                    onChange={(e) => handleInputChange("userName", e.target.value)}
-                  />
-                ) : (
-                  <p className="text-sm text-card-foreground font-medium">@{formData.userName}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <p className="text-sm text-card-foreground font-medium">{formData.email}</p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone</Label>
-                {isEditing ? (
-                  <Input
-                    id="phone"
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange("phone", e.target.value)}
-                  />
-                ) : (
-                  <p className="text-sm text-card-foreground font-medium">{formData.phone || "Not provided"}</p>
-                )}
-              </div>
-            </div>
-
-            <div className="mt-4 space-y-2">
-              <Label htmlFor="bio">Bio</Label>
-              {isEditing ? (
-                <Textarea
-                  id="bio"
-                  rows={4}
-                  value={formData.bio}
-                  onChange={(e) => handleInputChange("bio", e.target.value)}
-                  placeholder="Tell us about your investment philosophy and experience..."
-                />
-              ) : (
-                <p className="text-sm text-muted-foreground">{formData.bio || "No bio provided"}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Location & Investment Preferences */}
-          <div className="bg-card rounded-lg border border-border p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-card-foreground mb-4">Location & Investment Details</h2>
-            
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="city">City</Label>
-                {isEditing ? (
-                  <Input
-                    id="city"
-                    value={formData.city}
-                    onChange={(e) => handleInputChange("city", e.target.value)}
-                  />
-                ) : (
-                  <p className="text-sm text-card-foreground font-medium flex items-center">
-                    <MapPin className="h-4 w-4 mr-1 text-muted-foreground" />
-                    {formData.city || "Not specified"}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="country">Country</Label>
-                {isEditing ? (
-                  <Input
-                    id="country"
-                    value={formData.country}
-                    onChange={(e) => handleInputChange("country", e.target.value)}
-                  />
-                ) : (
-                  <p className="text-sm text-card-foreground font-medium">{formData.country || "Not specified"}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="experience">Investment Experience</Label>
-                {isEditing ? (
-                  <Input
-                    id="experience"
-                    value={formData.experience}
-                    onChange={(e) => handleInputChange("experience", e.target.value)}
-                    placeholder="e.g., 5+ years"
-                  />
-                ) : (
-                  <p className="text-sm text-card-foreground font-medium">{formData.experience || "Not specified"}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label>Funding Range</Label>
-                {isEditing ? (
-                  <div className="flex space-x-2">
-                    <Input
-                      type="number"
-                      placeholder="Min"
-                      value={formData.fundingRange.min}
-                      onChange={(e) => handleFundingRangeChange("min", Number(e.target.value))}
-                    />
-                    <Input
-                      type="number"
-                      placeholder="Max"
-                      value={formData.fundingRange.max}
-                      onChange={(e) => handleFundingRangeChange("max", Number(e.target.value))}
-                    />
-                  </div>
-                ) : (
-                  <p className="text-sm text-card-foreground font-medium flex items-center">
-                    <DollarSign className="h-4 w-4 mr-1 text-muted-foreground" />
-                    {formatCurrency(formData.fundingRange.min)} - {formatCurrency(formData.fundingRange.max)}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div className="mt-4 space-y-2">
-              <Label htmlFor="investmentFocus">Investment Focus</Label>
-              {isEditing ? (
-                <Input
-                  id="investmentFocus"
-                  value={formData.investmentFocus.join(", ")}
-                  onChange={(e) => handleInvestmentFocusChange(e.target.value)}
-                  placeholder="Enter focus areas separated by commas (e.g., Healthcare, FinTech, AI/ML)"
-                />
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {formData.investmentFocus.length > 0 ? (
-                    formData.investmentFocus.map((focus, index) => (
-                      <span
-                        key={index}
-                        className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary"
-                      >
-                        {focus}
-                      </span>
-                    ))
-                  ) : (
-                    <p className="text-sm text-muted-foreground">No investment focus specified</p>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Social Links */}
-          <div className="bg-card rounded-lg border border-border p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-card-foreground mb-4">Social Links</h2>
-            
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="website">Website</Label>
-                {isEditing ? (
-                  <Input
-                    id="website"
-                    value={formData.socialLinks.website}
-                    onChange={(e) => handleSocialLinksChange("website", e.target.value)}
-                    placeholder="https://yourwebsite.com"
-                  />
-                ) : (
-                  formData.socialLinks.website ? (
-                    <p className="text-sm text-card-foreground font-medium flex items-center">
-                      <LinkIcon className="h-4 w-4 mr-1 text-muted-foreground" />
-                      <a href={formData.socialLinks.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                        {formData.socialLinks.website}
-                      </a>
-                    </p>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">No website provided</p>
-                  )
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="linkedin">LinkedIn</Label>
-                {isEditing ? (
-                  <Input
-                    id="linkedin"
-                    value={formData.socialLinks.linkedin}
-                    onChange={(e) => handleSocialLinksChange("linkedin", e.target.value)}
-                    placeholder="https://linkedin.com/in/username"
-                  />
-                ) : (
-                  formData.socialLinks.linkedin ? (
-                    <p className="text-sm text-card-foreground font-medium">
-                      <a href={formData.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                        {formData.socialLinks.linkedin}
-                      </a>
-                    </p>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">No LinkedIn provided</p>
-                  )
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="twitter">Twitter</Label>
-                {isEditing ? (
-                  <Input
-                    id="twitter"
-                    value={formData.socialLinks.twitter}
-                    onChange={(e) => handleSocialLinksChange("twitter", e.target.value)}
-                    placeholder="https://twitter.com/username"
-                  />
-                ) : (
-                  formData.socialLinks.twitter ? (
-                    <p className="text-sm text-card-foreground font-medium">
-                      <a href={formData.socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                        {formData.socialLinks.twitter}
-                      </a>
-                    </p>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">No Twitter provided</p>
-                  )
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Sidebar */}
-        <div className="space-y-6">
-          <div className="bg-card rounded-lg border border-border p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-card-foreground mb-4">Profile Photo</h3>
-            <div className="flex flex-col items-center space-y-4">
-              <div className="relative">
-                {profile.profileImage ? (
-                  <img 
-                    src={profile.profileImage} 
-                    alt={profile.name}
-                    className="w-24 h-24 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center">
-                    <User className="h-10 w-10 text-primary" />
-                  </div>
-                )}
-                {isEditing && (
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="absolute -bottom-1 -right-1 rounded-full h-8 w-8"
-                  >
-                    <Camera className="h-3 w-3" />
-                  </Button>
-                )}
-              </div>
-              {isEditing && (
-                <Button variant="outline" size="sm">
-                  <Camera className="h-4 w-4 mr-2" />
-                  Change Photo
-                </Button>
-              )}
-            </div>
-          </div>
-
-          <div className="bg-card rounded-lg border border-border p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-card-foreground mb-4">Investment Summary</h3>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Investment Range</span>
-                <span className="text-sm text-card-foreground font-medium">
-                  {formatCurrency(formData.fundingRange.min)} - {formatCurrency(formData.fundingRange.max)}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Focus Areas</span>
-                <span className="text-sm text-card-foreground font-medium">
-                  {formData.investmentFocus.length} sectors
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Experience</span>
-                <span className="text-sm text-card-foreground font-medium">
-                  {formData.experience || "Not specified"}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-card rounded-lg border border-border p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-card-foreground mb-4">Account Status</h3>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Email Verified</span>
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                  Verified
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Profile Complete</span>
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                  90%
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Member Since</span>
-                <span className="text-sm text-card-foreground font-medium">
-                  {profile.createdAt ? new Date(profile.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Recently'}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    </form>
   );
 }
-
-
