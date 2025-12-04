@@ -14,7 +14,7 @@ import {
 } from "@/components/ui";
 import Datepicker from "react-tailwindcss-datepicker";
 import "flowbite/dist/flowbite.css";
-import { useParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { Loader } from "lucide-react";
 import { UpdateUserSchema } from "@/lib/auth/zodSchemas";
 import toast from "react-hot-toast";
@@ -23,8 +23,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 export default function EditProfilePage() {
-  const params = useParams();
-  const userName = params.userName;
+  const { data: session } = useSession();
+  const userId = session?.user?.id;
 
   const [user, setUser] = useState<any>(null);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -58,8 +58,10 @@ export default function EditProfilePage() {
 
   // Fetching User From API
   useEffect(() => {
+    if (!userId) return;
+
     async function fetchUser() {
-      const res = await fetch(`/api/profile/${userName}`, {
+      const res = await fetch(`/api/profile/${userId}`, {
         method: "GET",
       });
       if (!res.ok) return;
@@ -67,7 +69,7 @@ export default function EditProfilePage() {
       setUser(data.user);
     }
     fetchUser();
-  }, [userName]);
+  }, [userId]);
 
   // Populate form
   useEffect(() => {
@@ -94,7 +96,7 @@ export default function EditProfilePage() {
   const onSubmit = async (data: any) => {
     setIsUpdating(true);
     try {
-      const res = await fetch(`/api/profile/${data.userName}`, {
+      const res = await fetch(`/api/profile/${userId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...data, experiences: addedExperiences }),
@@ -272,7 +274,12 @@ export default function EditProfilePage() {
         </div>
         {/* Add New Field Button */}
         <div className="flex justify-end">
-          <Button type="button" variant="ghost" className="cursor-pointer shadow-sm" onClick={handleAddExperience}>
+          <Button
+            type="button"
+            variant="ghost"
+            className="cursor-pointer shadow-sm"
+            onClick={handleAddExperience}
+          >
             Add New Field
           </Button>
         </div>
