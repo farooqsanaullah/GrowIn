@@ -21,7 +21,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Extract conversation ID from channel name
-    const conversationId = channelName.replace('conversation-', '');
+    // Channel format: "private-conversation-{conversationId}"
+    const conversationId = channelName.replace('private-conversation-', '');
 
     await connectDB();
 

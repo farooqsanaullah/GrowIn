@@ -1,140 +1,120 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { Startup } from '@/lib/types/startup';
 
-interface TestMessagingProps {
-  startup: Startup; // receive from parent
+interface StartupProfileProps {
+  startup: {
+    _id: string;
+    // name: string;
+    description: string;
+    founders: Array<{
+      _id: string;
+      name: string;
+      role: string;
+    }>;
+  };
 }
 
-export default function TestMessaging({ startup }: TestMessagingProps) {
+export default function StartupProfile({ startup }: StartupProfileProps) {
   const { data: session } = useSession();
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
-  const [results, setResults] = useState<string[]>([]);
-  const [recipientId, setRecipientId] = useState('');
-  const [conversationId, setConversationId] = useState('');
-
-  const addResult = (message: string) => {
-    setResults(prev => [...prev, `${new Date().toLocaleTimeString()}: ${message}`]);
-  };
-
-  // Pick first founder automatically
-  useEffect(() => {
-    if (startup?.founders?.length > 0) {
-      const firstFounder = startup.founders[0] as unknown as { _id: string; name?: string };
-      setRecipientId(firstFounder._id);
-      addResult(`✅ Recipient set to first founder: ${firstFounder.name || 'Unknown Name'}`);
-    } else {
-      addResult('❌ No founders found for this startup');
-    }
-  }, [startup]);
-
-  const testCreateConversation = async () => {
-    if (!recipientId) {
-      addResult('❌ No recipient selected');
+  const handleStartConversation = async () => {
+    if (!session?.user) {
+      alert('Please log in to message this startup');
       return;
     }
 
+    // Only investors can initiate conversations
+    if (session.user.role !== 'investor') {
+      alert('Only investors can start conversations');
+      return;
+    }
+
+    setLoading(true);
+
     try {
-      const res = await fetch('/api/conversations', {
+      // Get the first founder (you can let user choose which founder)
+      const firstFounder = startup.founders[0];
+
+      if (!firstFounder) {
+        alert('No founders available for this startup');
+        return;
+      }
+
+      // Create or get existing conversation
+      const response = await fetch('/api/conversations', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
-          recipientId,
+          recipientId: firstFounder._id,
           recipientRole: 'founder',
           startupId: startup._id,
         }),
       });
 
-      const data = await res.json();
-
-      if (res.ok) {
-        addResult(`✅ Conversation created: ${data.conversation._id}`);
-        setConversationId(data.conversation._id);
-      } else {
-        addResult(`❌ Failed: ${data.error}`);
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to start conversation');
       }
+
+      const data = await response.json();
+      
+      // Redirect to the chat page
+      router.push(`/messages/${data.conversation._id}`);
     } catch (error) {
-      addResult(`❌ Error: ${error}`);
+      console.error('Error starting conversation:', error);
+      alert(error instanceof Error ? error.message : 'Failed to start conversation');
+    } finally {
+      setLoading(false);
     }
   };
-
-  const testSendMessage = async () => {
-    if (!conversationId) {
-      addResult('❌ No conversation selected');
-      return;
-    }
-
-    try {
-      const res = await fetch('/api/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          conversationId,
-          content: `Test message at ${new Date().toISOString()}`,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        addResult(`✅ Message sent: ${data.message._id}`);
-      } else {
-        addResult(`❌ Failed: ${data.error}`);
-      }
-    } catch (error) {
-      addResult(`❌ Error: ${error}`);
-    }
-  };
-
-  if (!session) {
-    return <div className="p-8">Please sign in to test</div>;
-  }
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Messaging System Test Dashboard</h1>
+    <div className="max-w-4xl mx-auto p-6">
+      <div className="bg-white rounded-lg shadow-lg p-6">
+        {/* <h1 className="text-3xl font-bold mb-4">{startup.name}</h1> */}
+        <p className="text-gray-600 mb-6">{startup.description}</p>
 
-      <div className="bg-blue-50 p-4 rounded mb-6">
-        <p><strong>Current User:</strong> {session.user?.name}</p>
-        <p><strong>Role:</strong> {session.user?.role}</p>
-        <p><strong>ID:</strong> {session.user?.id}</p>
-        <p><strong>Startup ID:</strong> {startup._id}</p>
-        <p><strong>Recipient (first founder):</strong> {recipientId || 'Loading...'}</p>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        <button
-          onClick={testCreateConversation}
-          className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-          disabled={!recipientId}
-        >
-          1. Create Conversation
-        </button>
-
-        <button
-          onClick={testSendMessage}
-          className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600"
-          disabled={!conversationId}
-        >
-          2. Send Message
-        </button>
-      </div>
-
-      <div className="bg-gray-100 p-4 rounded">
-        <h2 className="font-bold mb-2">Test Results:</h2>
-        <button
-          onClick={() => setResults([])}
-          className="text-sm text-red-600 mb-2"
-        >
-          Clear Results
-        </button>
-        <div className="space-y-1 font-mono text-sm">
-          {results.map((result, i) => (
-            <div key={i}>{result}</div>
-          ))}
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold mb-3">Founders</h2>
+          <div className="space-y-2">
+            {startup.founders.map((founder) => (
+              <div key={founder._id} className="flex items-center gap-3 p-3 bg-gray-50 rounded">
+                <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold">
+                  {founder.name?.[0]?.toUpperCase() || '?'}
+                </div>
+                <div>
+                  <p className="font-medium">{founder.name}</p>
+                  <p className="text-sm text-gray-500">{founder.role}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
+
+        {/* Message Button - Only shown to investors */}
+        {session?.user?.role === 'investor' && (
+          <button
+            onClick={handleStartConversation}
+            disabled={loading}
+            className="w-full bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold"
+          >
+            {loading ? 'Starting conversation...' : 'Message this Startup'}
+          </button>
+        )}
+
+        {/* Show different message for founders */}
+        {session?.user?.role === 'founder' && (
+          <div className="bg-gray-100 p-4 rounded-lg text-center text-gray-600">
+            Only investors can initiate conversations
+          </div>
+        )}
       </div>
     </div>
   );

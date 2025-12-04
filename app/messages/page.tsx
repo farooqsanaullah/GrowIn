@@ -24,7 +24,7 @@ export default function ConversationsPage() {
 
     fetchConversations();
   }, []);
-
+  
   const getOtherParticipant = (conversation: IConversation): IUser | null => {
     const participant = conversation.participants.find(
       (p) => typeof p.userId === 'object' && 'name' in p.userId
@@ -35,6 +35,35 @@ export default function ConversationsPage() {
     }
     
     return null;
+  };
+
+  const formatDate = (date: Date | string | undefined) => {
+    if (!date) return '';
+    
+    try {
+      const dateObj = typeof date === 'string' ? new Date(date) : date;
+      const now = new Date();
+      const diff = now.getTime() - dateObj.getTime();
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      
+      if (days === 0) {
+        return dateObj.toLocaleTimeString([], { 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        });
+      } else if (days === 1) {
+        return 'Yesterday';
+      } else if (days < 7) {
+        return dateObj.toLocaleDateString([], { weekday: 'short' });
+      } else {
+        return dateObj.toLocaleDateString([], { 
+          month: 'short', 
+          day: 'numeric' 
+        });
+      }
+    } catch (error) {
+      return '';
+    }
   };
 
   if (loading) {
@@ -65,22 +94,24 @@ export default function ConversationsPage() {
                 className="p-4 bg-white rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer"
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900">
-                      {otherParticipant?.name || 'Unknown'}
-                    </h3>
-                    <p className="text-sm text-gray-500">
-                      {otherParticipant?.role}
-                    </p>
-                    {conversation.lastMessage && (
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold text-gray-900 truncate">
+                        {otherParticipant?.name || 'Unknown'}
+                      </h3>
+                      <span className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-full flex-shrink-0">
+                        {otherParticipant?.role}
+                      </span>
+                    </div>
+                    {conversation.lastMessage && conversation.lastMessage.content && (
                       <p className="text-sm text-gray-600 mt-1 truncate">
                         {conversation.lastMessage.content}
                       </p>
                     )}
                   </div>
-                  {conversation.lastMessage && (
-                    <div className="text-xs text-gray-400 ml-4">
-                      {new Date(conversation.lastMessage.sentAt).toLocaleDateString()}
+                  {conversation.lastMessage && conversation.lastMessage.sentAt && (
+                    <div className="text-xs text-gray-400 ml-4 flex-shrink-0">
+                      {formatDate(conversation.lastMessage.sentAt)}
                     </div>
                   )}
                 </div>
