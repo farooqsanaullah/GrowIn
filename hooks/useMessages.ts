@@ -1,97 +1,95 @@
-'use client';
+import { useState, useEffect, useCallback } from 'react';
+import { IMessage } from '@/lib/types/index';
 
-import { useEffect, useState, useCallback } from 'react';
-import { pusherClient } from '@/lib/pusher/pusher-client';
-import { IMessage, PusherMessage } from '@/lib/types/index';
-import { Channel } from 'pusher-js';
-
-interface UseMessagesReturn {
-  messages: IMessage[];
-  loading: boolean;
-  error: string | null;
-  sendMessage: (content: string) => Promise<void>;
-}
-
-export function useMessages(conversationId: string | null): UseMessagesReturn {
+export function useMessages(conversationId: string) {
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Fetch initial messages
   useEffect(() => {
-    if (!conversationId) {
-      setLoading(false);
-      return;
-    }
+    if (!conversationId) return;
 
-    let channel: Channel;
-
-    // Fetch initial messages
     async function fetchMessages() {
       try {
         setLoading(true);
-        setError(null);
         const res = await fetch(`/api/messages?conversationId=${conversationId}`);
         
         if (!res.ok) {
           throw new Error('Failed to fetch messages');
         }
-        
+
         const data = await res.json();
         setMessages(data.messages || []);
+        setError(null);
       } catch (err) {
-        console.error('Error fetching messages:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch messages');
+        setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
         setLoading(false);
       }
     }
 
     fetchMessages();
-
-    // Subscribe to Pusher channel for real-time updates
-    channel = pusherClient.subscribe(`conversation-${conversationId}`);
-
-    channel.bind('new-message', (data: PusherMessage) => {
-      setMessages((prev) => {
-        // Avoid duplicates
-        const exists = prev.some((msg) => msg._id === data.message._id);
-        if (exists) return prev;
-        return [...prev, data.message];
-      });
-    });
-
-    return () => {
-      if (channel) {
-        channel.unbind_all();
-        channel.unsubscribe();
-      }
-    };
   }, [conversationId]);
 
+  // Add a new message to the list (used by Pusher)
+  const addMessage = useCallback((newMessage: IMessage) => {
+    setMessages((prev) => {
+      // Check if message already exists to prevent duplicates
+      const exists = prev.some(
+        (msg) => msg._id.toString() === newMessage._id.toString()
+      );
+      
+      if (exists) return prev;
+      
+      return [...prev, newMessage];
+    });
+  }, []);
+
+  // Send a new message
   const sendMessage = useCallback(
-    async (content: string): Promise<void> => {
-      if (!conversationId) {
-        throw new Error('No conversation selected');
+    async (content: string) => {
+      if (!content.trim()) {
+        throw new Error('Message content cannot be empty');
       }
 
       try {
         const res = await fetch('/api/messages', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ conversationId, content }),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            conversationId,
+            content: content.trim(),
+          }),
         });
 
         if (!res.ok) {
-          const errorData = await res.json();
-          throw new Error(errorData.error || 'Failed to send message');
+          const data = await res.json();
+          throw new Error(data.error || 'Failed to send message');
         }
+
+        const data = await res.json();
+        
+        // Add the message to local state immediately
+        if (data.message) {
+          addMessage(data.message);
+        }
+
+        return data.message;
       } catch (err) {
-        console.error('Error sending message:', err);
         throw err;
       }
     },
-    [conversationId]
+    [conversationId, addMessage]
   );
 
-  return { messages, loading, error, sendMessage };
+  return {
+    messages,
+    loading,
+    error,
+    sendMessage,
+    addMessage,
+  };
 }
