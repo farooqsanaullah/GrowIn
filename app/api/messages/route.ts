@@ -43,10 +43,10 @@ export async function POST(request: NextRequest) {
     const message = await Message.create({
       conversationId,
       senderId: user.id,
-      senderName: user.name,      // ✅ REQUIRED by schema
-      text: content.trim(),       // ✅ matches schema
-      senderRole: user.role,      // optional, useful for chat apps
-      type: 'text',               // optional, default type
+      senderName: user.name,
+      text: content.trim(), // Use 'text' to match model
+      senderRole: user.role,
+      type: 'text',
     });
 
     // Update lastMessage in Conversation
@@ -61,22 +61,32 @@ export async function POST(request: NextRequest) {
 
     // Populate sender info for real-time
     const populatedMessage = await Message.findById(message._id)
-      .populate('senderId', 'name email avatar')
+      .populate('senderId', 'name email avatar role')
       .lean<IMessage>();
 
-    // Trigger Pusher event
-    await pusherServer.trigger(`conversation-${conversationId}`, 'new-message', {
-      message: populatedMessage,
-    });
+    if (!populatedMessage) {
+      return NextResponse.json({ error: 'Failed to create message' }, { status: 500 });
+    }
 
-    return NextResponse.json({ message: populatedMessage }, { status: 201 });
+    // Add 'content' field for compatibility with frontend types
+    const messageWithContent = {
+      ...populatedMessage,
+      content: populatedMessage.text,
+    };
+
+    // Trigger Pusher event on PRIVATE channel
+    await pusherServer.trigger(
+      `private-conversation-${conversationId}`,
+      'new-message',
+      { message: messageWithContent }
+    );
+
+    return NextResponse.json({ message: messageWithContent }, { status: 201 });
   } catch (error) {
     console.error('Error sending message:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
-
-
 
 export async function GET(request: NextRequest) {
   try {
@@ -107,7 +117,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Build query
-    const query: any = { conversationId, isDeleted: false };
+    const query: any = { conversationId };
     if (before) {
       query.createdAt = { $lt: new Date(before) };
     }
@@ -115,10 +125,16 @@ export async function GET(request: NextRequest) {
     const messages = await Message.find(query)
       .sort({ createdAt: -1 })
       .limit(limit)
-      .populate('senderId', 'name email avatar')
+      .populate('senderId', 'name email avatar role')
       .lean<IMessage[]>();
 
-    return NextResponse.json({ messages: messages.reverse() });
+    // Add 'content' field for compatibility
+    const messagesWithContent = messages.map(msg => ({
+      ...msg,
+      content: msg.text,
+    }));
+
+    return NextResponse.json({ messages: messagesWithContent.reverse() });
   } catch (error) {
     console.error('Error fetching messages:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
