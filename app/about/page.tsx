@@ -1,5 +1,10 @@
+import Footer from "@/components/landingpage/Footer";
+import Header from "@/components/landingpage/Header";
+
 export default function AboutPage() {
   return (
+    <>
+    <Header />
     <div className="min-h-screen flex flex-col items-center justify-center py-10 px-4 bg-gray-50 font-montserrat">
       <h1 className="text-4xl font-bold mb-6 text-gray-800">About GrowIn</h1>
       <p className="max-w-3xl text-lg text-gray-600 leading-relaxed mb-6">
@@ -16,5 +21,7 @@ export default function AboutPage() {
         transform the startup landscape and drive innovation forward.
       </p>
     </div>
+    <Footer />
+    </>
   );
 }
