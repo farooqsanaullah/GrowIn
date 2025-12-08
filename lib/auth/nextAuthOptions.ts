@@ -248,9 +248,11 @@ export const authOptions: NextAuthOptions = {
       // Initial sign in
       if (user) {
         token.id = user.id;
-        console.log("🚀 ~ [JWT] (user|token).id:", user.id)
         token.role = user.role;     
-        console.log("🚀 ~ [JWT] (user|token).role:", user.role)
+        token.email = user.email;     
+        console.log("🚀 ~ [JWT] token.id:", user.id)
+        console.log("🚀 ~ [JWT] token.role:", user.role)
+        console.log("🚀 ~ [JWT] token.email:", user.email)
       }
 
       // Refresh user data on session update
@@ -277,9 +279,11 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (token) {
         session.user.id = token.id as string;
-        console.log("🚀 ~ [SESSION] token.id:", token.id)
         session.user.role = token.role as string;
+        session.user.email = token.email as string;
+        console.log("🚀 ~ [SESSION] token.id:", token.id)
         console.log("🚀 ~ [SESSION] token.role:", token.role)
+        console.log("🚀 ~ [SESSION] token.email:", token.email)
         
         // Add session expiry info
         session.expires = token.exp as string;
