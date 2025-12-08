@@ -183,7 +183,7 @@ export default function SigninForm({ providers }: SigninFormProps) {
                       disabled={loadingProvider || loadingSignin}
                       onClick={() => {
                         setLoadingProvider(prov.id)
-                        signIn(prov.id)
+                        signIn(prov.id, { callbackUrl: `${window.location.origin}/redirect` })
                       }}
                       className="w-full bg-background text-foreground hover:bg-foreground hover:text-background border-border hover:border-transparent cursor-pointer"
                     >
