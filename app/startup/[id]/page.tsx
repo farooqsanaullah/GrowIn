@@ -2,6 +2,7 @@ import { Startup } from "@/lib/types/startup";
 import ClientWrapper from "@/components/startup/ClientWrapper";
 import { notFound } from "next/navigation";
 
+
 type Props = {
   params: { id: string } | Promise<{ id: string }>;
 };

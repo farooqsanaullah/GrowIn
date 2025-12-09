@@ -218,6 +218,8 @@ export const authOptions: NextAuthOptions = {
           // Attaching DB info to user object (so JWT receives it)
           user.id = existingUser._id.toString();
           user.role = existingUser.role;
+          user.name = existingUser.name;
+          user.email = existingUser.email;
           
           isDev && console.log(`[OAuth] Linked existing user to ${account.provider}`);
 
@@ -242,6 +244,8 @@ export const authOptions: NextAuthOptions = {
         // Attaching DB fields so JWT sees them
         user.id = newUser._id.toString();
         user.role = newUser.role;
+        user.name = newUser.name;
+        user.email = newUser.email;
 
         return true;
       } catch (err) {
@@ -255,15 +259,19 @@ export const authOptions: NextAuthOptions = {
       // Initial sign in
       if (user) {
         token.id = user.id;
-        console.log("🚀 ~ [JWT] (user|token).id:", user.id)
+        // console.log("🚀 ~ [JWT] (user|token).id:", user.id)
         token.role = user.role;     
-        console.log("🚀 ~ [JWT] (user|token).role:", user.role)
+        // console.log("🚀 ~ [JWT] (user|token).role:", user.role)
+        token.name = user.name;
+        // console.log("🚀 ~ [JWT] (user|token).name:", user.name)
+        token.email = user.email;
+        // console.log("🚀 ~ [JWT] (user|token).email:", user.email)
       }
 
       // Refresh user data on session update
       if (trigger === "update" && session) {
         token = { ...token, ...session };
-        console.log(`🚀 ~ trigger === "update" && session:`, trigger === "update" && session)
+        // console.log(`🚀 ~ trigger === "update" && session:`, trigger === "update" && session)
       }
 
       // Handle OAuth token refresh (simplified example)
@@ -284,9 +292,13 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (token) {
         session.user.id = token.id as string;
-        console.log("🚀 ~ [SESSION] token.id:", token.id)
+        // console.log("🚀 ~ [SESSION] token.id:", token.id)
         session.user.role = token.role as string;
-        console.log("🚀 ~ [SESSION] token.role:", token.role)
+        // console.log("🚀 ~ [SESSION] token.role:", token.role)
+        session.user.name = token.name as string;
+        // console.log("🚀 ~ [SESSION] token.name:", token.name)
+        session.user.email = token.email as string;
+        // console.log("🚀 ~ [SESSION] token.email:", token.email)
         
         // Add session expiry info
         session.expires = token.exp as string;

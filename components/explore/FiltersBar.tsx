@@ -154,14 +154,14 @@ export default function FilterBar() {
           )}
         </div>
 
-        {(selectedIndustries.length || selectedCategories.length || selectedBatches.length) && (
+        {(selectedIndustries.length || selectedCategories.length || selectedBatches.length)? (
           <button
             onClick={clearAll}
             className="px-4 py-2 bg-red-100 text-red-600 rounded-xl hover:bg-red-200 whitespace-nowrap flex-shrink-0 min-w-0 truncate max-w-[120px]"
           >
             Clear All
           </button>
-        )}
+        ) : null}
       </div>
     </div>
   );
