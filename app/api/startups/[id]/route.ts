@@ -79,8 +79,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     }
 
     const startup = await Startup.findByIdAndUpdate(id, { $set: updateData }, { new: true, runValidators: true })
-      .populate("founders", "userName name profileImage email")
-      .populate("investors", "userName name profileImage email")
+      .populate("founders", "_id userName name profileImage email")
+      .populate("investors", "_id userName name profileImage email")
       .lean();
 
     if (!startup) {

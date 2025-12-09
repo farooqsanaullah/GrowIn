@@ -270,6 +270,8 @@ export const authOptions: NextAuthOptions = {
         // Attaching DB fields so JWT sees them
         user.id = newUser._id.toString();
         user.role = newUser.role;
+        user.name = newUser.name;
+        user.email = newUser.email;
 
         return true;
       } catch (err) {
