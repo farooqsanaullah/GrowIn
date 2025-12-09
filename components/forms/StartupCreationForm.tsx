@@ -3,13 +3,14 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
+import { useSession } from 'next-auth/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Building2,
   Upload,
   X,
   Plus,
-  Loader2,
+  Loader,
   Link as LinkIcon,
   FileText,
   ImageIcon,
@@ -17,7 +18,7 @@ import {
   Linkedin,
   Twitter,
   Instagram,
-  Facebook
+  Facebook,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -28,14 +29,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 import {
-  startupFormSchema,
-  StartupFormData,
   INDUSTRY_OPTIONS,
   CATEGORY_TYPE_OPTIONS,
   STATUS_OPTIONS
 } from '@/lib/validations/startup';
-import { startupsApi } from '@/lib/api/startups';
-import type { CreateStartupData, Startup } from '@/lib/types/api';
+import { startupsApi } from '@/lib/helpers/api/startups';
+import type { Startup } from '@/lib/types/api';
+import { handleProfilePicUpload } from '@/lib/helpers/api/handlers';
+import toast from 'react-hot-toast';
 
 interface StartupCreationFormProps {
   onSuccess?: () => void;
@@ -54,6 +55,8 @@ export function StartupCreationForm({ onSuccess, isEdit = false, initialData }: 
   );
   const [uploadingProfilePic, setUploadingProfilePic] = useState(false);
   const [profilePicUrl, setProfilePicUrl] = useState<string>(initialData?.profilePic || '');
+  const { data: session } = useSession();
+  const founderId = session?.user?.id;
 
   const {
     register,
@@ -82,6 +85,8 @@ export function StartupCreationForm({ onSuccess, isEdit = false, initialData }: 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+    if (!founderId) { alert('You must be logged in to upload files'); return; }
+    console.log('Founder ID for upload:', founderId);
 
     setUploadingFile(true);
     try {
@@ -92,6 +97,7 @@ export function StartupCreationForm({ onSuccess, isEdit = false, initialData }: 
       const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
+        headers: { 'founderId': founderId }
       });
 
       const result = await response.json();
@@ -100,43 +106,13 @@ export function StartupCreationForm({ onSuccess, isEdit = false, initialData }: 
         setPitchFileUrl(result.data.url);
         setPitchFileName(file.name);
       } else {
-        alert(result.message || 'Failed to upload file');
+        toast.error(result.message || 'Failed to upload file');
       }
     } catch (error) {
       console.error('Upload error:', error);
-      alert('Failed to upload file');
+      toast.error('Failed to upload file');
     } finally {
       setUploadingFile(false);
-    }
-  };
-
-  const handleProfilePicUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    setUploadingProfilePic(true);
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('type', 'profile');
-
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        setProfilePicUrl(result.data.url);
-      } else {
-        alert(result.message || 'Failed to upload image');
-      }
-    } catch (error) {
-      console.error('Upload error:', error);
-      alert('Failed to upload image');
-    } finally {
-      setUploadingProfilePic(false);
     }
   };
 
@@ -156,10 +132,12 @@ export function StartupCreationForm({ onSuccess, isEdit = false, initialData }: 
           )
         ),
       };
-
+// have to send founder id in header in both create and update
+      if (!founderId) { alert('You must be logged in to submit the form'); return; }
+    
       const response = isEdit && initialData?._id
-        ? await startupsApi.update(initialData._id, submissionData)
-        : await startupsApi.create(submissionData);
+        ? await startupsApi.update(initialData._id, submissionData, { headers: { founderId } })
+        : await startupsApi.create(submissionData, { headers: { founderId } });
 
       if (response.success) {
         if (onSuccess) {
@@ -168,11 +146,11 @@ export function StartupCreationForm({ onSuccess, isEdit = false, initialData }: 
           router.push('/founder/startups');
         }
       } else {
-        alert(response.message || `Failed to ${isEdit ? 'update' : 'create'} startup`);
+        toast.error(response.message || `Failed to ${isEdit ? 'update' : 'create'} startup`);
       }
     } catch (error) {
       console.error('Submission error:', error);
-      alert(`Failed to ${isEdit ? 'update' : 'create'} startup`);
+      toast.error(`Failed to ${isEdit ? 'update' : 'create'} startup`);
     } finally {
       setIsSubmitting(false);
     }
@@ -255,12 +233,12 @@ export function StartupCreationForm({ onSuccess, isEdit = false, initialData }: 
                 value={watch('status')}
                 onValueChange={(value) => setValue('status', value as any)}
               >
-                <SelectTrigger>
+                <SelectTrigger className='cursor-pointer'>
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
                   {STATUS_OPTIONS.map((status) => (
-                    <SelectItem key={status.value} value={status.value}>
+                    <SelectItem key={status.value} value={status.value} className='cursor-pointer'>
                       {status.label}
                     </SelectItem>
                   ))}
@@ -285,7 +263,7 @@ export function StartupCreationForm({ onSuccess, isEdit = false, initialData }: 
 
           <div className="space-y-2">
             <Label htmlFor="profilePic">Profile Picture</Label>
-            <div className="border-2 border-dashed border-border rounded-lg p-4">
+            <div className="border-2 border-dashed border-border rounded-lg p-4 cursor-pointer">
               {profilePicUrl ? (
                 <div className="flex items-center gap-4">
                   <img
@@ -320,7 +298,13 @@ export function StartupCreationForm({ onSuccess, isEdit = false, initialData }: 
                       id="profilePicFile"
                       type="file"
                       accept="image/*"
-                      onChange={handleProfilePicUpload}
+                      onChange={(e) => 
+                        handleProfilePicUpload(e, {
+                          onUploadStart: () => setUploadingProfilePic(true),
+                          onUploadSuccess: (url) => setProfilePicUrl(url),
+                          onUploadEnd: () => setUploadingProfilePic(false),
+                        })
+                      }
                       disabled={uploadingProfilePic}
                       className="hidden"
                     />
@@ -330,8 +314,8 @@ export function StartupCreationForm({ onSuccess, isEdit = false, initialData }: 
                   </p>
                   {uploadingProfilePic && (
                     <div className="flex items-center justify-center gap-2 mt-2">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      <span className="text-sm">Uploading...</span>
+                      <span className="text-sm">Uploading</span>
+                      <Loader className="animate-spin ml-2" />
                     </div>
                   )}
                 </div>
@@ -394,8 +378,8 @@ export function StartupCreationForm({ onSuccess, isEdit = false, initialData }: 
                   </p>
                   {uploadingFile && (
                     <div className="flex items-center justify-center gap-2">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      <span className="text-sm">Uploading...</span>
+                      <span className="text-sm">Uploading</span>
+                      <Loader className="animate-spin ml-2" />
                     </div>
                   )}
                 </div>
@@ -543,6 +527,7 @@ export function StartupCreationForm({ onSuccess, isEdit = false, initialData }: 
               variant="outline"
               size="sm"
               onClick={() => setEquityRanges([...equityRanges, { range: '', equity: 0 }])}
+              className='cursor-pointer'
             >
               <Plus className="h-4 w-4 mr-2" />
               Add Equity Range
@@ -558,18 +543,19 @@ export function StartupCreationForm({ onSuccess, isEdit = false, initialData }: 
           variant="outline"
           onClick={() => router.back()}
           disabled={isSubmitting}
+          className="cursor-pointer"
         >
           Cancel
         </Button>
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 cursor-pointer"
         >
           {isSubmitting ? (
             <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              {isEdit ? 'Updating Startup...' : 'Creating Startup...'}
+              {isEdit ? 'Updating Startup' : 'Creating Startup'}
+              <Loader className="animate-spin ml-2" />
             </>
           ) : (
             <>

@@ -90,7 +90,23 @@ const PortfolioSection = ({
         </div>
 
         <div className="space-y-4">
-          {portfolioData.map((item) => (
+          {portfolioData.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="text-6xl mb-4">
+                {portfolioType === 'founder' ? '🚀' : '💼'}
+              </div>
+              <h3 className="text-xl font-semibold mb-2" style={{ color: colors.textPrimary }}>
+                {portfolioType === 'founder' ? 'No Companies Yet' : 'No Investments Yet'}
+              </h3>
+              <p className="text-sm" style={{ color: colors.textMuted }}>
+                {portfolioType === 'founder' 
+                  ? 'This founder hasn\'t started any companies yet.' 
+                  : 'This investor hasn\'t made any investments yet.'
+                }
+              </p>
+            </div>
+          ) : (
+            portfolioData.map((item) => (
             <div
               key={item.id}
               className="flex items-center justify-between p-4 lg:p-6 rounded-xl border hover:shadow-md transition-all duration-300 cursor-pointer group"
@@ -168,7 +184,8 @@ const PortfolioSection = ({
                 </button>
               </div>
             </div>
-          ))}
+          ))
+          )}
         </div>
 
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -45,45 +46,53 @@ interface AnalyticsData {
 }
 
 export default function AnalyticsPage() {
+  const { data: session } = useSession();
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [timeframe, setTimeframe] = useState("6m");
 
   useEffect(() => {
     const fetchAnalyticsData = async () => {
+      if (!session?.user?.id) {
+        setLoading(false);
+        return;
+      }
+
       try {
+        const queryParams = new URLSearchParams({
+          userId: session.user.id,
+          timeframe: timeframe
+        });
 
-        const mockData: AnalyticsData = {
-          portfolioValue: 220000,
-          totalInvested: 195000,
-          totalReturn: 25000,
-          monthlyData: [
-            { month: "May", value: 180000, invested: 165000 },
-            { month: "Jun", value: 185000, invested: 175000 },
-            { month: "Jul", value: 192000, invested: 180000 },
-            { month: "Aug", value: 198000, invested: 185000 },
-            { month: "Sep", value: 205000, invested: 190000 },
-            { month: "Oct", value: 215000, invested: 195000 },
-            { month: "Nov", value: 220000, invested: 195000 },
-          ],
-          categoryBreakdown: [
-            { category: "Healthcare", value: 65000, count: 2 },
-            { category: "Clean Energy", value: 45000, count: 3 },
-            { category: "EdTech", value: 42000, count: 2 },
-            { category: "FinTech", value: 35000, count: 2 },
-            { category: "Food Tech", value: 20000, count: 1 },
-            { category: "AgTech", value: 13000, count: 1 },
-          ],
+        const response = await fetch(`/api/investor/analytics?${queryParams}`);
+        if (!response.ok) throw new Error('Failed to fetch analytics');
+        
+        const data = await response.json();
+        
+        // Transform API response to match AnalyticsData interface
+        const transformedData: AnalyticsData = {
+          portfolioValue: data.summary?.totalAmount || 0,
+          totalInvested: data.summary?.totalAmount || 0,
+          totalReturn: 0, // Calculate from performance data if available
+          monthlyData: Array.isArray(data.performance) ? data.performance.map((item: any) => ({
+            month: item.month || 'Unknown',
+            value: item.portfolioValue || 0,
+            invested: item.totalInvested || 0
+          })) : [],
+          categoryBreakdown: Array.isArray(data.categoryAnalysis) ? data.categoryAnalysis.map((item: any) => ({
+            category: item.category || 'Unknown',
+            value: item.totalAmount || 0,
+            count: item.count || 0
+          })) : [],
           performanceMetrics: {
-            bestPerformer: "HealthAI",
-            bestReturn: 28.5,
-            worstPerformer: "FinanceFlow",
-            worstReturn: -12.3,
-          },
+            bestPerformer: data.topPerformers?.[0]?.startup || 'N/A',
+            bestReturn: data.topPerformers?.[0]?.return || 0,
+            worstPerformer: data.topPerformers?.[data.topPerformers?.length - 1]?.startup || 'N/A',
+            worstReturn: data.topPerformers?.[data.topPerformers?.length - 1]?.return || 0
+          }
         };
-
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setAnalyticsData(mockData);
+        
+        setAnalyticsData(transformedData);
       } catch (error) {
         console.error('Error fetching analytics:', error);
       } finally {
@@ -92,9 +101,9 @@ export default function AnalyticsPage() {
     };
 
     fetchAnalyticsData();
-  }, [timeframe]);
+  }, [session, timeframe]);
 
-  if (loading || !analyticsData) {
+  if (loading) {
     return (
       <div className="space-y-6">
         <div className="h-8 bg-muted rounded w-1/4"></div>
@@ -118,7 +127,30 @@ export default function AnalyticsPage() {
     );
   }
 
-  const returnPercentage = (analyticsData.totalReturn / analyticsData.totalInvested) * 100;
+  if (!session?.user) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center py-12">
+          <h2 className="text-2xl font-bold mb-4">Please sign in to view analytics</h2>
+        </div>
+      </div>
+    );
+  }
+
+  if (!analyticsData) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center py-12">
+          <h2 className="text-2xl font-bold mb-4">No analytics data available</h2>
+          <p className="text-muted-foreground">Make some investments to see your analytics.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const returnPercentage = analyticsData.totalInvested && analyticsData.totalInvested > 0 
+    ? ((analyticsData.totalReturn || 0) / analyticsData.totalInvested) * 100 
+    : 0;
 
   return (
     <div className="space-y-6">
@@ -156,7 +188,7 @@ export default function AnalyticsPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground mb-1">Portfolio Value</p>
-              <p className="text-2xl font-bold text-foreground">${analyticsData.portfolioValue.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-foreground">${(analyticsData.portfolioValue || 0).toLocaleString()}</p>
             </div>
             <DollarSign className="h-8 w-8 text-primary" />
           </div>
@@ -167,7 +199,7 @@ export default function AnalyticsPage() {
             <div>
               <p className="text-sm font-medium text-muted-foreground mb-1">Total Return</p>
               <p className={`text-2xl font-bold ${analyticsData.totalReturn > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {analyticsData.totalReturn > 0 ? '+' : ''}${analyticsData.totalReturn.toLocaleString()}
+                {(analyticsData.totalReturn || 0) > 0 ? '+' : ''}${(analyticsData.totalReturn || 0).toLocaleString()}
               </p>
               <p className={`text-xs ${returnPercentage > 0 ? 'text-green-600' : 'text-red-600'}`}>
                 {returnPercentage > 0 ? '+' : ''}{returnPercentage.toFixed(1)}%
@@ -192,7 +224,7 @@ export default function AnalyticsPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground mb-1">Total Invested</p>
-              <p className="text-2xl font-bold text-foreground">${analyticsData.totalInvested.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-foreground">${(analyticsData.totalInvested || 0).toLocaleString()}</p>
             </div>
             <BarChart3 className="h-8 w-8 text-primary" />
           </div>
@@ -205,8 +237,8 @@ export default function AnalyticsPage() {
         <Card className="p-6">
           <h3 className="text-lg font-semibold text-foreground mb-4">Portfolio Performance</h3>
           <div className="space-y-4">
-            {analyticsData.monthlyData.map((data, index) => {
-              const growth = index > 0 
+            {(analyticsData.monthlyData || []).map((data, index) => {
+              const growth = index > 0 && analyticsData.monthlyData && analyticsData.monthlyData[index - 1]
                 ? ((data.value - analyticsData.monthlyData[index - 1].value) / analyticsData.monthlyData[index - 1].value) * 100
                 : 0;
               
@@ -216,7 +248,7 @@ export default function AnalyticsPage() {
                     <div className="w-2 h-8 bg-primary rounded-full"></div>
                     <div>
                       <p className="font-medium text-foreground">{data.month}</p>
-                      <p className="text-sm text-muted-foreground">${data.value.toLocaleString()}</p>
+                      <p className="text-sm text-muted-foreground">${(data.value || 0).toLocaleString()}</p>
                     </div>
                   </div>
                   <div className="text-right">
@@ -236,8 +268,10 @@ export default function AnalyticsPage() {
         <Card className="p-6">
           <h3 className="text-lg font-semibold text-foreground mb-4">Investment by Category</h3>
           <div className="space-y-4">
-            {analyticsData.categoryBreakdown.map((category) => {
-              const percentage = (category.value / analyticsData.portfolioValue) * 100;
+            {(analyticsData.categoryBreakdown || []).map((category) => {
+              const percentage = analyticsData.portfolioValue && analyticsData.portfolioValue > 0
+                ? ((category.value || 0) / analyticsData.portfolioValue) * 100
+                : 0;
               
               return (
                 <div key={category.category} className="space-y-2">
@@ -249,7 +283,7 @@ export default function AnalyticsPage() {
                       </Badge>
                     </div>
                     <span className="text-sm font-medium text-foreground">
-                      ${category.value.toLocaleString()} ({percentage.toFixed(1)}%)
+                      ${(category.value || 0).toLocaleString()} ({(percentage || 0).toFixed(1)}%)
                     </span>
                   </div>
                   <div className="w-full bg-muted rounded-full h-2">

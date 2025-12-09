@@ -4,7 +4,11 @@ import GithubProvider from "next-auth/providers/github";
 import { NextAuthOptions } from "next-auth";
 import { RateLimiterMemory } from "rate-limiter-flexible";
 import { connectDB } from "@/lib/db/connect";
-import { generateUniqueUsername, verifyPassword, getUserByEmail } from "@/lib/helpers/backend"
+import {
+  generateUniqueUsername,
+  verifyPassword,
+  getUserByEmail,
+} from "@/lib/helpers/backend";
 import User from "@/lib/models/user.model";
 
 const {
@@ -49,33 +53,40 @@ type OAuthProfile = GoogleProfile | GithubProfile;
 
 // Input validation and sanitization
 function sanitizeOAuthProfile(profile: OAuthProfile) {
-  const email = (profile.email || '').toLowerCase().trim();
-  const userName = ('login' in profile ? profile.login : email.split('@')[0]).substring(0, 50);
-  const name = (profile.name || email.split('@')[0]).substring(0, 100);
-  const bio = ('bio' in profile ? profile.bio : '')?.substring(0, 200).trim();
-  
+  const email = (profile.email || "").toLowerCase().trim();
+  const userName = (
+    "login" in profile ? profile.login : email.split("@")[0]
+  ).substring(0, 50);
+  const name = (profile.name || email.split("@")[0]).substring(0, 100);
+  const bio = ("bio" in profile ? profile.bio : "")?.substring(0, 200).trim();
+
   let city: string | undefined;
   let country: string | undefined;
 
-  if ('location' in profile && profile.location) {
-    const loc = profile.location.split(',').map((v: string) => v.trim());
+  if ("location" in profile && profile.location) {
+    const loc = profile.location.split(",").map((v: string) => v.trim());
     city = loc[0]?.substring(0, 50);
     country = loc[1]?.substring(0, 50);
   }
 
-  const profileImage = ('picture' in profile && profile.picture)
-    || ('avatar_url' in profile && profile.avatar_url)
-    || undefined;
+  const profileImage =
+    ("picture" in profile && profile.picture) ||
+    ("avatar_url" in profile && profile.avatar_url) ||
+    undefined;
 
   // Only include social links if they exist (avoid empty strings for validation)
-  const socialLinks: Partial<{github: string; twitter: string; website: string}> = {};
-  if ('html_url' in profile && profile.html_url) {
+  const socialLinks: Partial<{
+    github: string;
+    twitter: string;
+    website: string;
+  }> = {};
+  if ("html_url" in profile && profile.html_url) {
     socialLinks.github = profile.html_url;
   }
-  if ('twitter_username' in profile && profile.twitter_username) {
+  if ("twitter_username" in profile && profile.twitter_username) {
     socialLinks.twitter = `https://twitter.com/${profile.twitter_username}`;
   }
-  if ('blog' in profile && profile.blog) {
+  if ("blog" in profile && profile.blog) {
     socialLinks.website = profile.blog;
   }
 
@@ -98,7 +109,7 @@ export const authOptions: NextAuthOptions = {
     updateAge: 24 * 60 * 60, // Update session every 24 hours
   },
   pages: {
-    signIn: "/signin",   // custom sign-in page
+    signIn: "/signin", // custom sign-in page
     // error: "/signin",    // redirects OAuth/sign-in errors to the same sign-in page
     // we could also have:
     // signOut: "/signout", // custom sign-out page
@@ -132,7 +143,10 @@ export const authOptions: NextAuthOptions = {
             throw new Error("Invalid credentials");
           }
 
-          const isValid = await verifyPassword(credentials.password, user.password);
+          const isValid = await verifyPassword(
+            credentials.password,
+            user.password
+          );
           if (!isValid) {
             throw new Error("Invalid credentials");
           }
@@ -157,22 +171,22 @@ export const authOptions: NextAuthOptions = {
           scope: "openid email profile",
           prompt: "consent",
           access_type: "offline",
-          response_type: "code"
-        }
-      }
+          response_type: "code",
+        },
+      },
     }),
     GithubProvider({
       clientId: GITHUB_CLIENT_ID!,
       clientSecret: GITHUB_CLIENT_SECRET!,
       authorization: {
-        params: { scope: "read:user user:email" }
-      }
+        params: { scope: "read:user user:email" },
+      },
     }),
   ],
   callbacks: {
     // Redirect on success
     async redirect({ url, baseUrl }) {
-      return baseUrl + "/";
+      return baseUrl + "/explore";
     },
 
     //  [1] signIn → Handle OAuth user creation/account linking
@@ -184,7 +198,11 @@ export const authOptions: NextAuthOptions = {
 
       try {
         // Only handle google/github
-        if (!["google", "github"].includes(account?.provider || "") || !account?.provider) return true;
+        if (
+          !["google", "github"].includes(account?.provider || "") ||
+          !account?.provider
+        )
+          return true;
 
         const p = profile as OAuthProfile;
 
@@ -204,12 +222,18 @@ export const authOptions: NextAuthOptions = {
         // ----- If user already exists -----
         if (existingUser) {
           // Link provider
-          if (!existingUser.provider || existingUser.provider !== account?.provider) {
+          if (
+            !existingUser.provider ||
+            existingUser.provider !== account?.provider
+          ) {
             existingUser.provider = account?.provider;
           }
 
           // Fill missing fields only (DO NOT override user custom data)
-          existingUser.userName ||= await generateUniqueUsername(sanitizedData.userName, sanitizedData.email);
+          existingUser.userName ||= await generateUniqueUsername(
+            sanitizedData.userName,
+            sanitizedData.email
+          );
           existingUser.name ||= sanitizedData.name;
           existingUser.profileImage ||= sanitizedData.profileImage;
 
@@ -218,16 +242,18 @@ export const authOptions: NextAuthOptions = {
           // Attaching DB info to user object (so JWT receives it)
           user.id = existingUser._id.toString();
           user.role = existingUser.role;
-          user.name = existingUser.name;
-          user.email = existingUser.email;
-          
-          isDev && console.log(`[OAuth] Linked existing user to ${account.provider}`);
+
+          isDev &&
+            console.log(`[OAuth] Linked existing user to ${account.provider}`);
 
           return true;
         }
 
         // ----- Create new OAuth user -----
-        const uniqueUserName = await generateUniqueUsername(sanitizedData.userName, sanitizedData.email);
+        const uniqueUserName = await generateUniqueUsername(
+          sanitizedData.userName,
+          sanitizedData.email
+        );
         const newUser = await User.create({
           email: sanitizedData.email,
           provider: account?.provider,
@@ -253,25 +279,24 @@ export const authOptions: NextAuthOptions = {
         return false;
       }
     },
-    
+
     //  [2] JWT Callback - Handle token refresh and updates
     async jwt({ token, user, account, trigger, session }) {
       // Initial sign in
       if (user) {
         token.id = user.id;
-        // console.log("🚀 ~ [JWT] (user|token).id:", user.id)
-        token.role = user.role;     
-        // console.log("🚀 ~ [JWT] (user|token).role:", user.role)
-        token.name = user.name;
-        // console.log("🚀 ~ [JWT] (user|token).name:", user.name)
-        token.email = user.email;
-        // console.log("🚀 ~ [JWT] (user|token).email:", user.email)
+        console.log("🚀 ~ [JWT] (user|token).id:", user.id);
+        token.role = user.role;
+        console.log("🚀 ~ [JWT] (user|token).role:", user.role);
       }
 
       // Refresh user data on session update
       if (trigger === "update" && session) {
         token = { ...token, ...session };
-        // console.log(`🚀 ~ trigger === "update" && session:`, trigger === "update" && session)
+        console.log(
+          `🚀 ~ trigger === "update" && session:`,
+          trigger === "update" && session
+        );
       }
 
       // Handle OAuth token refresh (simplified example)
@@ -292,18 +317,14 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (token) {
         session.user.id = token.id as string;
-        // console.log("🚀 ~ [SESSION] token.id:", token.id)
+        console.log("🚀 ~ [SESSION] token.id:", token.id);
         session.user.role = token.role as string;
-        // console.log("🚀 ~ [SESSION] token.role:", token.role)
-        session.user.name = token.name as string;
-        // console.log("🚀 ~ [SESSION] token.name:", token.name)
-        session.user.email = token.email as string;
-        // console.log("🚀 ~ [SESSION] token.email:", token.email)
-        
+        console.log("🚀 ~ [SESSION] token.role:", token.role);
+
         // Add session expiry info
         session.expires = token.exp as string;
       }
-      
+
       return session;
     },
   },

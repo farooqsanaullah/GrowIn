@@ -31,9 +31,7 @@ const fetchAPI = async <T>(
   return response.json();
 };
 
-/**
- * Build query params from object, only include defined values
- */
+
 const buildQueryParams = <T extends Record<string, any>>(
   filters: T
 ): string => {
@@ -48,9 +46,7 @@ const buildQueryParams = <T extends Record<string, any>>(
   return params.toString();
 };
 
-/**
- * Construct URL with query params
- */
+
 const buildUrl = (baseUrl: string, filters?: Record<string, any>): string => {
   if (!filters || Object.keys(filters).length === 0) {
     return baseUrl;
@@ -60,9 +56,7 @@ const buildUrl = (baseUrl: string, filters?: Record<string, any>): string => {
 };
 
 export const startupsApi = {
-  /**
-   * Get all startups with optional filters and pagination
-   */
+  
   getAll: async (
     filters: StartupFilters = {}
   ): Promise<StartupListResponse> => {
@@ -70,16 +64,12 @@ export const startupsApi = {
     return fetchAPI<StartupListResponse>(url);
   },
 
-  /**
-   * Get single startup by ID
-   */
+
   getById: async (id: string): Promise<StartupResponse> => {
     return fetchAPI<StartupResponse>(`${API_BASE_URL}/startups/${id}`);
   },
 
-  /**
-   * Get startups by founder ID
-   */
+
   getByFounder: async (
     founderId: string,
     filters: Pick<StartupFilters, "page" | "limit"> = {}
@@ -88,35 +78,33 @@ export const startupsApi = {
       `${API_BASE_URL}/startups/founder/${founderId}`,
       filters
     );
+    console.log("Fetching startups for founder:", url);
     return fetchAPI<StartupListResponse>(url);
   },
 
-  /**
-   * Create new startup
-   */
-  create: async (data: CreateStartupData): Promise<StartupResponse> => {
+
+  create: async (data: CreateStartupData, options: RequestInit = {}): Promise<StartupResponse> => {
     return fetchAPI<StartupResponse>(`${API_BASE_URL}/startups`, {
       method: "POST",
       body: JSON.stringify(data),
+      ...options,
     });
   },
 
-  /**
-   * Update startup by ID
-   */
+ 
   update: async (
     id: string,
-    data: Partial<CreateStartupData>
+    data: Partial<CreateStartupData>,
+    options: RequestInit = {}
   ): Promise<StartupResponse> => {
     return fetchAPI<StartupResponse>(`${API_BASE_URL}/startups/${id}`, {
       method: "PUT",
       body: JSON.stringify(data),
+      ...options,
     });
   },
 
-  /**
-   * Delete startup by ID
-   */
+
   delete: async (id: string): Promise<ApiResponse<{ id: string }>> => {
     return fetchAPI<ApiResponse<{ id: string }>>(
       `${API_BASE_URL}/startups/${id}`,

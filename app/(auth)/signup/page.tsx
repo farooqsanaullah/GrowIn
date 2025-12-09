@@ -4,10 +4,11 @@ import { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { toast } from "react-hot-toast";
 import { Eye, EyeClosedIcon, Loader } from "lucide-react";
 import {
   Button,
+  FloatingLabelInput,
   Input,
   Label
 } from "@/components/ui";
@@ -96,13 +97,13 @@ export default function SignupPage() {
 
       toast.success("Account created successfully!");
 
-      // Auto-login after signup
       await signIn("credentials", {
         redirect: false,
         email: data.email,
         password: data.password,
       });
 
+      toast.success("Account created successfully.");
       router.push("/signin"); // Redirect to signin after signup
     } catch (error) {
       isDev && console.error("Signup error:", error);
@@ -167,7 +168,29 @@ export default function SignupPage() {
 
           {/* User Name */}
           <div>
-            <Label htmlFor="userName" className="text-foreground text-md">Username</Label>
+            <FloatingLabelInput 
+              id="userName"
+              label="Username"
+              placeholder="John Doe"
+              autoComplete="new-username"
+              className={`mt-2 bg-input text-foreground pr-10
+                ${
+                  isAvailable === true && !isChecking
+                    ? "bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
+                    : "border-border"
+                }`}
+              {...register("userName", { 
+                required: "Username is required",
+                minLength: { value: 3, message: "Username must be at least 3 characters long" },
+                maxLength: { value: 30, message: "Username must not exceed 30 characters" },
+                // trim input on change
+                setValueAs: (value) => value.trim(),
+              })}
+            />
+            {isChecking && (
+              <Loader className="animate-spin absolute right-2 top-3.5 w-5 h-5 text-muted-foreground" />
+            )}
+            {/* <Label htmlFor="userName" className="text-foreground text-md">Username</Label>
             <div className="relative">
               <Input
                 id="userName"
@@ -191,7 +214,7 @@ export default function SignupPage() {
               {isChecking && (
                 <Loader className="animate-spin absolute right-2 top-3.5 w-5 h-5 text-muted-foreground" />
               )}
-            </div>
+            </div> */}
 
             {isAvailable === true && !isChecking && (
               <p className="mt-1 text-sm text-success">Username <b>{userNameValue}</b> is available.</p>
@@ -206,11 +229,9 @@ export default function SignupPage() {
 
           {/* Email */}
           <div>
-            <Label htmlFor="email" className="text-foreground text-md">Email</Label>
-            <Input
+            <FloatingLabelInput
               id="email"
-              type="email"
-              placeholder="email@example.com"
+              label="Email"
               {...register("email", { required: "Email is required" })}
               className={`mt-2 bg-input text-foreground pr-10
                 ${(EMAIL_REGEX.test(emailValue))
