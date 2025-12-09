@@ -18,8 +18,8 @@ export async function GET(request: NextRequest) {
       'participants.userId': user.id,
     })
       .sort({ lastMessageAt: -1 })
-      .populate('participants.userId', 'name email avatar role')
-      .populate('startupId', 'name')
+      .populate('participants.userId', 'userName email role')
+      .populate('startupId', 'title')
       .limit(50)
       .lean<IConversation[]>();
 
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
       'participants.userId': { $all: [userObjectId, recipientObjectId] },
       startupId: startupObjectId,
     })
-      .populate('participants.userId', 'name email avatar role')
+      .populate('participants.userId', 'userName email avatar role')
       .lean<IConversation>();
 
     if (existingConversation) {
@@ -94,8 +94,8 @@ export async function POST(request: NextRequest) {
 
     // Populate and return
     const populatedConversation = await Conversation.findById(conversation._id)
-      .populate('participants.userId', 'name email avatar role')
-      .populate('startupId', 'name')
+      .populate('participants.userId', 'userName email avatar role')
+      .populate('startupId', 'title')
       .lean<IConversation>();
 
     return NextResponse.json({ conversation: populatedConversation }, { status: 201 });
