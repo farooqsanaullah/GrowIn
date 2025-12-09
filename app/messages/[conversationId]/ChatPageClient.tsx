@@ -3,7 +3,7 @@
 import { useMessages } from '@/hooks/useMessages';
 import { useState, useRef, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { IMessage } from '@/lib/types/index';
+import { IMessage, IUser } from '@/lib/types/index';
 import Pusher from 'pusher-js';
 
 interface ChatPageClientProps {
@@ -29,27 +29,59 @@ export default function ChatPageClient({ conversationId }: ChatPageClientProps) 
   useEffect(() => {
     if (!conversationId || !session?.user?.id) return;
 
-    pusherRef.current = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
+    console.log('🔌 Setting up Pusher for conversation', conversationId);
+
+    const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
       cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
       authEndpoint: '/api/pusher/auth',
       auth: { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } },
     });
 
-    const channel = pusherRef.current.subscribe(`private-conversation-${conversationId}`);
+    pusherRef.current = pusher;
+    Pusher.logToConsole = true;
 
-    channel.bind('new-message', (data: { message: IMessage }) => {
-      const messageSenderId = typeof data.message.senderId === 'object'
-        ? (data.message.senderId as any)._id?.toString() || (data.message.senderId as any).id?.toString()
-        : data.message.senderId.toString();
+    const channelName = `private-conversation-${conversationId}`;
+    const channel = pusher.subscribe(channelName);
 
-      if (messageSenderId !== session.user.id) addMessage(data.message);
+    channel.bind('pusher:subscription_succeeded', () => {
+      console.log('✅ Subscribed to', channelName);
+    });
+
+    channel.bind('pusher:subscription_error', (err: any) => {
+      console.error('❌ Pusher subscription error', err);
+    });
+
+    // Listen for new messages
+    channel.bind('new-message', (data: any) => {
+      console.log('📨 Pusher event received:', data);
+
+      // Make sure the data has `message` and a valid senderId
+      const message = data?.message;
+      console.log('🚀 Received message:', message);
+      if (!message || !message.senderId) {
+        console.error('❌ Invalid message data received:', data);
+        return;
+      }
+
+      let messageSenderId: string;
+      if (typeof message.senderId === 'object') {
+        messageSenderId =
+          message.senderId._id?.toString() ||
+          message.senderId.id?.toString() ||
+          '';
+      } else {
+        messageSenderId = message.senderId.toString();
+      }
+
+      // Only add message if not sent by current user
+      if (messageSenderId && messageSenderId !== session.user.id) {
+        addMessage(message);
+      }
     });
 
     return () => {
-      if (pusherRef.current) {
-        pusherRef.current.unsubscribe(`private-conversation-${conversationId}`);
-        pusherRef.current.disconnect();
-      }
+      pusher.unsubscribe(channelName);
+      pusher.disconnect();
     };
   }, [conversationId, session?.user?.id, addMessage]);
 
@@ -59,29 +91,45 @@ export default function ChatPageClient({ conversationId }: ChatPageClientProps) 
 
     setSending(true);
     try {
-      await sendMessage(input);
+      await sendMessage(input.trim());
       setInput('');
+    } catch (err) {
+      console.error('❌ Failed to send message:', err);
     } finally {
       setSending(false);
     }
   };
 
   const isOwnMessage = (message: IMessage) => {
+    if (!message.senderId) return false;
+
     if (typeof message.senderId === 'object') {
       const senderObj = message.senderId as any;
-      const senderId = senderObj._id?.toString() || senderObj.id?.toString();
-      return senderId === session?.user?.id;
+      return (
+        senderObj._id?.toString() === session?.user?.id ||
+        senderObj.id?.toString() === session?.user?.id
+      );
     }
     return message.senderId.toString() === session?.user?.id;
   };
 
-  const getSenderName = (message: IMessage) => {
-    if (typeof message.senderId === 'object' && 'name' in message.senderId) return message.senderId.name;
-    return message.senderName || 'Unknown';
-  };
+    const getSenderName = (message: IMessage) => {
+      if (typeof message.senderId === 'object' && 'userName' in message.senderId) {
+        return (message.senderId as IUser).userName;
+      }
+      return message.senderName || 'Unknown';
+    };
 
-  if (loading) return <div className="flex items-center justify-center h-screen">Loading messages...</div>;
-  if (error) return <div className="flex items-center justify-center h-screen text-red-600">Error: {error}</div>;
+
+
+  if (loading)
+    return <div className="flex items-center justify-center h-screen">Loading messages...</div>;
+  if (error)
+    return (
+      <div className="flex items-center justify-center h-screen text-red-600">
+        Error: {error}
+      </div>
+    );
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
@@ -100,13 +148,18 @@ export default function ChatPageClient({ conversationId }: ChatPageClientProps) 
                 <div className="text-xs text-gray-500 mb-1">{getSenderName(message)}</div>
                 <div
                   className={`rounded-lg px-4 py-2 ${
-                    isOwnMessage(message) ? 'bg-blue-500 text-white' : 'bg-white text-gray-900 shadow'
+                    isOwnMessage(message)
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-white text-gray-900 shadow'
                   }`}
                 >
                   {message.content || message.text}
                 </div>
                 <div className="text-xs text-gray-400 mt-1">
-                  {new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  {new Date(message.createdAt).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
                 </div>
               </div>
             </div>

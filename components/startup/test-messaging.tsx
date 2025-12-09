@@ -3,6 +3,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import { useEffect } from 'react';
+import { pusherClient } from '@/lib/pusher/pusher-client';
+
 
 interface StartupProfileProps {
   startup: {
@@ -19,6 +22,37 @@ interface StartupProfileProps {
 
 export default function StartupProfile({ startup }: StartupProfileProps) {
   const { data: session } = useSession();
+  useEffect(() => {
+  if (!session?.user?.id) return;
+
+  // Subscribe to user channel
+  const channel = pusherClient.subscribe(`user-${session.user.id}`);
+
+  interface NewConversationPayload {
+    conversation: {
+      _id: string;
+      participants: Array<{
+        _id: string;
+        role: string;
+      }>;
+    };
+  }
+
+  channel.bind("new-conversation", (payload: NewConversationPayload) => {
+    console.log("🚀 New conversation received:", payload);
+
+    // Optional: automatically redirect founder to chat
+    // router.push(`/messages/${payload.conversation._id}`);
+
+    // Optional UI alert
+    alert(`New conversation created with investor/founder`);
+  });
+
+  return () => {
+    pusherClient.unsubscribe(`user-${session.user.id}`);
+  };
+}, [session?.user?.id]);
+
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -64,6 +98,7 @@ export default function StartupProfile({ startup }: StartupProfileProps) {
       }
 
       const data = await response.json();
+      console.log('Conversation started:', data);
       
       // Redirect to the chat page
       router.push(`/messages/${data.conversation._id}`);
