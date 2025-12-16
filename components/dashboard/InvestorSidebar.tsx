@@ -17,6 +17,7 @@ import {
   LogOut,
   PieChart
 } from "lucide-react";
+import { signOut } from "next-auth/react";
 
 const investorSidebarItems = [
   {
@@ -115,8 +116,7 @@ export function InvestorSidebar({ className }: InvestorSidebarProps) {
               variant="ghost"
               className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
               onClick={() => {
-                // Handle logout
-                console.log("Logout clicked");
+                signOut();
               }}
             >
               <LogOut className="mr-3 h-5 w-5" />
