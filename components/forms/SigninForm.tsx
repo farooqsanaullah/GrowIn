@@ -4,14 +4,12 @@ import { JSX, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SignInSchema, SignInSchemaType } from "@/lib/auth/zodSchemas";
-
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Button, FloatingLabelInput, Separator } from "@/components/ui";
+import { Button, FloatingLabelInput, Input, Label, Separator } from "@/components/ui";
 import { toast } from "react-hot-toast";
 import { Eye, EyeClosedIcon, Loader } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
 
@@ -59,17 +57,9 @@ export default function SigninForm({ providers }: SigninFormProps) {
       }
 
       toast.success("Login successful");
-      const session = await fetch("/api/auth/session").then(r => r.json());
-      const role = session?.user?.role;
 
-      if (role === "founder") {
-        router.push("/founder/dashboard");
-      } else if (role === "investor") {
-        router.push("/investor/dashboard");
-      } else {
-        router.push("/");
-      }
 
+      router.push("/"); // redirect after login
     } catch (error) {
       isDev && console.error("Login error:", error);
       toast.error("Something went wrong");
@@ -79,29 +69,14 @@ export default function SigninForm({ providers }: SigninFormProps) {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-around bg-background text-foreground">
-      
-      {/* Logo */}
-      <div className="flex flex-col justify-start mb-80">
-        <Image
-          src="/logo.png"
-          alt="App Logo"
-          width={200}
-          height={0}
-          className="rounded-md"
-        />
-        <p className="mt-4 text-xl text-muted-foreground pl-4">
-          Welcome back! Sign in to continue your journey with GrowIn.
-        </p>
-      </div>
-      
+    <div className="flex min-h-screen items-center justify-center bg-background text-foreground">
       <div className="w-full max-w-md rounded-lg border border-border bg-card p-8 shadow-sm">
         <h1 className="mb-6 text-left text-2xl text-foreground">Sign In for GrowIn</h1>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           
           {/* Email */}
           <div>
-            <FloatingLabelInput 
+            <FloatingLabelInput
               id="email"
               label="Email"
               disabled={loadingSignin || loadingProvider}

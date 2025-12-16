@@ -4,7 +4,6 @@ import {
   investorInvestmentConfirmationEmail,
 } from "@/lib/constants/email";
 
-const resend = new Resend(process.env.RESEND_API_KEY!);
 
 type SendInvestmentEmailsProps = {
   founder: {
@@ -29,6 +28,8 @@ export async function sendInvestmentEmails({
   amount,
   currency = "USD",
 }: SendInvestmentEmailsProps) {
+  const resend = new Resend(process.env.RESEND_API_KEY!);
+
   try {
     /* ---------- Founder email ---------- */
     await resend.emails.send({
