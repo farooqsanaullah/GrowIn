@@ -35,6 +35,7 @@ export default function PortfolioPage() {
         investmentsApi.getPortfolio(userId),
         investmentsApi.getPortfolioStats(userId),
       ]);
+    
 
       if (portfolioResponse.success && portfolioResponse.data) {
         setInvestments(portfolioResponse.data);
@@ -73,17 +74,53 @@ export default function PortfolioPage() {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">My Portfolio</h1>
-            <p className="text-muted-foreground">
-              Track and manage your investment portfolio
-            </p>
+            <div className="h-8 w-48 bg-muted rounded animate-pulse mb-2" />
+            <div className="h-4 w-72 bg-muted rounded animate-pulse" />
           </div>
+          <div className="h-10 w-40 bg-muted rounded animate-pulse" />
         </div>
 
-        <div className="text-center py-16">
-          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading your portfolio...</p>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i} className="p-6">
+              <div className="flex items-center space-x-3">
+                <div className="h-8 w-8 bg-muted rounded animate-pulse" />
+                <div className="space-y-2 w-full">
+                  <div className="h-6 w-24 bg-muted rounded animate-pulse" />
+                  <div className="h-3 w-28 bg-muted rounded animate-pulse" />
+                </div>
+              </div>
+            </Card>
+          ))}
         </div>
+
+        <Card className="p-6">
+          <div className="space-y-4">
+            <div className="h-5 w-40 bg-muted rounded animate-pulse" />
+            <div className="space-y-4">
+              {[...Array(4)].map((_, i) => (
+                <div
+                  key={i}
+                  className="flex items-center p-4 bg-muted/30 rounded-lg border border-border/50"
+                >
+                  <div className="flex items-start space-x-4 flex-1">
+                    <div className="w-12 h-12 bg-muted rounded-lg animate-pulse" />
+                    <div className="flex-1 min-w-0 space-y-2">
+                      <div className="h-4 w-56 bg-muted rounded animate-pulse" />
+                      <div className="h-3 w-80 bg-muted rounded animate-pulse" />
+                      <div className="flex items-center space-x-4">
+                        <div className="h-3 w-28 bg-muted rounded animate-pulse" />
+                        <div className="h-3 w-20 bg-muted rounded animate-pulse" />
+                        <div className="h-3 w-24 bg-muted rounded animate-pulse" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="h-8 w-28 bg-muted rounded animate-pulse" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </Card>
       </div>
     );
   }
