@@ -40,25 +40,29 @@ export function PortfolioOverview() {
 
         const response = await fetch(`/api/investor/portfolio?${queryParams}`);
         if (!response.ok) throw new Error('Failed to fetch portfolio');
-        
+
         const data = await response.json();
-        
-        if (data.success && Array.isArray(data.portfolio)) {
-          const transformedPortfolio = data.portfolio.map((item: any) => ({
-            id: item.id,
-            name: item.name,
-            description: item.description,
-            category: item.category,
-            investmentAmount: item.investmentAmount,
-            currentValue: item.currentValue,
-            investmentDate: item.investmentDate,
-            status: item.status,
-            logo: item.logo
-          }));
-          setPortfolioStartups(transformedPortfolio);
-        } else {
-          setPortfolioStartups([]);
-        }
+        console.log('Fetched portfolio data:', data);
+
+        const portfolioItems = Array.isArray(data.portfolio)
+          ? data.portfolio
+          : Array.isArray(data.data)
+            ? data.data
+            : [];
+
+        const transformedPortfolio = portfolioItems.map((item: any) => ({
+          id: item.id || item._id,
+          name: item.name || item.startup?.title,
+          description: item.description || item.startup?.description,
+          category: item.category || item.startup?.categoryType,
+          investmentAmount: item.investmentAmount ?? item.amount ?? 0,
+          currentValue: item.currentValue ?? item.amount ?? 0,
+          investmentDate: item.investmentDate || item.createdAt,
+          status: item.status || item.startup?.status || "stable",
+          logo: item.logo || item.startup?.profilePic
+        }));
+
+        setPortfolioStartups(transformedPortfolio);
       } catch (error) {
         console.error('Error fetching portfolio data:', error);
         setPortfolioStartups([]);
