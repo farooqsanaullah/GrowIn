@@ -88,19 +88,25 @@ export const startupsApi = {
       `${API_BASE_URL}/startups/founder/${founderId}`,
       filters
     );
-    console.log("Fetching startups for founder:", url);
     return fetchAPI<StartupListResponse>(url);
   },
 
   /**
    * Create new startup
    */
-
-  create: async (data: CreateStartupData, options: RequestInit = {}): Promise<StartupResponse> => {
+  create: async (data: CreateStartupData, founderId?: string): Promise<StartupResponse> => {
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+    
+    if (founderId) {
+      headers.founderId = founderId;
+    }
+    
     return fetchAPI<StartupResponse>(`${API_BASE_URL}/startups`, {
       method: "POST",
       body: JSON.stringify(data),
-      ...options,
+      headers,
     });
   },
 
@@ -109,13 +115,11 @@ export const startupsApi = {
    */
   update: async (
     id: string,
-    data: Partial<CreateStartupData>,
-    options: RequestInit = {}
+    data: Partial<CreateStartupData>
   ): Promise<StartupResponse> => {
     return fetchAPI<StartupResponse>(`${API_BASE_URL}/startups/${id}`, {
       method: "PUT",
       body: JSON.stringify(data),
-      ...options,
     });
   },
 
