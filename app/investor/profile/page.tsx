@@ -13,19 +13,19 @@ import {
 } from "@/components/ui";
 import { useSession } from "next-auth/react";
 import { Loader } from "lucide-react";
-import { updateUserSchema } from "@/lib/auth/zodValidation/updateUserSchema";
+import { UpdateUserSchema } from "@/lib/auth/zodSchemas";
 import toast from "react-hot-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 export default function EditProfilePage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [user, setUser] = useState<any>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   const { control, register, handleSubmit, setValue, watch, formState: { errors } } = useForm({
-    resolver: zodResolver(updateUserSchema),
+    resolver: zodResolver(UpdateUserSchema),
     defaultValues: {
       userName: "",
       name: "",
@@ -45,37 +45,36 @@ export default function EditProfilePage() {
   const [fundingRange, setFundingRange] = useState([0, 0]);
   const [manual, setManual] = useState({ min: 0, max: 0 });
 
-  // Fetching User From API
+  // Fetch user once session is authenticated
   useEffect(() => {
-    async function fetchUser() {
-      if (!session?.user?.id) {
-        setIsLoading(false);
-        return;
-      }
-
+    const fetchUser = async () => {
+      if (status !== "authenticated" || !session?.user?.id) return;
       try {
-        const res = await fetch(`/api/profile/${session.user.id}`, {
-          method: "GET",
-        });
-        
+        setIsLoading(true);
+        const res = await fetch(`/api/profile/${session.user.id}`, { method: "GET" });
         if (!res.ok) {
           toast.error("Failed to fetch profile");
-          setIsLoading(false);
+          setUser(null);
           return;
         }
-
         const data = await res.json();
         setUser(data.data.user);
       } catch (error) {
         console.error("Error fetching user:", error);
         toast.error("Error fetching profile");
+        setUser(null);
       } finally {
         setIsLoading(false);
       }
+    };
+
+    if (status === "authenticated") {
+      fetchUser();
+    } else if (status === "unauthenticated") {
+      setIsLoading(false);
+      setUser(null);
     }
-    
-    fetchUser();
-  }, [session?.user?.id]);
+  }, [status, session?.user?.id]);
 
   // Populate form when user data arrives
   useEffect(() => {
@@ -151,7 +150,8 @@ export default function EditProfilePage() {
     }
   };
 
-  if (isLoading) {
+  // Show skeleton while session or user data is loading
+  if (status === "loading" || isLoading) {
     return (
       <div className="space-y-10">
         <div className="animate-pulse">
@@ -167,7 +167,8 @@ export default function EditProfilePage() {
     );
   }
 
-  if (!session?.user) {
+  // Only show sign-in prompt when session is confirmed unauthenticated
+  if (status === "unauthenticated") {
     return (
       <div className="text-center py-8">
         <p className="text-muted-foreground">Please sign in to view your profile</p>
@@ -175,7 +176,8 @@ export default function EditProfilePage() {
     );
   }
 
-  if (!user) {
+  // If authenticated but user not found after loading
+  if (status === "authenticated" && !user) {
     return (
       <div className="text-center py-8">
         <p className="text-muted-foreground">Profile not found</p>
@@ -191,7 +193,7 @@ export default function EditProfilePage() {
       <div className="flex items-center gap-6">
         {formData.profileImage ? (
           <Image
-            src={formData.profileImage}
+            src={formData.profileImage as string}
             alt="Profile"
             width={90}
             height={90}
@@ -233,13 +235,13 @@ export default function EditProfilePage() {
 
           <FloatingPhoneInput
             label="Phone"
-            value={formData?.phone || ""}
+            value={(formData?.phone as string) || ""}
             onChange={(val) => setValue("phone", val)}
           />
 
           <FloatingCountryInput
             label="Country"
-            value={formData?.country || ""}
+            value={(formData?.country as string) || ""}
             onChange={(val) => {
               setValue("country", val);
               setValue("city", "");
@@ -248,8 +250,8 @@ export default function EditProfilePage() {
 
           <FloatingRegionInput
             label="City"
-            country={formData?.country || ""}
-            value={formData?.city || ""}
+            country={(formData?.country as string) || ""}
+            value={(formData?.city as string) || ""}
             onChange={(val) => setValue("city", val)}
           />
         </div>
