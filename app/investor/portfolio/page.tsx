@@ -35,8 +35,6 @@ export default function PortfolioPage() {
         investmentsApi.getPortfolio(userId),
         investmentsApi.getPortfolioStats(userId),
       ]);
-    
-
       if (portfolioResponse.success && portfolioResponse.data) {
         setInvestments(portfolioResponse.data);
       }
