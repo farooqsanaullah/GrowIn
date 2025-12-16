@@ -2,10 +2,9 @@ import bcrypt from "bcrypt";
 import User from "@/lib/models/user.model";
 import { getToken } from "next-auth/jwt";
 import { NextRequest } from "next/server";
-import { verifyToken } from "@/lib/helpers/backend";
 import { getUserById } from "./user";
 
-const { NODE_ENV } = process.env;
+const { NODE_ENV, NEXTAUTH_SECRET } = process.env;
 const isDev = NODE_ENV! === "development";
 
 export async function generateUniqueUsername(userName?: string, email?: string) {
@@ -29,33 +28,22 @@ export async function generateUniqueUsername(userName?: string, email?: string) 
 };
 
 export async function getAuthenticatedUser(req: NextRequest) {
- 
   try {
-    const manualToken = req.cookies?.get("token")?.value;
     const nextAuthToken = await getToken({
       req,
-      secret: process.env.NEXTAUTH_SECRET,
+      secret: NEXTAUTH_SECRET!,
     });
 
-    // No tokens found
-    if (!manualToken && !nextAuthToken) return null;
+    if (!nextAuthToken) return null;
 
-    // Extract userId from whichever token exists
-    let userId: string | undefined;
-
-    if (manualToken) {
-      const decoded = verifyToken(manualToken);
-      userId = decoded?.userId;
-    } else if (nextAuthToken) {
-      userId = nextAuthToken.userId?.toString() || nextAuthToken.sub;
-    }
-
+    // userId can be in 'sub' or custom 'userId' field
+    const userId = nextAuthToken.userId?.toString() || nextAuthToken.sub;
     if (!userId) return null;
 
     // Fetch user document from DB
     return await getUserById(userId);
   } catch (error) {
-    isDev && console.log("Unauthenticated user:", error);
+    isDev && console.log("[HELPER: getAuthenticatedUser] Unauthenticated user:", error);
     return null;
   }
 }

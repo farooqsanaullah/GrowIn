@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyToken } from "@/lib/helpers/backend";
 import { getToken } from "next-auth/jwt";
 
 const { NODE_ENV, NEXTAUTH_SECRET } = process.env;
@@ -8,23 +7,18 @@ export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const isDev = NODE_ENV === "development";
 
-  // --- FETCH AUTH TOKENS ---
-  // Manual token (from cookies) + NextAuth session token
-  const manualToken = req.cookies.get("token")?.value;
+  // --- FETCH NEXTAUTH SESSION TOKEN ---
   const nextAuthToken = await getToken({ req, secret: NEXTAUTH_SECRET! });
 
   isDev &&
     console.log(
       "[Middleware] Path:", pathname,
-      "ManualJWT:", !!manualToken,
-      "NextAuthJWT:", !!nextAuthToken
+      "| NextAuthJWT token exists:", !!nextAuthToken
     );
 
   // =============================================================================
   //  ROLE-BASED GUARD
   //  Prevents users from accessing other roles' areas
-  //  - investor → /founder/*
-  //  - founder → /investor/*
   // =============================================================================
   if (nextAuthToken?.role) {
     const userRole = nextAuthToken.role; // "investor" | "founder"
@@ -49,27 +43,21 @@ export async function middleware(req: NextRequest) {
   //  If already authenticated → redirect to dashboard
   // =============================================================================
   if (pathname.startsWith("/signin") || pathname.startsWith("/signup")) {
-    if (manualToken || nextAuthToken) {
-      try {
-        manualToken && verifyToken(manualToken);
-        isDev && console.log("[Middleware] Already signed in → redirecting to /dashboard");
-        return NextResponse.redirect(new URL("/dashboard", req.url));
-      } catch {
-        // Invalid token → allow access to signin/signup
-      }
+    if (nextAuthToken) {
+      isDev && console.log("[Middleware] Already signed in → redirecting to /dashboard");
+      return NextResponse.redirect(new URL("/dashboard", req.url));
     }
     return NextResponse.next();
   }
 
   // =============================================================================
   //  PROTECTED PAGES & API ROUTES
-  //  All /founder, /investor, and /api/auth/* routes
   // =============================================================================
   const isProtectedApi = pathname.startsWith("/api/auth/");
   const requiresAuth = pathname.startsWith("/founder") || pathname.startsWith("/investor") || isProtectedApi;
 
   if (requiresAuth) {
-    if (!manualToken && !nextAuthToken) {
+    if (!nextAuthToken) {
       if (isProtectedApi) {
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
       } else {
@@ -78,17 +66,8 @@ export async function middleware(req: NextRequest) {
       }
     }
 
-    try {
-      manualToken && verifyToken(manualToken);
-      return NextResponse.next();
-    } catch {
-      if (isProtectedApi) {
-        return NextResponse.json({ message: "Invalid or expired token" }, { status: 401 });
-      } else {
-        isDev && console.error("[Middleware] Invalid or expired manual token");
-        return NextResponse.redirect(new URL("/signin?error=token_expired", req.url));
-      }
-    }
+    // Authenticated → allow access
+    return NextResponse.next();
   }
 
   // Allow all other public routes

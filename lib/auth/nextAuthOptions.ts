@@ -87,8 +87,8 @@ function sanitizeOAuthProfile(profile: OAuthProfile) {
 export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
-    maxAge: 7 * 24 * 60 * 60, // 30 days
-    updateAge: 24 * 60 * 60, // Update session every 24 hours
+    maxAge: 24 * 60 * 60, // 1 day
+    updateAge: 60 * 60, // renew session every single hour
   },
   pages: {
     signIn: "/signin",   // custom sign-in page
