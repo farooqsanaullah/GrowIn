@@ -137,7 +137,7 @@ export function StartupCreationForm({ onSuccess, isEdit = false, initialData }: 
     
       const response = isEdit && initialData?._id
         ? await startupsApi.update(initialData._id, submissionData)
-        : await startupsApi.create(submissionData);
+        : await startupsApi.create(submissionData, founderId);
 
       if (response.success) {
         if (onSuccess) {
