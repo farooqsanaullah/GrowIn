@@ -173,9 +173,41 @@ export default function StartupsPage() {
 
         <div className="space-y-4">
           {loading ? (
-            <div className="text-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
-              <p className="text-muted-foreground">Loading startups...</p>
+            <div className="space-y-4">
+              {[...Array(6)].map((_, i) => (
+                <div
+                  key={i}
+                  className="flex items-center p-4 bg-muted/30 flex-col sm:flex-row rounded-lg border border-border/50"
+                >
+                  <div className="flex items-start space-x-4 flex-1">
+                    <div className="w-12 h-12 bg-muted rounded-lg animate-pulse" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <div className="h-4 w-56 bg-muted rounded animate-pulse" />
+                        <div className="h-4 w-16 bg-muted rounded animate-pulse" />
+                        <div className="h-4 w-16 bg-muted rounded animate-pulse" />
+                      </div>
+                      <div className="h-3 w-80 bg-muted rounded animate-pulse mb-2" />
+                      <div className="flex items-center space-x-6">
+                        <div className="h-3 w-24 bg-muted rounded animate-pulse" />
+                        <div className="h-3 w-24 bg-muted rounded animate-pulse" />
+                        <div className="h-3 w-28 bg-muted rounded animate-pulse" />
+                        <div className="h-3 w-28 bg-muted rounded animate-pulse" />
+                      </div>
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        <div className="h-4 w-16 bg-muted rounded animate-pulse" />
+                        <div className="h-4 w-12 bg-muted rounded animate-pulse" />
+                        <div className="h-4 w-20 bg-muted rounded animate-pulse" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2 mt-4 sm:mt-0">
+                    <div className="h-8 w-8 bg-muted rounded animate-pulse" />
+                    <div className="h-8 w-8 bg-muted rounded animate-pulse" />
+                    <div className="h-8 w-8 bg-muted rounded animate-pulse" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : error ? (
             <div className="text-center py-12">
@@ -241,7 +273,7 @@ export default function StartupsPage() {
                     <div className="flex items-center space-x-6 text-xs text-muted-foreground">
                       <span className="flex items-center">
                         <Users className="h-3 w-3 mr-1" />
-                        {startup.followers} followers
+                        {startup.followers.length} followers
                       </span>
                       <span>Industry: {startup.industry}</span>
                       <span>Rating: {startup.avgRating}/5 ({startup.ratingCount} reviews)</span>
