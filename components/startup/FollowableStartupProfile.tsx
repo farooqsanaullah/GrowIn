@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { Star } from "lucide-react";
 import { Startup } from "@/lib/types/startup";
 import { useHorizontalScroll } from "@/hooks/useHorizontalScroll";
+import toast from "react-hot-toast";
 
 interface Props {
   startup: Startup;
@@ -42,7 +43,7 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
   }, [session, startup.followers]);
 
   useEffect(() => {
-    if (!session?.user?.id) return;
+    if (!session?.user?.id || !startup?._id) return;
 
     const fetchUserRating = async () => {
       try {
@@ -59,10 +60,11 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
     };
 
     fetchUserRating();
-  }, [session?.user?.id, startup._id]);
+  }, [session?.user?.id, startup?._id]);
 
   const toggleFollow = async () => {
-    if (!session?.user?.id) return alert("Please login first");
+    if (!session?.user?.id) return toast.error("Please login first");
+    if (!startup?._id) return <div>Loading...</div>;
 
     try {
       const res = await fetch(`/api/startups/${startup._id}/follow`, {
@@ -88,6 +90,7 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
 
   const handleRating = async (rating: number) => {
     if (!session?.user?.id) return alert("Please login to rate");
+    if (!startup?._id) return <div>Loading...</div>;
 
     setIsRatingSubmitting(true);
 
@@ -115,15 +118,30 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
   };
 
   const handleInvest = async () => {
-    if (!session?.user?.id) return alert("Please login first");
+    // Check if user is logged in
+    if (!session?.user?.id) {
+      toast.error("Please login first");
+      return;
+    }
 
+    // Check if startup data is loaded
+    if (!startup?._id) {
+      toast.error("Startup data not loaded");
+      return;
+    }
+
+    // Validate investment amount
     const amountNum = parseFloat(investmentAmount);
-    if (isNaN(amountNum) || amountNum <= 0) return alert("Enter a valid amount");
+    if (isNaN(amountNum) || amountNum <= 0) {
+      toast.error("Enter a valid amount");
+      return;
+    }
 
     setIsInvesting(true);
 
     try {
-      const res = await fetch("/api/investment", {
+      // Call backend to create Stripe invoice
+      const res = await fetch("/api/create-investment-invoice", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -133,17 +151,25 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
         }),
       });
 
-      const data = await res.json();
-
-      if (data.success) {
-        alert(`Successfully invested $${amountNum}`);
-        setInvestmentAmount("");
-      } else {
-        alert(data.message || "Investment failed");
+      if (!res.ok) {
+        throw new Error("Failed to create invoice");
       }
+
+      const data = await res.json();
+      const { invoiceUrl } = data; // single invoice returned now
+
+      if (!invoiceUrl) {
+        toast.error("Invoice URL not found");
+        console.error("Backend response:", data);
+        return;
+      }
+
+      // Redirect to Stripe payment page
+      window.location.href = invoiceUrl;
+
     } catch (err) {
-      console.error(err);
-      alert("Something went wrong while investing");
+      console.error("Error creating investment invoice:", err);
+      toast.error("Something went wrong. Please try again.");
     } finally {
       setIsInvesting(false);
     }
@@ -261,65 +287,63 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
       <div className="w-full lg:w-96 flex-shrink-0 space-y-6">
         <div className="lg:sticky lg:top-20 space-y-6">
 
-          {startup.equityRange?.length > 0 && (
-            <div className="rounded-2xl p-6 shadow-md bg-gray-50">
-              <h2 className="text-2xl font-bold mb-6">Investment Opportunity</h2>
-              <div className="space-y-2 mb-6">
-                {startup.equityRange.map((eq, i) => (
-                  <div key={i} className="flex justify-between items-center p-3 rounded-lg bg-white shadow-sm">
-                    <span className="text-gray-700 text-sm font-medium">{eq.range}</span>
-                    <span className="font-bold text-gray-900 text-lg">{eq.equity}%</span>
-                  </div>
-                ))}
+          <div className="rounded-2xl p-6 shadow-md bg-gray-50">
+            <h2 className="text-2xl font-bold mb-6">Investment Opportunity</h2>
+            <div className="space-y-2 mb-6">
+              {startup.equityRange.map((eq, i) => (
+                <div key={i} className="flex justify-between items-center p-3 rounded-lg bg-white shadow-sm">
+                  <span className="text-gray-700 text-sm font-medium">{eq.range}</span>
+                  <span className="font-bold text-gray-900 text-lg">{eq.equity}%</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Investment Amount</label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">$</span>
+                <input
+                  type="text"
+                  value={investmentAmount}
+                  onChange={(e) => setInvestmentAmount(e.target.value)}
+                  placeholder="Enter amount"
+                  className="w-full border-2 border-gray-300 rounded-lg pl-7 pr-3 py-2 text-base focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none"
+                />
+              </div>
+              <button
+                onClick={handleInvest}
+                disabled={isInvesting}
+                className={`w-full mt-3 py-2 font-semibold rounded-lg transition ${
+                  isInvesting ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600 text-white"
+                }`}
+              >
+                {isInvesting ? "Investing..." : "Invest Now"}
+              </button>
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex items-center justify-between rounded-lg p-4 shadow-sm" style={{backgroundColor: 'var(--bg-primary)'}}>
+                <div className="flex items-center gap-2">
+                  <span className="text-green-600 text-lg font-bold">💰</span>
+                  <span className="text-gray-800 font-semibold">Raised</span>
+                </div>
+                <span className="text-gray-900 font-bold text-lg">
+                  {formatAmount(startup.totalRaised ?? 0)}
+                </span>
               </div>
 
-              <div className="mb-6">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Investment Amount</label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">$</span>
-                  <input
-                    type="text"
-                    value={investmentAmount}
-                    onChange={(e) => setInvestmentAmount(e.target.value)}
-                    placeholder="Enter amount"
-                    className="w-full border-2 border-gray-300 rounded-lg pl-7 pr-3 py-2 text-base focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none"
-                  />
+              <div className="flex items-center justify-between rounded-lg p-4 shadow-sm" style={{backgroundColor: 'var(--bg-secondary)'}}>
+                <div className="flex items-center gap-2">
+                  <Star className="text-yellow-400 fill-yellow-400" size={20} />
+                  <span className="text-gray-800 font-semibold">Rating</span>
                 </div>
-                <button
-                  onClick={handleInvest}
-                  disabled={isInvesting}
-                  className={`w-full mt-3 py-2 font-semibold rounded-lg transition ${
-                    isInvesting ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600 text-white"
-                  }`}
-                >
-                  {isInvesting ? "Investing..." : "Invest Now"}
-                </button>
-              </div>
-
-              <div className="mt-6 pt-4 border-t border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-center justify-between rounded-lg p-4 shadow-sm" style={{backgroundColor: 'var(--bg-primary)'}}>
-                  <div className="flex items-center gap-2">
-                    <span className="text-green-600 text-lg font-bold">💰</span>
-                    <span className="text-gray-800 font-semibold">Raised</span>
-                  </div>
-                  <span className="text-gray-900 font-bold text-lg">
-                    {formatAmount(startup.totalRaised ?? 0)}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between rounded-lg p-4 shadow-sm" style={{backgroundColor: 'var(--bg-secondary)'}}>
-                  <div className="flex items-center gap-2">
-                    <Star className="text-yellow-400 fill-yellow-400" size={20} />
-                    <span className="text-gray-800 font-semibold">Rating</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="font-bold">{avgRating.toFixed(1)}</span>
-                    <span className="text-xs text-gray-500">({ratingCount})</span>
-                  </div>
+                <div className="flex items-center gap-1">
+                  <span className="font-bold">{avgRating.toFixed(1)}</span>
+                  <span className="text-xs text-gray-500">({ratingCount})</span>
                 </div>
               </div>
             </div>
-          )}
+          </div>
 
           {/* Followers */}
           <div className="rounded-2xl p-6 shadow-md bg-gray-50">
