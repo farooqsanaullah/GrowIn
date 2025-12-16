@@ -123,7 +123,7 @@ export function RecentStartups() {
                   <div className="flex items-center space-x-4 text-xs text-muted-foreground">
                     <span className="flex items-center">
                       <Users className="h-3 w-3 mr-1" />
-                      {startup.followers} followers
+                      {startup.followers.length} followers
                     </span>
                     <span>Industry: {startup.industry}</span>
                     <span>Created {new Date(startup.createdAt).toLocaleDateString()}</span>
