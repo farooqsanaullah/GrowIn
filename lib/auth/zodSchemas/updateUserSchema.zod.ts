@@ -1,24 +1,29 @@
 import { z } from "zod";
-import { PhoneSchema,
+import {
+  PhoneSchema,
   PasswordSchema,
   SocialLinksSchema,
   ExperienceSchema,
   FundingRangeSchema,
- } from "@/lib/auth/zodSchemas";
+} from "@/lib/auth/zodSchemas";
 
-// User update schema
+// Treat empty strings as undefined for optional fields
+const optionalString = (schema: z.ZodString) =>
+  z.preprocess((val) => (val === "" ? undefined : val), schema.optional());
+
+// User update schema (profile edits do not require password)
 export const UpdateUserSchema = z.object({
-  userName: z.string().min(3, "Username too short").max(30, "Username too long").optional(),
-  name: z.string().max(50, "Name too long").optional(),
-  email: z.string().email("Invalid email").optional(),
-  phone: PhoneSchema,
-  password: PasswordSchema,
+  userName: optionalString(z.string().min(3, "Username too short").max(30, "Username too long")),
+  name: optionalString(z.string().max(50, "Name too long")),
+  email: optionalString(z.string().email("Invalid email")),
+  phone: z.preprocess((val) => (val === "" ? undefined : val), PhoneSchema),
+  password: z.preprocess((val) => (val === "" ? undefined : val), PasswordSchema.optional()),
   role: z.enum(["investor", "founder"]).optional(),
-  profileImage: z.string().url("Invalid URL").optional(),
-  bio: z.string().max(500, "Bio too long").optional(),
+  profileImage: optionalString(z.string().url("Invalid URL")),
+  bio: optionalString(z.string().max(500, "Bio too long")),
   socialLinks: SocialLinksSchema,
-  city: z.string().optional(),
-  country: z.string().optional(),
+  city: optionalString(z.string()),
+  country: optionalString(z.string()),
   experiences: z.array(ExperienceSchema).optional(),
   skills: z.array(z.string()).optional(),
   fundingRange: FundingRangeSchema,
