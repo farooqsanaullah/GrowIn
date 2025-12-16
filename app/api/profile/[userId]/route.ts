@@ -3,7 +3,7 @@ import { connectDB } from "@/lib/db/connect";
 import User from "@/lib/models/user.model";
 import Startup from "@/lib/models/startup.model";
 import Investment from "@/lib/models/investment.model";
-import { updateUserSchema } from "@/lib/auth/zodValidation/updateUserSchema";
+import { UpdateUserSchema } from "@/lib/auth/zodSchemas";
 import { success } from "zod";
 
 const isDev = process.env.NODE_ENV === "development";
@@ -136,7 +136,7 @@ export async function PUT(req: NextRequest, context: API_Props) {
     const body = await req.json();
 
     // Validating body using Zod schema
-    const parsed = updateUserSchema.safeParse(body);
+    const parsed = UpdateUserSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
         { message: "Invalid input", errors: parsed.error.issues },
