@@ -132,12 +132,12 @@ export function StartupCreationForm({ onSuccess, isEdit = false, initialData }: 
           )
         ),
       };
-// have to send founder id in header in both create and update
+
       if (!founderId) { alert('You must be logged in to submit the form'); return; }
     
       const response = isEdit && initialData?._id
-        ? await startupsApi.update(initialData._id, submissionData, { headers: { founderId } })
-        : await startupsApi.create(submissionData, { headers: { founderId } });
+        ? await startupsApi.update(initialData._id, submissionData)
+        : await startupsApi.create(submissionData);
 
       if (response.success) {
         if (onSuccess) {
@@ -158,7 +158,7 @@ export function StartupCreationForm({ onSuccess, isEdit = false, initialData }: 
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-      {/* Basic Information */}
+    
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -325,7 +325,6 @@ export function StartupCreationForm({ onSuccess, isEdit = false, initialData }: 
         </CardContent>
       </Card>
 
-      {/* Pitch Upload */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -389,7 +388,7 @@ export function StartupCreationForm({ onSuccess, isEdit = false, initialData }: 
         </CardContent>
       </Card>
 
-      {/* Social Links */}
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -476,7 +475,7 @@ export function StartupCreationForm({ onSuccess, isEdit = false, initialData }: 
 
 
 
-      {/* Equity Ranges */}
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -536,7 +535,7 @@ export function StartupCreationForm({ onSuccess, isEdit = false, initialData }: 
         </CardContent>
       </Card>
 
-      {/* Submit Buttons */}
+
       <div className="flex flex-col sm:flex-row gap-4 justify-end">
         <Button
           type="button"
