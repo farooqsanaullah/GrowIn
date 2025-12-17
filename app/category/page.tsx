@@ -5,6 +5,8 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import StartupCard from "@/components/explore/StartupCard";
 import { Startup } from "@/lib/types/startup";
 import FiltersBar from "@/components/explore/FiltersBar";
+import Header from "@/components/landingpage/Header";
+import Footer from "@/components/landingpage/Footer";
 
 const PAGE_SIZE = 6;
 
@@ -60,7 +62,12 @@ function ExploreContent() {
   };
 
   return (
-    <div className="p-4 md:px-20 space-y-6">
+    <div>
+      <Header />
+    <div className="p-4 md:px-20 space-y-6 pt-30">
+      <h1 className="text-xl sm:text-xl md:text-2xl font-bold mb-4 md:mx-20 sm:mx-4 text-center sm:text-left">
+          Invest in Innovation, Grow Together.
+        </h1>
       <FiltersBar />
       {loading ? (
         <p>Loading...</p>
@@ -68,7 +75,8 @@ function ExploreContent() {
         <p>No startups found</p>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-4 md:px-20 ">
             {startups.map(s => <StartupCard key={s._id} startup={s} />)}
           </div>
 
@@ -94,6 +102,9 @@ function ExploreContent() {
           )}
         </>
       )}
+    </div>
+    <Footer />
+    
     </div>
   );
 }

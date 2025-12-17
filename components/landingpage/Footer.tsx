@@ -278,30 +278,7 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Bottom Section */}
-        <div className="py-6 flex flex-col sm:flex-row justify-between items-center">
-          <p
-            className="text-sm mb-4 sm:mb-0"
-            style={{ color: colors.textMuted }}
-          >
-            © 2025 GrowIn. All rights reserved. Built with 💙 for the startup
-            ecosystem.
-          </p>
-          <div className="flex items-center space-x-6">
-            <div className="flex items-center space-x-2">
-              <div
-                className="w-2 h-2 rounded-full animate-pulse"
-                style={{ backgroundColor: "#10b981" }}
-              ></div>
-              <span
-                className="text-sm font-medium"
-                style={{ color: colors.textMuted }}
-              >
-                Platform Status: Operational
-              </span>
-            </div>
-          </div>
-        </div>
+
       </div>
     </footer>
   );

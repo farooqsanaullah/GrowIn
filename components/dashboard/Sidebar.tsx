@@ -17,6 +17,7 @@ import {
   LogOut,
   TrendingUp
 } from "lucide-react";
+import { signOut } from "next-auth/react";
 
 const sidebarItems = [
   {
@@ -35,19 +36,9 @@ const sidebarItems = [
     icon: Users,
   },
   {
-    title: "Explore Investors",
-    href: "/explore-investors",
-    icon: TrendingUp,
-  },
-  {
     title: "Profile",
     href: "/founder/profile",
     icon: User,
-  },
-  {
-    title: "Settings",
-    href: "/founder/settings",
-    icon: Settings,
   },
 ];
 
@@ -115,8 +106,7 @@ export function Sidebar({ className }: SidebarProps) {
               variant="ghost"
               className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
               onClick={() => {
-                // Handle logout
-                console.log("Logout clicked");
+                signOut();
               }}
             >
               <LogOut className="mr-3 h-5 w-5" />

@@ -11,7 +11,7 @@ import type {
   AnalyticsResponse,
 } from "@/lib/types/api";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000").replace(/\/$/, "");
 
 const fetchAPI = async <T>(
   url: string,
@@ -133,8 +133,8 @@ export const investmentsApi = {
   
   getPortfolioStats: async (investorId?: string, options: RequestInit = {}): Promise<PortfolioStatsResponse> => {
     const url = investorId 
-      ? `${API_BASE_URL}/investor/${investorId}/portfolio/stats`
-      : `${API_BASE_URL}/investor/portfolio/stats`;
+      ? `${API_BASE_URL}/api/investor/${investorId}/portfolio/stats`
+      : `${API_BASE_URL}/api/investor/portfolio/stats`;
     return fetchAPI<PortfolioStatsResponse>(url, options);
   },
 
@@ -144,8 +144,8 @@ export const investmentsApi = {
     options: RequestInit = {}
   ): Promise<InvestmentListResponse> => {
     const baseUrl = investorId 
-      ? `${API_BASE_URL}/investor/${investorId}/portfolio`
-      : `${API_BASE_URL}/investor/portfolio`;
+      ? `${API_BASE_URL}/api/investor/${investorId}/portfolio`
+      : `${API_BASE_URL}/api/investor/portfolio`;
     const url = buildUrl(baseUrl, filters);
     return fetchAPI<InvestmentListResponse>(url, options);
   },
@@ -155,8 +155,8 @@ export const investmentsApi = {
     period: "1m" | "3m" | "6m" | "1y" | "all" = "6m"
   ): Promise<AnalyticsResponse> => {
     const baseUrl = investorId 
-      ? `${API_BASE_URL}/investor/${investorId}/analytics`
-      : `${API_BASE_URL}/investor/analytics`;
+      ? `${API_BASE_URL}/api/investor/${investorId}/analytics`
+      : `${API_BASE_URL}/api/investor/analytics`;
     const url = `${baseUrl}?period=${period}`;
     return fetchAPI<AnalyticsResponse>(url);
   },
@@ -176,7 +176,7 @@ export const investmentsApi = {
       logo?: string;
     };
   }>>> => {
-    const url = buildUrl(`${API_BASE_URL}/investor/activities`, filters);
+    const url = buildUrl(`${API_BASE_URL}/api/investor/activities`, filters);
     return fetchAPI<ApiResponse<Array<{
       id: string;
       type: "investment" | "update" | "exit";
@@ -208,7 +208,7 @@ export const investmentsApi = {
     score: number;
     reasons: string[];
   }>>> => {
-    const url = buildUrl(`${API_BASE_URL}/investor/recommendations`, filters);
+    const url = buildUrl(`${API_BASE_URL}/api/investor/recommendations`, filters);
     return fetchAPI<ApiResponse<Array<{
       startup: {
         id: string;

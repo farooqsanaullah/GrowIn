@@ -1,16 +1,14 @@
 "use client";
 
-import { JSX, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Button, FloatingLabelInput, Separator } from "@/components/ui";
+import { Button, Input, Label, Separator } from "@/components/ui";
 import { toast } from "react-hot-toast";
 import { Eye, EyeClosedIcon, Loader } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { FcGoogle } from "react-icons/fc";
-import { FaGithub } from "react-icons/fa";
 
 type SigninFormValues = {
   email: string;
@@ -22,11 +20,6 @@ type SigninFormProps = {
 };
 
 const isDev = process.env.NODE_ENV === "development";
-
-const providerIcons: { [key: string]: JSX.Element } = {
-  google: <FcGoogle className="mr-2" />,
-  github: <FaGithub className="mr-2" />,
-};
 
 export default function SigninForm({ providers }: SigninFormProps) {
   const router = useRouter();
@@ -59,17 +52,9 @@ export default function SigninForm({ providers }: SigninFormProps) {
       }
 
       toast.success("Login successful");
-      const session = await fetch("/api/auth/session").then(r => r.json());
-      const role = session?.user?.role;
 
-      if (role === "founder") {
-        router.push("/founder/dashboard");
-      } else if (role === "investor") {
-        router.push("/investor/dashboard");
-      } else {
-        router.push("/");
-      }
 
+      router.push("/"); // redirect after login
     } catch (error) {
       isDev && console.error("Login error:", error);
       toast.error("Something went wrong");
@@ -79,30 +64,31 @@ export default function SigninForm({ providers }: SigninFormProps) {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-around bg-background text-foreground">
-      
-      {/* Logo */}
-      <div className="flex flex-col justify-start mb-80">
-        <Image
-          src="/logo.png"
-          alt="App Logo"
-          width={200}
-          height={0}
-          className="rounded-md"
-        />
-        <p className="mt-4 text-xl text-muted-foreground pl-4">
-          Welcome back! Sign in to continue your journey with GrowIn.
-        </p>
-      </div>
-      
+    <div className="flex min-h-screen items-center justify-center bg-background text-foreground">
       <div className="w-full max-w-md rounded-lg border border-border bg-card p-8 shadow-sm">
-        <h1 className="mb-6 text-center text-2xl font- text-foreground">Sign In</h1>
+        
+        {/* Logo */}
+        <div className="flex justify-center mt-[-10]">
+          <Image
+            src="/logo.png"
+            alt="App Logo"
+            width={125}
+            height={0}
+            className="rounded-md"
+          />
+        </div>
+
+        <h1 className="mb-6 text-center text-3xl font-semibold text-foreground">Sign In</h1>
+
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           {/* Email */}
           <div>
-            <FloatingLabelInput 
+            <Label htmlFor="email" className="text-foreground text-md">Email</Label>
+            <Input
               id="email"
-              label="Email"
+              type="email"
+              placeholder="email@example.com"
+              className="mt-2 bg-input text-foreground border-border"
               {...register("email", { required: "Email is required" })}
             />
             {errors.email && (
@@ -111,25 +97,29 @@ export default function SigninForm({ providers }: SigninFormProps) {
           </div>
 
           {/* Password */}
-          <div className="relative">
-            <FloatingLabelInput
-              id="password"
-              label="Password"
-              type={showPassword ? "text" : "password"}
-              placeholder="••••••••"
-              {...register("password", { required: "Password is required" })}
-            />
+          <div>
+            <Label htmlFor="password" className="text-foreground text-md">Password</Label>
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                className="mt-2 bg-input text-foreground border-border pr-10"
+                {...register("password", {
+                })}
+              />
+              {isPassEntered && (
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(prev => !prev)}
+                  className="absolute flex items-center inset-y-6.75 space-y-1 right-2 text-muted-foreground cursor-pointer"
+                >
+                  {showPassword ? <EyeClosedIcon /> : <Eye />}
+                </button>
+              )}
+            </div>
             {errors.password && (
               <p className="mt-1 text-sm text-destructive">{errors.password.message}</p>
-            )}
-            {isPassEntered && (
-              <button
-                type="button"
-                onClick={() => setShowPassword(prev => !prev)}
-                className="absolute right-2 inset-y-0 flex items-center text-muted-foreground cursor-pointer"
-              >
-                {showPassword ? <EyeClosedIcon /> : <Eye />}
-              </button>
             )}
           </div>
 
@@ -155,7 +145,10 @@ export default function SigninForm({ providers }: SigninFormProps) {
             className="w-full cursor-pointer bg-primary text-md text-primary-foreground hover:bg-primary/90"
           >
             {isLoading ? (
-              <>Signing in<Loader className="animate-spin ml-2" /></>
+              <>
+                Signing in
+                <Loader className="animate-spin ml-2" />
+              </>
             ) : (
               "Sign In"
             )}
@@ -184,7 +177,6 @@ export default function SigninForm({ providers }: SigninFormProps) {
                       onClick={() => signIn(prov.id)}
                       className="w-full bg-background text-foreground hover:bg-foreground hover:text-background border-border hover:border-transparent cursor-pointer"
                     >
-                      {providerIcons[prov.id]}
                       Sign in with {prov.name}
                     </Button>
                   ))}

@@ -38,7 +38,8 @@ export function GrowthInsights() {
   const [categoryData, setCategoryData] = useState<CategoryData[]>([]);
   const [loading, setLoading] = useState(true);
   const { data: session } = useSession();
-  const founderId = session?.user?.id;
+  const userId = session?.user?.id;
+  const userRole = session?.user?.role;
 
   const generateMonthlyData = (startups: any[]) => {
     const months = [
@@ -71,10 +72,23 @@ export function GrowthInsights() {
 
   const generateCategoryData = (startups: any[]) => {
     const categories: { [key: string]: number } = {};
+    // Use a robust, high-contrast palette that does not depend on CSS variables
     const colors = [
-      "hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))",
-      "hsl(var(--chart-4))", "hsl(var(--chart-5))", "hsl(var(--primary))",
-      "hsl(220 70% 50%)", "hsl(340 82% 52%)", "hsl(291 64% 42%)", "hsl(142 76% 36%)"
+      "#4F46E5", // Indigo
+      "#10B981", // Emerald
+      "#F59E0B", // Amber
+      "#EF4444", // Red
+      "#6366F1", // Indigo-light
+      "#22D3EE", // Cyan
+      "#8B5CF6", // Violet
+      "#14B8A6", // Teal
+      "#DB2777", // Pink
+      "#84CC16", // Lime
+      "#0EA5E9", // Sky
+      "#FB7185", // Rose
+      "#A3E635", // Lime-light
+      "#F97316", // Orange
+      "#34D399", // Emerald-light
     ];
 
     startups.forEach(startup => {
@@ -94,19 +108,24 @@ export function GrowthInsights() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        if (!founderId) {
-          setLoading(false);
-          return;
+        let startups: any[] = [];
+
+        // If role is founder, fetch founder-specific startups
+        if (userRole === "founder" && userId) {
+          const response = await startupsApi.getByFounder(userId);
+          if (response.success && response.data) {
+            startups = response.data;
+          }
+        } else {
+          // For investors or unknown roles, fallback to all startups
+          const response = await startupsApi.getAll({ limit: 100 });
+          if (response.success && response.data) {
+            startups = response.data;
+          }
         }
 
-
-        const response = await startupsApi.getByFounder(founderId);
-
-        if (response.success && response.data) {
-          const startups = response.data;
-          setMonthlyData(generateMonthlyData(startups));
-          setCategoryData(generateCategoryData(startups));
-        }
+        setMonthlyData(generateMonthlyData(startups));
+        setCategoryData(generateCategoryData(startups));
       } catch (error) {
         console.error('Error fetching growth data:', error);
       } finally {
