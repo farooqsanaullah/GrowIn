@@ -46,6 +46,7 @@ type StartupStatus = 'active' | 'inactive' | 'pending' | 'closed';
 
 interface Startup {
   _id: string;
+  name?: string;
   title: string;
   description: string;
   pitch: string[];

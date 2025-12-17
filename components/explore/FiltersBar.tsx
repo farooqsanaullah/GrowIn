@@ -44,7 +44,7 @@ export default function FilterBar() {
     const current = params.get(key)?.split(",") || [];
     const newValues = current.includes(value) ? current.filter(v => v !== value) : [...current, value];
 
-    if (newValues.length) params.set(key, newValues.join(",")); 
+    if (newValues.length) params.set(key, newValues.join(","));
     else params.delete(key);
 
     params.delete("page");
@@ -87,9 +87,8 @@ export default function FilterBar() {
             <button
               key={ind.name}
               onClick={() => toggleFilter("industry", ind.name)}
-              className={`flex-shrink-0 min-w-[110px] flex flex-col items-center py-2 px-2 rounded-xl transition ${
-                selectedIndustries.includes(ind.name) ? "text-black bg-gray-200" : "text-gray-500 hover:text-black"
-              }`}
+              className={`flex-shrink-0 min-w-[110px] flex flex-col items-center py-2 px-2 rounded-xl transition ${selectedIndustries.includes(ind.name) ? "text-black bg-gray-200" : "text-gray-500 hover:text-black"
+                }`}
             >
               {ind.icon}
               <span className="text-xs mt-1 text-center truncate w-full">{ind.name}</span>
@@ -131,7 +130,7 @@ export default function FilterBar() {
           )}
         </div>
 
-        <div className="relative flex-shrink-0 min-w-0">
+        <div className="relative shrink-0 min-w-0">
           <button
             onClick={() => setOpenDropdown(openDropdown === "category" ? null : "category")}
             className="px-4 py-2 bg-gray-100 rounded-xl flex items-center justify-between whitespace-nowrap truncate max-w-[200px]"
@@ -157,11 +156,11 @@ export default function FilterBar() {
         {(selectedIndustries.length || selectedCategories.length || selectedBatches.length) ? (
           <button
             onClick={clearAll}
-            className="px-4 py-2 bg-red-100 text-red-600 rounded-xl hover:bg-red-200 whitespace-nowrap flex-shrink-0 min-w-0 truncate max-w-[120px]"
+            className="px-4 py-2 bg-red-100 text-red-600 rounded-xl hover:bg-red-200 whitespace-nowrap shrink-0 min-w-0 truncate max-w-[120px]"
           >
             Clear All
           </button>
-        ):<></>}
+        ) : null}
       </div>
     </div>
   );
