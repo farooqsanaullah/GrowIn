@@ -17,7 +17,7 @@ const InvestmentSchema = new Schema<IInvestment>({
   startupId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "Startup" },
   amount: { type: Number, required: true },
   status: { type: String, enum: ["pending", "paid", "failed"], default: "pending" },
-  stripeInvoiceId: { type: String },
+  stripeInvoiceId: { type: String, unique: true, sparse: true },
   stripeCustomerId: { type: String },
   paidAt: { type: Date },
 }, { timestamps: true });
