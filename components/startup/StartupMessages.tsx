@@ -133,7 +133,14 @@ const StartupMessages = ({ startupId }: StartupMessagesProps) => {
       return prev;
     });
 
-    showNotification(message);
+    // Only show notification for messages from others
+    const messageSenderId = typeof message.senderId === 'object' 
+      ? message.senderId._id 
+      : message.senderId;
+    
+    if (messageSenderId !== session?.user?.id) {
+      showNotification(message);
+    }
   };
 
   const handleNewConversationEvent = (data: { conversation: ConversationData }) => {
