@@ -62,7 +62,7 @@ export async function GET(
     const conversationsWithMessages = await Promise.all(
       conversations.map(async (conv) => {
         const messages = await Message.find({ conversationId: conv._id })
-          .populate('senderId', 'name email avatar image role')
+          .populate('senderId', 'userName email avatar image role')
           .sort({ createdAt: -1 })
           .limit(10)
           .lean();
@@ -78,6 +78,7 @@ export async function GET(
         return { ...conv, messages: messagesWithContent, messageCount };
       })
     );
+    console.log('Conversations with messages prepared', conversationsWithMessages.length);
 
     return NextResponse.json({
       success: true,
