@@ -217,20 +217,36 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
                 {startup.founders.map((member: any, i: number) => (
                   console.log("rendering member is", member),
                   <div key={i} className="flex-shrink-0 w-64 snap-start">
-
                     <div className="flex gap-4 items-start">
                       <div className="w-16 h-16 rounded-full overflow-hidden ring-4 ring-gray-200 flex-shrink-0 ml-2 mt-2">
-                        <img src={member.profileImage || "/fallback-image.png"} alt={ member.userName} className="w-full h-full object-cover" />
+                        <img
+                          src={member.profileImage || "/fallback-image.png"}
+                          alt={member.userName}
+                          className="w-full h-full object-cover"
+                        />
                       </div>
-                      <div>
-                        <Link href={`/user/founder/${member._id}`}><h3 className="text-lg font-bold text-gray-900">{member.userName}</h3></Link>
 
-                        <p className="text-gray-500 text-sm mb-1">{member.role || "Founder"}</p>
-                        {member.bio && <p className="text-gray-700 text-sm leading-relaxed">{member.bio}</p>}
+                      <div>
+                        <Link href={`/user/founder/${member._id}`}>
+                          <h3 className="text-lg font-bold text-gray-900">
+                            {member.userName}
+                          </h3>
+                        </Link>
+
+                        <p className="text-gray-500 text-sm mb-1">
+                          {member.role
+                            ? member.role
+                            : i === 0
+                              ? "Founder"
+                              : "Co-Founder"}
+                        </p>
+
+                        {/* {member.bio && <p className="text-gray-700 text-sm leading-relaxed">{member.bio}</p>} */}
                       </div>
                     </div>
                   </div>
                 ))}
+
               </div>
             </div>
           )}
@@ -324,7 +340,7 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
                   <div className="flex items-center justify-between rounded-lg p-4 shadow-sm" style={{ backgroundColor: 'var(--bg-primary)' }}>
                     <div className="flex items-center gap-2">
                       <span className="text-green-600 text-lg font-bold">💰</span>
-                      <span className="text-gray-800 font-semibold">Raised</span>
+                      <span className="text-gray-800 font-semibold">Raised:</span>
                     </div>
                     <span className="text-gray-900 font-bold text-lg">
                       {formatAmount(startup.totalRaised ?? 0)}

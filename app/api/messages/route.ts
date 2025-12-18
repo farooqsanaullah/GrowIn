@@ -69,14 +69,36 @@ export async function POST(request: NextRequest) {
       content: populatedMessage.text,
     };
 
-    // Real-time event
-    // FIX: wrap payload in an object with `message`
     console.log("🚀 ~ messageWithContent:", messageWithContent);
-    await pusherServer.trigger(
-      `private-conversation-${conversationId}`,
-      "new-message",
-      { message: messageWithContent }
-    );
+
+    // ✅ FIXED: Trigger BOTH channels so all components receive the message
+    const pusherPayload = { 
+      message: messageWithContent,
+      conversationId: conversationId 
+    };
+
+    try {
+      // Trigger conversation-specific channel (for ChatPageClient)
+      await pusherServer.trigger(
+        `private-conversation-${conversationId}`,
+        "new-message",
+        pusherPayload
+      );
+      console.log("✅ Triggered private-conversation channel");
+
+      // Trigger startup channel (for StartupMessages)
+      if (conversation.startupId) {
+        await pusherServer.trigger(
+          `startup-${conversation.startupId}`,
+          "new-message",
+          pusherPayload
+        );
+        console.log("✅ Triggered startup channel");
+      }
+    } catch (pusherError) {
+      console.error("❌ Pusher trigger error:", pusherError);
+      // Don't fail the request if Pusher fails
+    }
 
     console.log("🚀 ~ Message sent via Pusher");
 
