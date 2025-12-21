@@ -1,47 +1,62 @@
-"use server"
-
 import { Resend } from "resend";
+import {
+  founderInvestmentReceivedEmail,
+  investorInvestmentConfirmationEmail,
+} from "@/lib/constants/email";
 
 const resend = new Resend(process.env.RESEND_API_KEY!);
 
-export async function sendInvestorEmail({
-  to,
-  amount,
-  startupName,
-}: {
-  to: string;
+type SendInvestmentEmailsProps = {
+  founder: {
+    name: string;
+    email: string;
+  };
+  investor: {
+    name: string;
+    email: string;
+  };
+  startup: {
+    title: string;
+  };
   amount: number;
-  startupName: string;
-}) {
-  await resend.emails.send({
-    from: "Acme <onboarding@resend.dev>",
-    to,
-    subject: "Your Investment Was Successful",
-    html: `
-      <h2>Investment Successful 🎉</h2>
-      <p>You have successfully invested <strong>$${amount}</strong> in <strong>${startupName}</strong>.</p>
-      <p>We appreciate your support!</p>
-    `,
-  });
-}
+  currency?: string;
+};
 
-export async function sendFounderEmail({
-  to,
+export async function sendInvestmentEmails({
+  founder,
+  investor,
+  startup,
   amount,
-  investorName,
-}: {
-  to: string;
-  amount: number;
-  investorName: string;
-}) {
-  await resend.emails.send({
-    from: "Acme <onboarding@resend.dev>",
-    to,
-    subject: "You Received a New Investment",
-    html: `
-      <h2>You Received an Investment 🎉</h2>
-      <p><strong>${investorName}</strong> has invested <strong>$${amount}</strong> in your startup.</p>
-      <p>Keep up the amazing work!</p>
-    `,
-  });
+  currency = "USD",
+}: SendInvestmentEmailsProps) {
+  try {
+    /* ---------- Founder email ---------- */
+    await resend.emails.send({
+      from: process.env.EMAIL_FROM!,
+      to: founder.email,
+      ...founderInvestmentReceivedEmail({
+        founderName: founder.name,
+        investorName: investor.name,
+        startupName: startup.title,
+        amount,
+        currency,
+      }),
+    });
+
+    /* ---------- Investor email ---------- */
+    await resend.emails.send({
+      from: process.env.EMAIL_FROM!,
+      to: investor.email,
+      ...investorInvestmentConfirmationEmail({
+        investorName: investor.name,
+        startupName: startup.title,
+        amount,
+        currency,
+      }),
+    });
+    console.log("📧 Investment emails sent successfully");
+  } catch (error) {
+    console.error("❌ Failed to send investment emails:", error);
+    // DO NOT throw → webhook must still return 200 to Stripe
+  }
 }
