@@ -1,6 +1,7 @@
 import Stripe from "stripe";
 import Investment from "@/lib/models/investment.model";
 import { connectDB } from "@/lib/db/connect";
+import Startup from "@/lib/models/startup.model";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-11-17.clover",
@@ -61,16 +62,37 @@ export async function POST(req: Request) {
     const updateData = statusMap[event.type];
 
     if (updateData) {
-      const updated = await Investment.findOneAndUpdate(
+      const updatedInvestment = await Investment.findOneAndUpdate(
         { stripeInvoiceId: invoiceId },
         updateData,
         { new: true }
       );
 
-      if (!updated) {
+      if (updatedInvestment && updateData.status === "paid") {
+        console.log("✅ Investment paid, updating startup totalRaised and investors list");
+
+        // 1. Calculate totalRaised for this startup
+        const investmentTotal = await Investment.aggregate([
+          { $match: { startupId: updatedInvestment.startupId, status: "paid" } },
+          { $group: { _id: null, totalRaised: { $sum: "$amount" } } },
+        ]);
+
+        const totalRaised =
+          investmentTotal.length > 0 ? investmentTotal[0].totalRaised : 0;
+
+        // 2. Update startup: totalRaised + add investor to investors array if not already there
+        await Startup.findByIdAndUpdate(updatedInvestment.startupId, {
+          totalRaised,
+          $addToSet: { investors: updatedInvestment.investorId }, // ensures no duplicates
+        });
+
+        console.log(`✅ Startup updated: totalRaised=${totalRaised}`);
+      }
+
+      if (!updatedInvestment) {
         console.error("❌ Investment not found for invoice:", invoiceId);
       } else {
-        console.log(`✅ Investment status updated to '${updateData.status}' for:`, updated._id);
+        console.log(`✅ Investment status updated to '${updateData.status}' for:`, updatedInvestment._id);
       }
     } else {
       console.log("ℹ️ Unhandled event type:", event.type);
