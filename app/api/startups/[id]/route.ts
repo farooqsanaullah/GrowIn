@@ -33,14 +33,20 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       return errorResponse("Startup not found", 404);
     }
 
-    // --- Get total invested amount for this startup ---
+    // --- Get total invested amount for this startup (only paid) ---
     const investmentTotal = await Investment.aggregate([
-      { $match: { startupId: new Types.ObjectId(id) } },
-      { $group: { _id: null, totalRaised: { $sum: "$amount" } } },
+      {
+        $match: {
+          startupId: new Types.ObjectId(id),
+          status: "paid", // ✅ only include paid investments
+        },
+      },
+      {
+        $group: { _id: null, totalRaised: { $sum: "$amount" } },
+      },
     ]);
 
-    const totalRaised =
-      investmentTotal.length > 0 ? investmentTotal[0].totalRaised : 0;
+    const totalRaised = investmentTotal.length > 0 ? investmentTotal[0].totalRaised : 0;
 
     // Attach to response
     const startupWithTotal = {
