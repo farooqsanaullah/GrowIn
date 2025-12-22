@@ -1,6 +1,6 @@
 import { Types } from 'mongoose';
 
-export type UserRole = 'investor' | 'founder' | 'team_member';
+export type UserRole = string;
 
 export type MessageType = 'text' | 'system';
 
