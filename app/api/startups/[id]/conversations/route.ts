@@ -33,17 +33,15 @@ export async function GET(
 
     const startupObjectId = new mongoose.Types.ObjectId(id);
 
-    // 🔍 DEBUG: Check what field name your Conversation model uses
     console.log('Looking for conversations with startupObjectId:', startupObjectId);
     
-    // Try finding ALL conversations first to see what exists
-    const allConversations = await Conversation.find({}).limit(5).lean();
-    console.log('Sample conversations in DB:', JSON.stringify(allConversations, null, 2));
+    if (process.env.NODE_ENV === 'development') {
+      const allConversations = await Conversation.find({}).limit(5).lean();
+      console.log('Sample conversations:', allConversations);
+    }
 
-    // The issue is likely here - what field stores the startup ID?
-    // Is it 'id', 'startupId', 'startup', or something else?
     const conversations = await Conversation.find({
-      startupId: startupObjectId, // ← Try 'startupId' instead of 'id'
+      startupId: startupObjectId, 
       isTeamChat: false,
     })
       .populate('participants.userId', 'name email avatar image role')
@@ -55,7 +53,7 @@ export async function GET(
     console.log('Found conversations:', conversations.length);
 
     const totalCount = await Conversation.countDocuments({
-      startupId: startupObjectId, // ← Change here too
+      startupId: startupObjectId, 
       isTeamChat: false,
     });
 
