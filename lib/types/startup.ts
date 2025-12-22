@@ -1,7 +1,8 @@
 export interface Founder {
   _id: string;
-  name: string;
+  userName: string;
   role: string;
+  profileImage?: string;
 }
 
 export interface Startup {

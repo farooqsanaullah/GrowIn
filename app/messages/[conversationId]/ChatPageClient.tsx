@@ -92,6 +92,10 @@ export default function ChatPageClient({ conversationId }: ChatPageClientProps) 
     setSending(true);
     try {
       await sendMessage(input.trim());
+      const sentMessage = await sendMessage(input.trim());
+      if (sentMessage) {
+        addMessage(sentMessage);
+      }
       setInput('');
     } catch (err) {
       console.error('❌ Failed to send message:', err);
