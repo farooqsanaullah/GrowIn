@@ -7,11 +7,11 @@ import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
 
 interface RouteParams {
-  params: Promise<{ id: string }>; // Changed to Promise
+  params: Promise<{ id: string }>; 
 }
 
 export async function POST(req: NextRequest, { params }: RouteParams) {
-  const { id: startupId } = await params; // Added await
+  const { id: startupId } = await params; 
 
   try {
     await connectDB();
@@ -35,11 +35,9 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Convert IDs to ObjectId
     const startupObjectId = new mongoose.Types.ObjectId(startupId);
     const userObjectId = new mongoose.Types.ObjectId(userId);
 
-    // Check if startup exists
     const startup = await Startup.findById(startupObjectId);
     if (!startup) {
       return NextResponse.json(

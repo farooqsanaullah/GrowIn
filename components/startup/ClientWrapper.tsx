@@ -5,8 +5,10 @@ import { SessionProvider, useSession } from "next-auth/react";
 import { MessageCircle } from "lucide-react";
 import FollowableStartupProfile from "./FollowableStartupProfile";
 import { Startup } from "@/lib/types/startup";
-import TestMessaging from "./test-messaging";
+import StartupProfile from "./MessageInitiator";
 import StartupMessages from "./StartupMessages"; 
+import Header from "../landingpage/Header";
+import Footer from "../landingpage/Footer";
 
 interface Props {
   startup: Startup;
@@ -72,11 +74,13 @@ const MessagesButton: React.FC<{ startup: Startup }> = ({ startup }) => {
 const ClientWrapper: React.FC<Props> = ({ startup }) => {
   return (
     <SessionProvider>
+      <Header />
       <FollowableStartupProfile startup={startup} />
-      <TestMessaging startup={startup} />
+      <StartupProfile startup={startup} />
       
       {/* Messages Button - Only visible to founders of this startup */}
       <MessagesButton startup={startup} />
+      <Footer />
     </SessionProvider>
   );
 };
