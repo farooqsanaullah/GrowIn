@@ -94,6 +94,12 @@ const InvestorProfile = async ({ params }: { params: Promise<{ Id: string }> }) 
     joinedDate: user.joinedDate || "Recently joined"
   };
 
+  // Transform portfolioData to ensure logo is always present
+  const transformedPortfolioData = portfolioData.map(item => ({
+    ...item,
+    logo: item.logo || '/logo.png' // Use the existing logo as fallback
+  }));
+
 
   return (
     <>
@@ -103,7 +109,7 @@ const InvestorProfile = async ({ params }: { params: Promise<{ Id: string }> }) 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <ProfileSidebar user={investorData} colors={colors} />
             <PortfolioSection 
-              portfolioData={portfolioData}
+              portfolioData={transformedPortfolioData}
               portfolioStats={portfolioStats}
               portfolioType="investor"
               portfolioTitle="Investment Portfolio"
