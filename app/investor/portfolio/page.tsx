@@ -57,17 +57,9 @@ export default function PortfolioPage() {
     }
   }, [session?.user?.id]);
 
-  if (!session?.user) {
-    return (
-      <div className="space-y-6">
-        <div className="text-center py-12">
-          <h2 className="text-2xl font-bold mb-4">Please sign in to view your portfolio</h2>
-        </div>
-      </div>
-    );
-  }
 
-  if (loading) {
+
+  if (!session?.user || loading) {
     return (
       <div className="space-y-6">
         <div className="flex justify-between items-center">
