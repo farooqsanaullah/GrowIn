@@ -47,4 +47,11 @@ export { Skeleton } from "./skeleton";
 // export { SwitchGroup } from "./switch-group";
 // export { Alert } from "./alert";
 // export { Collapsible } from "./collapsible";
-// export { DropdownMenu } from "./dropdown-menu";
+export {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "./dropdown-menu";

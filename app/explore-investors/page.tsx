@@ -5,16 +5,13 @@ import InvestorsExploreClient from "@/components/explore/InvestorsExploreClient"
 export const revalidate = 60;
 
 export default async function ExploreInvestorsPage() {
-  const BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(/\/$/, "");
   let initialInvestors: any[] = [];
   let initialCities: string[] = [];
   let initialCountries: string[] = [];
   let initialTotalPages = 1;
 
   try {
-    const url = BASE_URL
-      ? `${BASE_URL}/api/investors?limit=12&page=1`
-      : `/api/investors?limit=12&page=1`;
+    const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/investors?limit=12&page=1`
     const res = await fetch(url, {
       next: { revalidate },
     });

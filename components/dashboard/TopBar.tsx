@@ -1,8 +1,18 @@
 "use client";
 
-import { Bell, Search, User } from "lucide-react";
+import { Bell, Search, User, LogOut, KeyRound } from "lucide-react";
+import { signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui";
 
 interface TopBarProps {
   title?: string;
@@ -10,6 +20,17 @@ interface TopBarProps {
 }
 
 export function TopBar({ title = "Dashboard", description }: TopBarProps) {
+  const router = useRouter();
+
+  const handleLogout = () => {
+    signOut({
+      callbackUrl: "/signin",
+    });
+  };
+
+  const handleChangePassword = () => {
+    router.push("/forgot-password");
+  };
   return (
     <header className="h-16 bg-background border-b border-border px-6 flex items-center justify-between">
       <div className="flex items-center space-x-4 flex-1">
@@ -41,13 +62,32 @@ export function TopBar({ title = "Dashboard", description }: TopBarProps) {
           </span>
         </Button>
 
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          className="text-muted-foreground hover:text-foreground"
-        >
-          <User className="h-5 w-5" />
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <User className="h-5 w-5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleChangePassword}>
+              <KeyRound className="mr-2 h-4 w-4" />
+              Change Password
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              onClick={handleLogout}
+              className="text-destructive focus:text-destructive"
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              Logout
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   );
