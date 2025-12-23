@@ -94,13 +94,6 @@ const InvestorProfile = async ({ params }: { params: Promise<{ Id: string }> }) 
     joinedDate: user.joinedDate || "Recently joined"
   };
 
-  // Convert string IDs to numbers for component compatibility and handle empty portfolio
-  const formattedPortfolioData = portfolioData && portfolioData.length > 0 
-    ? portfolioData.map((item: any, index: number) => ({
-        ...item,
-        id: index + 1 // Use index + 1 as numeric ID
-      }))
-    : [];
 
   return (
     <>
@@ -110,7 +103,7 @@ const InvestorProfile = async ({ params }: { params: Promise<{ Id: string }> }) 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <ProfileSidebar user={investorData} colors={colors} />
             <PortfolioSection 
-              portfolioData={formattedPortfolioData}
+              portfolioData={portfolioData}
               portfolioStats={portfolioStats}
               portfolioType="investor"
               portfolioTitle="Investment Portfolio"
