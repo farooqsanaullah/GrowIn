@@ -11,7 +11,6 @@ export async function PATCH(
   try {
     await connectDB();
 
-    console.log(`PATCH hitted`)
     const { id } = await params;
 
     // Validate ObjectId

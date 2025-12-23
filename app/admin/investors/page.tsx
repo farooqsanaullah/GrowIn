@@ -180,7 +180,7 @@ export default function AdminInvestorsPage() {
                   onClick={() => toggleStatus(inv._id, inv.status)}
                 >
                   {updatingId === inv._id ? (
-                    <Loader className="h-4 w-4 rounded" />
+                    <Loader className="h-6 w-6 animate-spin text-muted-foreground" />
                   ) : inv.status === "active" ? (
                     "Deactivate"
                   ) : (
