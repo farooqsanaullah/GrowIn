@@ -1,16 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { useEffect } from 'react';
-import { pusherClient } from '@/lib/pusher/pusher-client';
-
+import { usePusherSubscription } from '@/hooks/usePusherSubs';
 
 interface StartupProfileProps {
   startup: {
     _id: string;
-    // name: string;
     description: string;
     founders: Array<{
       _id: string;
@@ -22,41 +19,19 @@ interface StartupProfileProps {
 
 export default function StartupProfile({ startup }: StartupProfileProps) {
   const { data: session } = useSession();
-  useEffect(() => {
-  if (!session?.user?.id) return;
-
-  // Subscribe to user channel
-  const channel = pusherClient.subscribe(`user-${session.user.id}`);
-
-  interface NewConversationPayload {
-    conversation: {
-      _id: string;
-      participants: Array<{
-        _id: string;
-        role: string;
-      }>;
-    };
-  }
-
-  channel.bind("new-conversation", (payload: NewConversationPayload) => {
-    console.log("🚀 New conversation received:", payload);
-    alert(`New conversation created with investor/founder`);
-  });
-
-  return () => {
-  if (session?.user?.id) {
-    const channelName = `user-${session.user.id}`;
-    const channel = pusherClient.channel(channelName);
-    if (channel) {
-      channel.unbind_all();
-      pusherClient.unsubscribe(channelName);
-    }
-  }
-};
-}, [session?.user?.id]);
-
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+
+  // ✅ Subscribe to user channel for new conversation alerts
+  // usePusherSubscription({
+  //   channelName: `user-${session?.user?.id}`,
+  //   eventName: 'new-conversation',
+  //   enabled: !!session?.user?.id,
+  //   onEvent: (payload: any) => {
+  //     console.log('🚀 New conversation received:', payload);
+  //     alert('New conversation created with investor/founder');
+  //   },
+  // });
 
   const handleStartConversation = async () => {
     if (!session?.user) {
@@ -64,7 +39,6 @@ export default function StartupProfile({ startup }: StartupProfileProps) {
       return;
     }
 
-    // Only investors can initiate conversations
     if (session.user.role !== 'investor') {
       alert('Only investors can start conversations');
       return;
@@ -73,20 +47,15 @@ export default function StartupProfile({ startup }: StartupProfileProps) {
     setLoading(true);
 
     try {
-      // Get the first founder (you can let user choose which founder)
       const firstFounder = startup.founders[0];
-
       if (!firstFounder) {
         alert('No founders available for this startup');
         return;
       }
 
-      // Create or get existing conversation
       const response = await fetch('/api/conversations', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           recipientId: firstFounder._id,
           recipientRole: 'founder',
@@ -100,11 +69,7 @@ export default function StartupProfile({ startup }: StartupProfileProps) {
       }
 
       const data = await response.json();
-      console.log('Conversation started:', data);
-      console.log('+++++++++:', startup.founders);
-      // Redirect to the chat page
       router.push(`/messages/${data.conversation._id}`);
-      
     } catch (error) {
       console.error('Error starting conversation:', error);
       alert(error instanceof Error ? error.message : 'Failed to start conversation');
@@ -133,7 +98,6 @@ export default function StartupProfile({ startup }: StartupProfileProps) {
           </div>
         </div>
 
-        {/* Message Button - Only shown to investors */}
         {session?.user?.role === 'investor' && (
           <button
             onClick={handleStartConversation}
@@ -144,7 +108,6 @@ export default function StartupProfile({ startup }: StartupProfileProps) {
           </button>
         )}
 
-        {/* Show different message for founders */}
         {session?.user?.role === 'founder' && (
           <div className="bg-gray-100 p-4 rounded-lg text-center text-gray-600">
             Only investors can initiate conversations
