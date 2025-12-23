@@ -1,6 +1,7 @@
 import { Startup } from "@/lib/types/startup";
 import ClientWrapper from "@/components/startup/ClientWrapper";
 import { notFound } from "next/navigation";
+import {IConversation} from "@/lib/types/index";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -8,16 +9,37 @@ interface PageProps {
 
 const StartupProfilePage = async ({ params }: PageProps) => {
   const { id } = await params;
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/startups/${id}`, {
-    cache: "no-store",
-  });
+  
+  // Fetch startup data
+  const startupRes = await fetch(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/startups/${id}`,
+    { cache: "no-store" }
+  );
 
-  if (!res.ok) notFound();
+  if (!startupRes.ok) notFound();
 
-  const json = await res.json();
-  const startup: Startup = json.data;
+  const startupJson = await startupRes.json();
+  const startup: Startup = startupJson.data;
 
-  return <ClientWrapper startup={startup} />;
+  // Fetch conversations
+  let conversations: IConversation[] = [];
+  try {
+    const conversationsRes = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/startups/${id}/conversations`,
+      { cache: "no-store" }
+    );
+
+    console.log('Conversations response status:', conversationsRes.status);
+    if (conversationsRes.ok) {
+      const conversationsJson = await conversationsRes.json();
+      console.log('Fetched conversations:', conversationsJson);
+      conversations = conversationsJson.conversations || [];
+    }
+  } catch (err) {
+    console.error('Failed to fetch conversations', err);
+  }
+
+  return <ClientWrapper startup={startup} conversations={conversations} />;
 };
 
 export default StartupProfilePage;
