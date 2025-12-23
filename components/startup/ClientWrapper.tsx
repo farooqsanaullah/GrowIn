@@ -20,8 +20,9 @@ interface Props {
 
 const MessagesButton: React.FC<{ startup: Startup, conversations: IConversation[] }> = ({ startup, conversations }) => {
   const { data: session } = useSession();
-  const [showMessages, setShowMessages] = useState(false);
+  const [open, setOpen] = useState(false);
 
+<<<<<<< HEAD
 
   const isFounderOfStartup = startup.founders?.some(
     (founder) => founder._id === session?.user?.id
@@ -31,19 +32,31 @@ const MessagesButton: React.FC<{ startup: Startup, conversations: IConversation[
   if (!isFounderOfStartup) {
     return null;
   }
+=======
+  const isFounder = startup.founders?.some(
+    f => f._id === session?.user?.id
+  );
+
+  if (!isFounder) return null;
+
+>>>>>>> 83cfeea (UPDATED: ui/ux of message icon and the message list)
 
   return (
     <>
-      {/* Floating Messages Button */}
       <button
-        onClick={() => setShowMessages(!showMessages)}
-        className="fixed bottom-6 right-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110 z-50 flex items-center gap-2"
-        aria-label="Toggle messages"
+        onClick={() => setOpen(true)}
+        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 p-4 rounded-full shadow-xl hover:scale-110 transition-all"
+        style={{
+          background:
+            'linear-gradient(135deg, #60a5fa, #a78bfa)',
+          color: 'white',
+        }}
       >
         <MessageCircle className="w-6 h-6" />
-        <span className="font-semibold">Messages</span>
+        Messages
       </button>
 
+<<<<<<< HEAD
       {/* Messages Modal/Panel */}
       {showMessages && (
         <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 flex items-center justify-center p-4">
@@ -71,6 +84,13 @@ const MessagesButton: React.FC<{ startup: Startup, conversations: IConversation[
           </div>
         </div>
       )}
+=======
+      <StartupMessages
+        conversations={conversations}
+        isOpen={open}
+        onClose={() => setOpen(false)}
+      />
+>>>>>>> 83cfeea (UPDATED: ui/ux of message icon and the message list)
     </>
   );
 };
