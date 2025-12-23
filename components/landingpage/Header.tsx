@@ -34,13 +34,16 @@ const Header = () => {
   // Handle clicks outside dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsProfileDropdownOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const navItems = [
@@ -52,8 +55,9 @@ const Header = () => {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? "backdrop-blur-md shadow-lg" : "bg-transparent"
-        }`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        isScrolled ? "backdrop-blur-md shadow-lg" : "bg-transparent"
+      }`}
       style={{
         backgroundColor: isScrolled ? colors.bgPrimary + "E6" : "transparent",
         borderBottom: isScrolled ? `1px solid ${colors.textMuted}30` : "none",
@@ -71,13 +75,18 @@ const Header = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             {navItems.map((item) => (
-
               <Link
                 key={item.name}
                 href={item.href}
-                className={`text-sm lg:text-base font-medium transition-all duration-300 hover:scale-105 relative group ${pathname === item.href ? "text-primary" : ""
-                  }`}
-                style={{ color: pathname === item.href ? colors.textPrimary : colors.textSecondary }}
+                className={`text-sm lg:text-base font-medium transition-all duration-300 hover:scale-105 relative group ${
+                  pathname === item.href ? "text-primary" : ""
+                }`}
+                style={{
+                  color:
+                    pathname === item.href
+                      ? colors.textPrimary
+                      : colors.textSecondary,
+                }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.color = colors.textPrimary;
                 }}
@@ -94,7 +103,6 @@ const Header = () => {
                   style={{ backgroundColor: colors.textPrimary }}
                 ></span>
               </Link>
-
             ))}
           </div>
 
@@ -104,7 +112,9 @@ const Header = () => {
               // Authenticated User - Profile Dropdown
               <div className="relative" ref={dropdownRef}>
                 <button
-                  onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                  onClick={() =>
+                    setIsProfileDropdownOpen(!isProfileDropdownOpen)
+                  }
                   className="flex items-center space-x-2 p-2 rounded-lg transition-all duration-300 hover:scale-105"
                   style={{
                     backgroundColor: colors.bgSecondary + "50",
@@ -115,7 +125,8 @@ const Header = () => {
                     e.currentTarget.style.boxShadow = `0 5px 15px ${colors.textMuted}40`;
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = colors.bgSecondary + "50";
+                    e.currentTarget.style.backgroundColor =
+                      colors.bgSecondary + "50";
                     e.currentTarget.style.boxShadow = "none";
                   }}
                 >
@@ -129,24 +140,40 @@ const Header = () => {
                     {session.user?.image ? (
                       <img
                         src={session.user.image}
-                        alt={session.user.name || 'User'}
+                        alt={session.user.name || "User"}
                         className="w-8 h-8 rounded-full"
                       />
                     ) : (
-                      <span>{session.user?.name?.charAt(0) || session.user?.email?.charAt(0) || 'U'}</span>
+                      <span>
+                        {session.user?.name?.charAt(0) ||
+                          session.user?.email?.charAt(0) ||
+                          "U"}
+                      </span>
                     )}
                   </div>
-                  <span className="text-sm font-medium" style={{ color: colors.textPrimary }}>
-                    {session.user?.name || session.user?.email?.split('@')[0] || 'User'}
+                  <span
+                    className="text-sm font-medium"
+                    style={{ color: colors.textPrimary }}
+                  >
+                    {session.user?.name ||
+                      session.user?.email?.split("@")[0] ||
+                      "User"}
                   </span>
                   <svg
-                    className={`w-4 h-4 transition-transform duration-200 ${isProfileDropdownOpen ? 'rotate-180' : ''}`}
+                    className={`w-4 h-4 transition-transform duration-200 ${
+                      isProfileDropdownOpen ? "rotate-180" : ""
+                    }`}
                     style={{ color: colors.textSecondary }}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </button>
 
@@ -160,20 +187,36 @@ const Header = () => {
                       boxShadow: `0 10px 25px ${colors.textMuted}40`,
                     }}
                   >
-                    {/* User Info */}
-                    <div className="px-4 py-3 border-b" style={{ borderColor: colors.textMuted + "20" }}>
-                      <p className="text-sm font-medium" style={{ color: colors.textPrimary }}>
-                        {session.user?.name || 'User'}
+                    {/* User Info - Updated with text wrapping */}
+                    <div
+                      className="px-4 py-3 border-b"
+                      style={{ borderColor: colors.textMuted + "20" }}
+                    >
+                      <p
+                        className="text-sm font-medium truncate"
+                        style={{ color: colors.textPrimary }}
+                      >
+                        {session.user?.name || "User"}
                       </p>
-                      <p className="text-xs" style={{ color: colors.textSecondary }}>
+                      <p
+                        className="text-xs break-all overflow-hidden mt-1"
+                        style={{
+                          color: colors.textSecondary,
+                          wordBreak: "break-word",
+                          maxWidth: "100%",
+                        }}
+                      >
                         {session.user?.email}
                       </p>
-                      <p className="text-xs capitalize font-medium mt-1" style={{ color: colors.textSecondary }}>
-                        {session.user?.role || 'User'}
+                      <p
+                        className="text-xs capitalize font-medium mt-1"
+                        style={{ color: colors.textSecondary }}
+                      >
+                        {session.user?.role || "User"}
                       </p>
                     </div>
 
-                    {/* Navigation Links */}
+  {/* Navigation Links */}
                     <div className="py-1">
                       <Link
                         href={`/${session.user?.role}/dashboard`}
@@ -278,13 +321,12 @@ const Header = () => {
                     e.currentTarget.style.boxShadow = `0 5px 15px ${colors.textMuted}40`;
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = colors.bgSecondary + "80";
+                    e.currentTarget.style.backgroundColor =
+                      colors.bgSecondary + "80";
                     e.currentTarget.style.boxShadow = "none";
                   }}
                 >
-                  <Link href="/signin">
-                    Sign In
-                  </Link>
+                  <Link href="/signin">Sign In</Link>
                 </button>
                 <button
                   className="px-4 py-2 lg:px-6 lg:py-3 text-sm lg:text-base font-semibold text-white rounded-lg transition-all duration-300 hover:scale-105 shadow-lg"
@@ -294,16 +336,16 @@ const Header = () => {
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.background = `linear-gradient(135deg, ${colors.textSecondary}, ${colors.textPrimary})`;
-                    e.currentTarget.style.boxShadow = "0 8px 25px rgba(22, 38, 61, 0.35)";
+                    e.currentTarget.style.boxShadow =
+                      "0 8px 25px rgba(22, 38, 61, 0.35)";
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.background = `linear-gradient(135deg, ${colors.textPrimary}, ${colors.textSecondary})`;
-                    e.currentTarget.style.boxShadow = "0 5px 15px rgba(22, 38, 61, 0.25)";
+                    e.currentTarget.style.boxShadow =
+                      "0 5px 15px rgba(22, 38, 61, 0.25)";
                   }}
                 >
-                  <Link href="/explore">
-                    Get Started
-                  </Link>
+                  <Link href="/explore">Get Started</Link>
                 </button>
               </>
             )}
@@ -355,8 +397,9 @@ const Header = () => {
 
         {/* Mobile Menu */}
         <div
-          className={`md:hidden transition-all duration-300 overflow-hidden ${isMobileMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-            }`}
+          className={`md:hidden transition-all duration-300 overflow-hidden ${
+            isMobileMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+          }`}
         >
           <div
             className="py-4 space-y-4 border-t"
@@ -390,9 +433,12 @@ const Header = () => {
                 // Authenticated Mobile Menu
                 <>
                   {/* User Info */}
-                  <div className="flex items-center space-x-3 p-3 rounded-lg" style={{ backgroundColor: colors.bgSecondary + "30" }}>
+                  <div
+                    className="flex items-start space-x-3 p-3 rounded-lg"
+                    style={{ backgroundColor: colors.bgSecondary + "30" }}
+                  >
                     <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold text-white"
+                      className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold text-white flex-shrink-0"
                       style={{
                         background: `linear-gradient(135deg, ${colors.textPrimary}, ${colors.textSecondary})`,
                       }}
@@ -400,19 +446,38 @@ const Header = () => {
                       {session.user?.image ? (
                         <img
                           src={session.user.image}
-                          alt={session.user.name || 'User'}
+                          alt={session.user.name || "User"}
                           className="w-10 h-10 rounded-full"
                         />
                       ) : (
-                        <span>{session.user?.name?.charAt(0) || session.user?.email?.charAt(0) || 'U'}</span>
+                        <span>
+                          {session.user?.name?.charAt(0) ||
+                            session.user?.email?.charAt(0) ||
+                            "U"}
+                        </span>
                       )}
                     </div>
-                    <div>
-                      <p className="text-sm font-medium" style={{ color: colors.textPrimary }}>
-                        {session.user?.name || 'User'}
+                    <div className="min-w-0 flex-1">
+                      <p
+                        className="text-sm font-medium truncate"
+                        style={{ color: colors.textPrimary }}
+                      >
+                        {session.user?.name || "User"}
                       </p>
-                      <p className="text-xs capitalize" style={{ color: colors.textSecondary }}>
-                        {session.user?.role || 'User'}
+                      <p
+                        className="text-xs break-all overflow-hidden"
+                        style={{
+                          color: colors.textSecondary,
+                          wordBreak: "break-word",
+                        }}
+                      >
+                        {session.user?.email}
+                      </p>
+                      <p
+                        className="text-xs capitalize mt-1"
+                        style={{ color: colors.textSecondary }}
+                      >
+                        {session.user?.role || "User"}
                       </p>
                     </div>
                   </div>
@@ -428,8 +493,18 @@ const Header = () => {
                     }}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+                    <svg
+                      className="w-5 h-5 mr-3"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"
+                      />
                     </svg>
                     Dashboard
                   </Link>
@@ -445,8 +520,18 @@ const Header = () => {
                     }}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    <svg
+                      className="w-5 h-5 mr-3"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                      />
                     </svg>
                     Profile
                   </Link>
@@ -464,8 +549,18 @@ const Header = () => {
                       border: "1px solid #fca5a5",
                     }}
                   >
-                    <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    <svg
+                      className="w-5 h-5 mr-3"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                      />
                     </svg>
                     Sign Out
                   </button>
