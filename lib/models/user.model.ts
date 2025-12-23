@@ -46,6 +46,7 @@ export interface IUser {
   fundingRange?: FundingRange;
 
   isVerified?: boolean;
+  status?: 'active' | 'inactive';
 }
 
 const userSchema = new Schema<IUser>(
@@ -171,6 +172,11 @@ const userSchema = new Schema<IUser>(
       max: { type: Number, min: [0, "Maximum funding must be positive"] },
     },
     isVerified: { type: Boolean, default: false },
+    status: { 
+      type: String, 
+      enum: ['active', 'inactive'],
+      default: 'active'  
+    }
   },
   {
     timestamps: true, // adds createdAt & updatedAt
