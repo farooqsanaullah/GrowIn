@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Building2, Plus, Edit, Eye, MoreHorizontal, Users, Loader2 } from "lucide-react";
+import { Building2, Plus, Edit, Eye, Users, Loader } from "lucide-react";
 import { startupsApi } from '@/lib/helpers/api/startups';
 import type { Startup } from '@/lib/types/api';
 import { useSession } from "next-auth/react";
@@ -72,7 +72,7 @@ export function RecentStartups() {
       <div className="space-y-4">
         {loading ? (
           <div className="text-center py-8">
-            <Loader2 className="h-6 w-6 animate-spin text-primary mx-auto mb-2" />
+            <Loader className="h-6 w-6 animate-spin text-primary mx-auto mb-2" />
             <p className="text-sm text-muted-foreground">Loading startups...</p>
           </div>
         ) : error ? (

@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Building2, User, Loader2, Search, Wallet } from "lucide-react";
+import { Building2, User, Loader, Search, Wallet } from "lucide-react";
 
 interface FounderInvestorItem {
   investor: {

@@ -22,7 +22,6 @@ export async function POST(request: NextRequest) {
 
     await connectDB();
 
-    // Verify access
     const conversation = await Conversation.findOne({
       _id: conversationId,
       'participants.userId': user.id,
@@ -35,7 +34,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create message
+    console.log('📝 Creating message for conversation:', conversationId);
+    console.log('👤 Sender:', user.name, user.id);
+
     const message = await Message.create({
       conversationId,
       senderId: user.id,
@@ -43,9 +44,9 @@ export async function POST(request: NextRequest) {
       senderRole: user.role,
       type: "text",
       text: content.trim(),
+      content: content.trim(), 
     });
 
-    // Update conversation last message
     await Conversation.findByIdAndUpdate(conversationId, {
       lastMessage: {
         content: content.trim(),
@@ -55,9 +56,8 @@ export async function POST(request: NextRequest) {
       lastMessageAt: message.createdAt,
     });
 
-    // Populate sender info
     const populatedMessage = await Message.findById(message._id)
-      .populate("senderId", "userName email role")
+      .populate("senderId", "userName name email role avatar image")
       .lean<IMessage>();
 
     if (!populatedMessage) {
@@ -66,19 +66,64 @@ export async function POST(request: NextRequest) {
 
     const messageWithContent = {
       ...populatedMessage,
-      content: populatedMessage.text,
+      content: populatedMessage.text || populatedMessage.content,
     };
 
-    // Real-time event
-    // FIX: wrap payload in an object with `message`
-    console.log("🚀 ~ messageWithContent:", messageWithContent);
-    await pusherServer.trigger(
-      `private-conversation-${conversationId}`,
-      "new-message",
-      { message: messageWithContent }
-    );
+    console.log("🚀 Message created:", messageWithContent._id);
 
-    console.log("🚀 ~ Message sent via Pusher");
+    // ✅ CRITICAL: Trigger ALL relevant channels
+    const pusherPayload = { 
+      message: messageWithContent,
+      conversationId: conversationId 
+    };
+
+    const pusherPromises = [];
+
+    try {
+      console.log('📡 Triggering private-conversation channel:', conversationId);
+      pusherPromises.push(
+        pusherServer.trigger(
+          `private-conversation-${conversationId}`,
+          "new-message",
+          pusherPayload
+        )
+      );
+
+      if (conversation.startupId) {
+        console.log('📡 Triggering startup channel:', conversation.startupId);
+        pusherPromises.push(
+          pusherServer.trigger(
+            `startup-${conversation.startupId}`,
+            "new-message",
+            pusherPayload
+          )
+        );
+      }
+
+      const participants = conversation.participants || [];
+      for (const participant of participants) {
+        const userId = typeof participant.userId === 'object' 
+          ? participant.userId._id?.toString() || participant.userId.toString()
+          : participant.userId.toString();
+        
+        if (userId && userId !== user.id) {
+          console.log('📡 Triggering user channel for participant:', userId);
+          pusherPromises.push(
+            pusherServer.trigger(
+              `user-${userId}`,
+              "new-message",
+              pusherPayload
+            )
+          );
+        }
+      }
+
+      await Promise.all(pusherPromises);
+      console.log("✅ All Pusher channels triggered successfully");
+
+    } catch (pusherError) {
+      console.error("Pusher trigger error:", pusherError);
+    }
 
     return NextResponse.json({ message: messageWithContent }, { status: 201 });
 
@@ -107,7 +152,6 @@ export async function GET(request: NextRequest) {
 
     await connectDB();
 
-    // Verify access
     const conversation = await Conversation.findOne({
       _id: conversationId,
       'participants.userId': user.id,
@@ -117,7 +161,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
-    // Build query
     const query: any = { conversationId };
 
     if (before) {
@@ -127,12 +170,12 @@ export async function GET(request: NextRequest) {
     const messages = await Message.find(query)
       .sort({ createdAt: -1 })
       .limit(limit)
-      .populate("senderId", "userName email avatar role")
+      .populate("senderId", "userName name email avatar image role")
       .lean<IMessage[]>();
 
     const formattedMessages = messages.map(msg => ({
       ...msg,
-      content: msg.text,
+      content: msg.text || msg.content,
     }));
 
     return NextResponse.json({

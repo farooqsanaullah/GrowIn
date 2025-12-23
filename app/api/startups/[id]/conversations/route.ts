@@ -12,10 +12,6 @@ export async function GET(
   try {
     const params = await context.params;
     const user = await getCurrentUser();
-    
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
 
     await connectDB();
 
@@ -33,17 +29,15 @@ export async function GET(
 
     const startupObjectId = new mongoose.Types.ObjectId(id);
 
-    // 🔍 DEBUG: Check what field name your Conversation model uses
     console.log('Looking for conversations with startupObjectId:', startupObjectId);
     
-    // Try finding ALL conversations first to see what exists
-    const allConversations = await Conversation.find({}).limit(5).lean();
-    console.log('Sample conversations in DB:', JSON.stringify(allConversations, null, 2));
+    if (process.env.NODE_ENV === 'development') {
+      const allConversations = await Conversation.find({}).limit(5).lean();
+      console.log('Sample conversations:', allConversations);
+    }
 
-    // The issue is likely here - what field stores the startup ID?
-    // Is it 'id', 'startupId', 'startup', or something else?
     const conversations = await Conversation.find({
-      startupId: startupObjectId, // ← Try 'startupId' instead of 'id'
+      startupId: startupObjectId, 
       isTeamChat: false,
     })
       .populate('participants.userId', 'name email avatar image role')
@@ -55,14 +49,14 @@ export async function GET(
     console.log('Found conversations:', conversations.length);
 
     const totalCount = await Conversation.countDocuments({
-      startupId: startupObjectId, // ← Change here too
+      startupId: startupObjectId, 
       isTeamChat: false,
     });
 
     const conversationsWithMessages = await Promise.all(
       conversations.map(async (conv) => {
         const messages = await Message.find({ conversationId: conv._id })
-          .populate('senderId', 'name email avatar image role')
+          .populate('senderId', 'userName email avatar image role')
           .sort({ createdAt: -1 })
           .limit(10)
           .lean();
@@ -78,6 +72,7 @@ export async function GET(
         return { ...conv, messages: messagesWithContent, messageCount };
       })
     );
+    console.log('Conversations with messages prepared', conversationsWithMessages.length);
 
     return NextResponse.json({
       success: true,

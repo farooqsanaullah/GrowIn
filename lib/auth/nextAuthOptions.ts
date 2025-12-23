@@ -105,8 +105,8 @@ function sanitizeOAuthProfile(profile: OAuthProfile) {
 export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
-    maxAge: 7 * 24 * 60 * 60, // 30 days
-    updateAge: 24 * 60 * 60, // Update session every 24 hours
+    maxAge: 24 * 60 * 60, // 1 day
+    updateAge: 60 * 60, // renew session every single hour
   },
   pages: {
     signIn: "/signin", // custom sign-in page
@@ -185,8 +185,8 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     // Redirect on success
-    async redirect({ url, baseUrl }) {
-      return baseUrl + "/explore";
+    async redirect({ baseUrl }) {
+      return baseUrl + "/redirect";
     },
 
     //  [1] signIn → Handle OAuth user creation/account linking
@@ -242,9 +242,10 @@ export const authOptions: NextAuthOptions = {
           // Attaching DB info to user object (so JWT receives it)
           user.id = existingUser._id.toString();
           user.role = existingUser.role;
-
-          isDev &&
-            console.log(`[OAuth] Linked existing user to ${account.provider}`);
+          user.name = existingUser.name;
+          user.email = existingUser.email;
+          
+          isDev && console.log(`[OAuth] Linked existing user to ${account.provider}`);
 
           return true;
         }
@@ -285,18 +286,19 @@ export const authOptions: NextAuthOptions = {
       // Initial sign in
       if (user) {
         token.id = user.id;
-        console.log("🚀 ~ [JWT] (user|token).id:", user.id);
-        token.role = user.role;
-        console.log("🚀 ~ [JWT] (user|token).role:", user.role);
+        // console.log("🚀 ~ [JWT] (user|token).id:", user.id)
+        token.role = user.role;     
+        // console.log("🚀 ~ [JWT] (user|token).role:", user.role)
+        token.name = user.name;
+        // console.log("🚀 ~ [JWT] (user|token).name:", user.name)
+        token.email = user.email;
+        // console.log("🚀 ~ [JWT] (user|token).email:", user.email)
       }
 
       // Refresh user data on session update
       if (trigger === "update" && session) {
         token = { ...token, ...session };
-        console.log(
-          `🚀 ~ trigger === "update" && session:`,
-          trigger === "update" && session
-        );
+        // console.log(`🚀 ~ trigger === "update" && session:`, trigger === "update" && session)
       }
 
       // Handle OAuth token refresh (simplified example)
@@ -317,10 +319,14 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (token) {
         session.user.id = token.id as string;
-        console.log("🚀 ~ [SESSION] token.id:", token.id);
+        // console.log("🚀 ~ [SESSION] token.id:", token.id)
         session.user.role = token.role as string;
-        console.log("🚀 ~ [SESSION] token.role:", token.role);
-
+        // console.log("🚀 ~ [SESSION] token.role:", token.role)
+        session.user.name = token.name as string;
+        // console.log("🚀 ~ [SESSION] token.name:", token.name)
+        session.user.email = token.email as string;
+        // console.log("🚀 ~ [SESSION] token.email:", token.email)
+        
         // Add session expiry info
         session.expires = token.exp as string;
       }

@@ -17,11 +17,11 @@ const nextConfig: NextConfig = {
         pathname: "/**",
       },
       {
-        protocol: "https",
-        hostname: "growin-startup-pitches.s3.eu-north-1.amazonaws.com",
-        port: "",
-        pathname: "/**",
-      },
+        protocol: 'https',
+        hostname: 'growin-startup-pitches.s3.eu-north-1.amazonaws.com',
+        port: '',
+        pathname: '/**',
+      },  
     ],
   },
 };

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { Building2, TrendingUp, DollarSign, BarChart3, Plus, Loader2 } from "lucide-react";
+import { Building2, TrendingUp, DollarSign, BarChart3, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
