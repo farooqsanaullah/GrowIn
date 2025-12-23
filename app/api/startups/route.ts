@@ -3,7 +3,6 @@ import { connectDB } from "@/lib/db/connect";
 import Startup from "@/lib/models/startup.model";
 import Investment from "@/lib/models/investment.model";
 import { Types } from "mongoose";
-import User from "@/lib/models/user.model";
 import { successResponse, errorResponse } from "@/lib/utils/apiResponse";
 import {
   parseQueryParams,
@@ -23,15 +22,12 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit;
 
     const query: Record<string, any> = {};
-
-    // Helper to convert CSV → array or return undefined
     const parseList = (param: string | null) => {
       if (!param) return undefined;
       return param.split(",").map((v) => v.trim());
     };
 
-    // Multi-select params
-    const categoryTypes = parseList(searchParams.get("categoryType"));
+    const categoryTypes = parseList(searchParams.get("category"));
     const industries = parseList(searchParams.get("industry"));
     const statuses = parseList(searchParams.get("status"));
     const badges = parseList(searchParams.get("badges"));

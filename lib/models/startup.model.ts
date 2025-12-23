@@ -31,6 +31,7 @@ export interface IStartup {
   avgRating: number;
   equityRange: EquityRange[];
   profilePic?: string;
+  totalRaised?: number;
 }
 
 const startupSchema = new Schema<IStartup>(
@@ -129,6 +130,10 @@ const startupSchema = new Schema<IStartup>(
     profilePic: {
       type: String,
       trim: true,
+    },
+    totalRaised: {
+      type: Number,
+      default: 0,
     },
   },
   {

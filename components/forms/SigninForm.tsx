@@ -1,19 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { JSX, useState } from "react";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { SignInSchema, SignInSchemaType } from "@/lib/auth/zodSchemas";
+
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Button, Input, Label, Separator } from "@/components/ui";
+import { Button, FloatingLabelInput, Input, Label, Separator } from "@/components/ui";
 import { toast } from "react-hot-toast";
 import { Eye, EyeClosedIcon, Loader } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-
-type SigninFormValues = {
-  email: string;
-  password: string;
-};
+import { FcGoogle } from "react-icons/fc";
+import { FaGithub } from "react-icons/fa";
 
 type SigninFormProps = {
   providers: Record<string, any> | null;
@@ -21,9 +21,15 @@ type SigninFormProps = {
 
 const isDev = process.env.NODE_ENV === "development";
 
+const providerIcons: { [key: string]: JSX.Element } = {
+  google: <FcGoogle className="mr-2" />,
+  github: <FaGithub className="mr-2" />,
+};
+
 export default function SigninForm({ providers }: SigninFormProps) {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
+  const [loadingSignin, setLoadingSignin] = useState(false);
+  const [loadingProvider, setLoadingProvider] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const { 
@@ -31,15 +37,16 @@ export default function SigninForm({ providers }: SigninFormProps) {
     handleSubmit,
     watch,
     formState: { errors }, 
-  } = useForm<SigninFormValues>({
+  } = useForm<SignInSchemaType>({
+    resolver: zodResolver(SignInSchema),
     defaultValues: { email: "", password: "" },
   });
 
   const isPassEntered = watch("password").length > 0;
 
-  const onSubmit = async (data: SigninFormValues) => {
+  const onSubmit = async (data: SignInSchemaType) => {
     try {
-      setIsLoading(true);
+      setLoadingSignin(true);
       const res = await signIn("credentials", {
         redirect: false,
         email: data.email,
@@ -59,7 +66,7 @@ export default function SigninForm({ providers }: SigninFormProps) {
       isDev && console.error("Login error:", error);
       toast.error("Something went wrong");
     } finally {
-      setIsLoading(false);
+      setLoadingSignin(false);
     }
   };
 
@@ -81,15 +88,14 @@ export default function SigninForm({ providers }: SigninFormProps) {
         <h1 className="mb-6 text-center text-3xl font-semibold text-foreground">Sign In</h1>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          
           {/* Email */}
           <div>
-            <Label htmlFor="email" className="text-foreground text-md">Email</Label>
-            <Input
+            <FloatingLabelInput
               id="email"
-              type="email"
-              placeholder="email@example.com"
-              className="mt-2 bg-input text-foreground border-border"
-              {...register("email", { required: "Email is required" })}
+              label="Email"
+              disabled={loadingSignin || loadingProvider}
+              {...register("email")}
             />
             {errors.email && (
               <p className="mt-1 text-sm text-destructive">{errors.email.message}</p>
@@ -97,58 +103,48 @@ export default function SigninForm({ providers }: SigninFormProps) {
           </div>
 
           {/* Password */}
-          <div>
-            <Label htmlFor="password" className="text-foreground text-md">Password</Label>
-            <div className="relative">
-              <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="••••••••"
-                className="mt-2 bg-input text-foreground border-border pr-10"
-                {...register("password", {
-                })}
-              />
-              {isPassEntered && (
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(prev => !prev)}
-                  className="absolute flex items-center inset-y-6.75 space-y-1 right-2 text-muted-foreground cursor-pointer"
-                >
-                  {showPassword ? <EyeClosedIcon /> : <Eye />}
-                </button>
-              )}
-            </div>
+          <div className="relative">
+            <FloatingLabelInput
+              id="password"
+              label="Password"
+              disabled={loadingSignin || loadingProvider}
+              type={showPassword ? "text" : "password"}
+              placeholder="••••••••"
+              {...register("password")}
+            />
             {errors.password && (
               <p className="mt-1 text-sm text-destructive">{errors.password.message}</p>
+            )}
+
+            {isPassEntered && (
+              <button
+                type="button"
+                onClick={() => setShowPassword(prev => !prev)}
+                className="absolute right-2 inset-y-0 flex items-center text-muted-foreground cursor-pointer"
+              >
+                {showPassword ? <EyeClosedIcon /> : <Eye />}
+              </button>
             )}
           </div>
 
           {/* SignUp Link */}
-          <div className="flex justify-between text-sm">
-            <p>
-              Don't have an account? SignUp {" "}
-              <Link className="text-sm underline text-foreground hover:text-primary" href={"/signup"}>
-                here
-              </Link>
-            </p>
-            <p>
-              <Link className="text-sm underline text-foreground hover:text-primary" href={"/forgot-password"}>
-                Forgot password?
-              </Link>
-            </p>
+          <div className="flex justify-between text-sm px-1">
+            <Link className="text-sm underline text-foreground hover:text-primary" href={"/signup"}>
+              SignUp
+            </Link>
+            <Link className="text-sm underline text-foreground hover:text-primary" href={"/forgot-password"}>
+              Forgot password?
+            </Link>
           </div>
 
           {/* SignIn Button */}
           <Button
             type="submit"
-            disabled={isLoading}
+            disabled={loadingSignin || loadingProvider}
             className="w-full cursor-pointer bg-primary text-md text-primary-foreground hover:bg-primary/90"
           >
-            {isLoading ? (
-              <>
-                Signing in
-                <Loader className="animate-spin ml-2" />
-              </>
+            {loadingSignin ? (
+              <>Signing in<Loader className="animate-spin" /></>
             ) : (
               "Sign In"
             )}
@@ -157,7 +153,7 @@ export default function SigninForm({ providers }: SigninFormProps) {
           {/* Separator */}
           <div className="relative flex items-center justify-center overflow-hidden">
             <Separator />
-            <div className="py-1.5 px-2 border rounded-full text-center bg-muted text-xs mx-1">
+            <div className="py-2 px-2 border rounded-lg text-center bg-muted text-xs mx-1">
               OR
             </div>
             <Separator />
@@ -174,10 +170,25 @@ export default function SigninForm({ providers }: SigninFormProps) {
                       type="button"
                       key={prov.name}
                       variant={"outline"}
-                      onClick={() => signIn(prov.id)}
+                      disabled={loadingProvider || loadingSignin}
+                      onClick={() => {
+                        setLoadingProvider(prov.id)
+                        signIn(prov.id, { callbackUrl: `${window.location.origin}/redirect` })
+                      }}
                       className="w-full bg-background text-foreground hover:bg-foreground hover:text-background border-border hover:border-transparent cursor-pointer"
                     >
-                      Sign in with {prov.name}
+                      {loadingProvider === prov.id ? (
+                        <>
+                          {providerIcons[prov.id]}
+                          Redirecting
+                          <Loader className="w-4 h-4 animate-spin ml-2" />
+                        </>
+                      ) : (
+                        <>
+                          {providerIcons[prov.id]}
+                          Sign in with {prov.name}
+                        </>
+                      )}
                     </Button>
                   ))}
               </div>

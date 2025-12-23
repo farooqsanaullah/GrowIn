@@ -20,13 +20,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing parameters' }, { status: 400 });
     }
 
-    // Extract conversation ID from channel name
-    // Channel format: "private-conversation-{conversationId}"
     const conversationId = channelName.replace('private-conversation-', '');
 
     await connectDB();
 
-    // Verify user is participant
     const conversation = await Conversation.findOne({
       _id: conversationId,
       'participants.userId': user.id,
@@ -36,7 +33,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Authorize the user for this private channel
     const authResponse = pusherServer.authorizeChannel(socketId, channelName, {
       user_id: user.id,
       user_info: {

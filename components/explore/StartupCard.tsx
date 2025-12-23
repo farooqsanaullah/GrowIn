@@ -17,7 +17,7 @@ const colors = {
 };
 
 const StartupCard: React.FC<StartupCardProps> = ({ startup }) => {
-  const profilePic = startup.profilePic || "/fallback-image.png";
+  const profilePic = startup.profilePic;
   const fullStars = Math.floor(startup.avgRating);
   const hasHalfStar = startup.avgRating % 1 >= 0.5;
   const formatAmount = (amount: number) => {
@@ -70,16 +70,19 @@ const StartupCard: React.FC<StartupCardProps> = ({ startup }) => {
         </div>
 
 
+        {startup.founders?.length > 0 && (
         <div className="absolute top-36 right-4 z-10">
           <div className="relative w-20 h-20 rounded-full border-4 border-white shadow-md overflow-hidden transition-transform duration-300 ease-in-out hover:scale-105 cursor-pointer">
             <img
-              src={profilePic}
-              alt="Founder"
+              src={startup.founders[0].profileImage || "/fallback-image.png"}
+              alt={startup.founders[0].userName || "Founder"}
               className="w-full h-full rounded-full object-cover"
             />
             <span className="absolute inset-0 rounded-full border-2 border-blue-400 opacity-0 transition-opacity duration-300 hover:opacity-100"></span>
           </div>
         </div>
+      )}
+
 
         <div className="pt-10 p-4 flex flex-col flex-1">
           <h3

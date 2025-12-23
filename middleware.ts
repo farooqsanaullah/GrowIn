@@ -1,90 +1,89 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyToken } from "@/lib/helpers/backend";
 import { getToken } from "next-auth/jwt";
 
 const { NODE_ENV, NEXTAUTH_SECRET } = process.env;
-
-export const protectedRoutes = [
-  "/Profile/:userName",
-  "/founder/:username",
-  "/investor/:username",
-];
-
-// Utility to convert route patterns to RegExp
-function routeToRegex(route: string) {
-  // Replace :param with [^/]+
-  return new RegExp("^" + route.replace(/:\w+/g, "[^/]+") + "$");
-}
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const isDev = NODE_ENV === "development";
 
-  // Fetch tokens
-  const manualToken = req.cookies.get("token")?.value;
+  // --- FETCH NEXTAUTH SESSION TOKEN ---
   const nextAuthToken = await getToken({ req, secret: NEXTAUTH_SECRET! });
 
-  // Log in dev mode
-  if (isDev) {
-    console.log("[Middleware] Path:", pathname, "ManualJWT:", !!manualToken, "NextAuthJWT:", !!nextAuthToken);
+  isDev &&
+    console.log(
+      "[Middleware] Path:", pathname,
+      "| NextAuthJWT token exists:", !!nextAuthToken
+    );
+
+  // =============================================================================
+  //  ROLE-BASED GUARD
+  //  Prevents users from accessing other roles' areas
+  // =============================================================================
+  if (nextAuthToken?.role) {
+    const userRole = nextAuthToken.role; // "investor" | "founder"
+    const isTryingFounderArea = pathname.startsWith("/founder");
+    const isTryingInvestorArea = pathname.startsWith("/investor");
+
+    if (userRole === "investor" && isTryingFounderArea) {
+      return NextResponse.redirect(
+        new URL("/investor/dashboard?error=forbidden", req.url)
+      );
+    }
+
+    if (userRole === "founder" && isTryingInvestorArea) {
+      return NextResponse.redirect(
+        new URL("/founder/dashboard?error=forbidden", req.url)
+      );
+    }
   }
 
-  // --- PUBLIC ROUTES ---
+  // =============================================================================
+  //  PUBLIC AUTH ROUTES
+  //  If already authenticated → redirect to dashboard
+  // =============================================================================
   if (pathname.startsWith("/signin") || pathname.startsWith("/signup")) {
-    if (manualToken || nextAuthToken) {
-      try {
-        if (manualToken) verifyToken(manualToken);
-        if (isDev) console.log("[Middleware] Already signed in → redirecting to /dashboard");
-        return NextResponse.redirect(new URL("/dashboard", req.url));
-      } catch {
-        // Invalid token → allow access to signin/signup
-      }
+    if (nextAuthToken) {
+      isDev && console.log("[Middleware] Already signed in → redirecting to /dashboard");
+      return NextResponse.redirect(new URL("/dashboard", req.url));
     }
     return NextResponse.next();
   }
 
-  // --- PROTECTED PAGES ---
-  const isProtectedPage = protectedRoutes.some((route) => routeToRegex(route).test(pathname));
+  // =============================================================================
+  //  PROTECTED PAGES & API ROUTES
+  // =============================================================================
+  const isProtectedApi = pathname.startsWith("/api/auth/");
+  const requiresAuth = pathname.startsWith("/founder") || pathname.startsWith("/investor") || isProtectedApi;
 
-  if (isProtectedPage) {
-    if (!manualToken && !nextAuthToken) {
-      if (isDev) console.warn("[Middleware] Unauthorized access to protected page");
-      return NextResponse.redirect(new URL("/signin?error=unauthorized", req.url));
+  if (requiresAuth) {
+    if (!nextAuthToken) {
+      if (isProtectedApi) {
+        return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+      } else {
+        isDev && console.warn("[Middleware] Unauthorized access to protected page");
+        return NextResponse.redirect(new URL("/signin?error=unauthorized", req.url));
+      }
     }
-    try {
-      if (manualToken) verifyToken(manualToken);
-      return NextResponse.next();
-    } catch {
-      if (isDev) console.error("[Middleware] Invalid or expired token");
-      return NextResponse.redirect(new URL("/signin?error=token_expired", req.url));
-    }
+
+    // Authenticated → allow access
+    return NextResponse.next();
   }
 
-  // --- PROTECTED API ROUTES ---
-  if (pathname.startsWith("/api/auth/")) {
-    if (!manualToken && !nextAuthToken) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-    try {
-      if (manualToken) verifyToken(manualToken);
-      return NextResponse.next();
-    } catch {
-      return NextResponse.json({ message: "Invalid or expired token" }, { status: 401 });
-    }
-  }
-
-  // Default fallback (public pages)
+  // Allow all other public routes
   return NextResponse.next();
 }
 
-// --- Middleware Matcher ---
+// =============================================================================
+//  MIDDLEWARE MATCHER
+//  Runs middleware only for relevant routes
+// =============================================================================
 export const config = {
   matcher: [
-    "/Profile/:userName",
-    "/founder/:username",
-    "/investor/:username",
-    "/api/auth/forgot-password", 
-    "/api/auth/reset-password", 
+    "/founder/:path*",
+    "/investor/:path*",
+    "/api/auth/forgot-password",
+    "/api/auth/reset-password",
     "/api/auth/change-password",
   ],
   runtime: "nodejs",

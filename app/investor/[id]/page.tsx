@@ -20,7 +20,7 @@ import {
   Github,
   ExternalLink,
   ArrowLeft,
-  Loader2,
+  Loader,
   User as UserIcon,
   BarChart3,
   PieChart,
@@ -92,7 +92,7 @@ export default function InvestorProfilePage() {
     return (
       <div className="space-y-6">
         <div className="text-center py-16">
-          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
+          <Loader className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
           <p className="text-muted-foreground">Loading investor profile...</p>
         </div>
       </div>

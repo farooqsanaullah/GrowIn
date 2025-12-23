@@ -49,7 +49,6 @@ export async function POST(request: NextRequest) {
 
     await connectDB();
 
-    // Validate conversation initiation rules
     if (!canInitiateConversation(user.role, recipientRole)) {
       return NextResponse.json(
         { error: 'Only investors can initiate conversations with founders' },
@@ -57,12 +56,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Convert all string IDs to ObjectId
     const userObjectId = new mongoose.Types.ObjectId(user.id);
     const recipientObjectId = new mongoose.Types.ObjectId(recipientId);
     const startupObjectId = new mongoose.Types.ObjectId(startupId);
 
-    // Check if conversation already exists
     const existingConversation = await Conversation.findOne({
       'participants.userId': { $all: [userObjectId, recipientObjectId] },
       startupId: startupObjectId,
@@ -74,7 +71,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ conversation: existingConversation });
     }
 
-    // Create new conversation
     const conversation = await Conversation.create({
       participants: [
         { userId: userObjectId, role: user.role },
@@ -92,7 +88,6 @@ export async function POST(request: NextRequest) {
       createdAt: new Date(),
     });
 
-    // Populate and return
     const populatedConversation = await Conversation.findById(conversation._id)
       .populate('participants.userId', 'userName email avatar role')
       .populate('startupId', 'title')

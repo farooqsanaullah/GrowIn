@@ -160,7 +160,7 @@ export default function FilterBar() {
           >
             Clear All
           </button>
-        ) : null}
+        ):<></>}
       </div>
     </div>
   );

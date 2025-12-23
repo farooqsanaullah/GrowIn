@@ -5,16 +5,20 @@ import { SessionProvider, useSession } from "next-auth/react";
 import { MessageCircle, Sparkles } from "lucide-react";
 import FollowableStartupProfile from "./FollowableStartupProfile";
 import { Startup } from "@/lib/types/startup";
-import TestMessaging from "./test-messaging";
-import StartupMessages from "./StartupMessages";
 import InvestorMatchPanel from "./InvestorMatchPanel";
 import OutreachGenerator from "./OutreachGenerator"; 
+// import StartupProfile from "./MessageInitiator";
+import StartupMessages from "./StartupMessages"; 
+import Header from "../landingpage/Header";
+import Footer from "../landingpage/Footer";
+import { IConversation } from "@/lib/types/index";
 
 interface Props {
   startup: Startup;
+  conversations: IConversation[];
 }
 
-const MessagesButton: React.FC<{ startup: Startup }> = ({ startup }) => {
+const MessagesButton: React.FC<{ startup: Startup, conversations: IConversation[] }> = ({ startup, conversations }) => {
   const { data: session } = useSession();
   const [showMessages, setShowMessages] = useState(false);
 
@@ -63,7 +67,7 @@ const MessagesButton: React.FC<{ startup: Startup }> = ({ startup }) => {
                 />
               </svg>
             </button>
-            <StartupMessages startupId={startup._id} />
+            <StartupMessages conversations={conversations} />
           </div>
         </div>
       )}
@@ -145,18 +149,16 @@ const AIMatchButton: React.FC<{ startup: Startup }> = ({ startup }) => {
     </>
   );
 };
-
-const ClientWrapper: React.FC<Props> = ({ startup }) => {
+const ClientWrapper: React.FC<Props> = ({ startup, conversations }) => {
   return (
     <SessionProvider>
+      <Header />
       <FollowableStartupProfile startup={startup} />
-      <TestMessaging startup={startup} />
-      
-
-      <MessagesButton startup={startup} />
-      
-
+      {/* <StartupProfile startup={startup} /> */}            
       <AIMatchButton startup={startup} />
+      {/* Messages Button - Only visible to founders of this startup */}
+      <MessagesButton startup={startup} conversations={conversations} />
+      <Footer />
     </SessionProvider>
   );
 };
