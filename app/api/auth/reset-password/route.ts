@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { verifyToken, getUserById, updatePassword } from "@/lib/helpers/backend";
-import { validatePassword } from "@/lib/helpers/shared";
+import { PasswordSchema } from "@/lib/auth/zodSchemas";
 import { success, error } from "@/lib/auth/apiResponses";
 import { connectDB } from "@/lib/db/connect";
 
@@ -17,8 +17,11 @@ export async function POST(req: NextRequest) {
     if (!user) return error("User not found", 404);
     if (!user.password) return error("OAuth accounts cannot reset passwords manually", 403);
 
-    const passwordError = validatePassword(newPassword);
-    if (passwordError) return error("Invalid password", 400);
+    // Zod validation for new password
+    const result = PasswordSchema.safeParse(newPassword);
+    if (!result.success) {
+      return error(result.error.issues.map(e => e.message).join(", "), 400);
+    }
 
     await updatePassword(userId, newPassword);
 

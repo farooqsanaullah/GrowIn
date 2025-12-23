@@ -179,13 +179,21 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
   const handleInvest = async () => {
     if (!session?.user?.id) return toast.error("Please login first");
 
+    // Check if startup data is loaded
+    if (!startup?._id) {
+      toast.error("Startup data not loaded");
+      return;
+    }
+
+    // Validate investment amount
     const amountNum = parseFloat(investmentAmount);
     if (isNaN(amountNum) || amountNum <= 0) return toast.error("Enter a valid amount");
 
     setIsInvesting(true);
 
     try {
-      const res = await fetch("/api/investment", {
+      // Call backend to create Stripe invoice
+      const res = await fetch("/api/create-investment-invoice", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -195,17 +203,25 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
         }),
       });
 
-      const data = await res.json();
-
-      if (data.success) {
-        toast.success(`Successfully invested $${amountNum}`);
-        setInvestmentAmount("");
-      } else {
-        toast.error(data.message || "Investment failed");
+      if (!res.ok) {
+        throw new Error("Failed to create invoice");
       }
+
+      const data = await res.json();
+      const { invoiceUrl } = data; // single invoice returned now
+
+      if (!invoiceUrl) {
+        toast.error("Invoice URL not found");
+        console.error("Backend response:", data);
+        return;
+      }
+
+      // Redirect to Stripe payment page
+      window.location.href = invoiceUrl;
+
     } catch (err) {
-      console.error(err);
-      toast.error("Something went wrong while investing");
+      console.error("Error creating investment invoice:", err);
+      toast.error("Something went wrong. Please try again.");
     } finally {
       setIsInvesting(false);
     }

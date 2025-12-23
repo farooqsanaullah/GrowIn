@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Calendar, Loader2 } from "lucide-react";
+import { Calendar, Loader } from "lucide-react";
 import { useSession } from "next-auth/react";
 
 interface Activity {
@@ -88,7 +88,7 @@ export function RecentActivity() {
       
       {loading ? (
         <div className="flex items-center justify-center h-32">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          <Loader className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       ) : (
         <div className="space-y-4">

@@ -3,11 +3,11 @@ import ClientWrapper from "@/components/startup/ClientWrapper";
 import { notFound } from "next/navigation";
 import {IConversation} from "@/lib/types/index";
 
-interface PageProps {
+type Props = {
   params: Promise<{ id: string }>;
-}
+};
 
-const StartupProfilePage = async ({ params }: PageProps) => {
+const StartupProfilePage = async ({ params }: Props) => {
   const { id } = await params;
   
   // Fetch startup data

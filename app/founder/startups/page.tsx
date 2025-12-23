@@ -16,7 +16,6 @@ import {
   Eye,
   Trash2,
   Users,
-  Loader2
 } from "lucide-react";
 
 

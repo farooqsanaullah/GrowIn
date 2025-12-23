@@ -1,7 +1,11 @@
 import User from "@/lib/models/user.model";
 
 export async function getUserById(userId: string) {
-  return await User.findById(userId).select("+password");
+  return await User.findById(userId);
+}
+
+export async function getUsersByIds(ids: string[]) {
+  return User.find({ _id: { $in: ids } }).select("email");
 }
 
 export async function getUserByEmail(email: string) {

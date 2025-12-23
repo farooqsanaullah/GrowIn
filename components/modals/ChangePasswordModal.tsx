@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { validatePassword } from "@/lib/helpers/shared";
+import { PasswordSchema } from "@/lib/auth/zodSchemas";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeClosedIcon, Loader } from "lucide-react";
 import {
   Dialog,
@@ -12,11 +14,10 @@ import {
   DialogTitle,
   DialogFooter,
   Button,
-  Label,
-  Input,
+  FloatingLabelInput,
 } from "@/components/ui";
 import toast from "react-hot-toast";
-import { getPasswordStrength } from "@/lib/helpers/shared";
+import { getPasswordStrength } from "@/lib/helpers";
 
 export type ChangePasswordModalProps = {
   isOpen: boolean;
@@ -30,6 +31,18 @@ type FormValues = {
   newPassword: string;
   confirmPassword: string;
 };
+
+// Create a combined schema for the form
+const ChangePasswordSchema = z
+  .object({
+    currentPassword: z.string().optional(), // only required in normal flow
+    newPassword: PasswordSchema,
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
 
 export default function ChangePasswordModal({
   isOpen,
@@ -49,6 +62,7 @@ export default function ChangePasswordModal({
     setError,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
+    resolver: zodResolver(ChangePasswordSchema),
     defaultValues: {
       currentPassword: "",
       newPassword: "",
@@ -61,29 +75,12 @@ export default function ChangePasswordModal({
   const confirmPasswordValue = watch("confirmPassword");
   const { lengthCheck, specialCharCheck, digitCheck } = getPasswordStrength(newPasswordValue);
 
+  const isValidCurrentPassword = PasswordSchema.safeParse(currentPasswordValue).success;
+  const isValidNewPassword = PasswordSchema.safeParse(newPasswordValue).success;
+  const isValidConfirmPassword = newPasswordValue === confirmPasswordValue && confirmPasswordValue.length > 0;
+
   const onSubmit = async (data: FormValues) => {
-    const { currentPassword, newPassword, confirmPassword } = data;
-
-    const currentPasswordError =
-      !isForgotPasswordFlow ? validatePassword(currentPassword || "") : null;
-    const newPasswordError = validatePassword(newPassword);
-    const confirmPasswordError = validatePassword(confirmPassword);
-
-    if (currentPasswordError) setError("currentPassword", { message: currentPasswordError });
-    if (newPasswordError) setError("newPassword", { message: newPasswordError });
-    if (confirmPasswordError) setError("confirmPassword", { message: confirmPasswordError });
-
-    if (
-      currentPasswordError ||
-      newPasswordError ||
-      confirmPasswordError
-    )
-      return;
-
-    if (newPassword !== confirmPassword) {
-      setError("confirmPassword", { message: "Passwords do not match" });
-      return;
-    }
+    const { currentPassword, newPassword } = data;
 
     try {
       const url = isForgotPasswordFlow
@@ -126,8 +123,8 @@ export default function ChangePasswordModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md"
-        onInteractOutside={(event) => event.preventDefault()} // Prevent click outside
-        onEscapeKeyDown={(event) => event.preventDefault()}   // Prevent Esc
+        onInteractOutside={(event) => event.preventDefault()}
+        onEscapeKeyDown={(event) => event.preventDefault()}
       >
         <DialogHeader>
           <DialogTitle className="text-xl text-center">Change Password</DialogTitle>
@@ -137,26 +134,22 @@ export default function ChangePasswordModal({
           {/* CURRENT PASSWORD */}
           {!isForgotPasswordFlow && (
             <div>
-              <Label htmlFor="currentPassword" className="text-foreground text-md">Current Password</Label>
-              <div className="mt-2 relative">
-                <Input
-                  type={showCurrentPassword ? "text" : "password"}
-                  placeholder="Current password"
-                  autoComplete="current-password"
-                  {...register("currentPassword", {
-                    validate: (value) =>
-                      isForgotPasswordFlow
-                        ? true
-                        : validatePassword(value || "") || true,
-                  })}
-                  className={`bg-input text-foreground pr-10
-                  ${(currentPasswordValue && currentPasswordValue.length >= 8)
-                      ? "bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
-                      : "border-border"
-                  }
-                `}
-                />
-                {currentPasswordValue && currentPasswordValue.length > 0 && (
+              <FloatingLabelInput
+                id="currentPassword"
+                label="Current Password"
+                type={showCurrentPassword ? "text" : "password"}
+                autoComplete="password"
+                disabled={isSubmitting}
+                className={`bg-input text-foreground pr-10 ${
+                  currentPasswordValue?.length === 0 
+                    ? "border-border"
+                    : isValidCurrentPassword
+                    ? "!bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
+                    : "!bg-destructive/10 border-transparent focus-visible:border-destructive focus-visible:ring-0 shadow-none"
+                }`}
+                {...register("currentPassword")}
+              />
+              {currentPasswordValue && currentPasswordValue.length > 0 && (
                 <button
                   type="button"
                   onClick={() => setShowCurrentPassword((prev) => !prev)}
@@ -164,8 +157,7 @@ export default function ChangePasswordModal({
                 >
                   {showCurrentPassword ? <EyeClosedIcon /> : <Eye />}
                 </button>
-                )}
-              </div>
+              )}
               {errors.currentPassword && (
                 <p className="text-destructive text-sm mt-1">
                   {errors.currentPassword.message}
@@ -176,24 +168,23 @@ export default function ChangePasswordModal({
 
           {/* NEW PASSWORD */}
           <div>
-            <Label htmlFor="newPassword" className="text-foreground text-md">New Password</Label>
-            <div className="mt-2 relative">
-              <Input
+            <div className="relative">
+              <FloatingLabelInput
                 id="newPassword"
+                label="New Password"
                 type={showNewPassword ? "text" : "password"}
-                placeholder="••••••••"
-                autoComplete="new-password"
-                {...register("newPassword", {
-                  validate: (value) => validatePassword(value) || true,
-                })}
-                className={`bg-input text-foreground pr-10
-                  ${(lengthCheck && specialCharCheck && digitCheck)
-                      ? "bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
-                      : "border-border"
-                  }
-                `}
+                autoComplete="password"
+                disabled={isSubmitting}
+                className={`bg-input text-foreground pr-10 ${
+                  newPasswordValue?.length === 0 
+                    ? "border-border"
+                    : isValidNewPassword
+                    ? "!bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
+                    : "!bg-destructive/10 border-transparent focus-visible:border-destructive focus-visible:ring-0 shadow-none"
+                }`}
+                {...register("newPassword")}
               />
-              {newPasswordValue && newPasswordValue.length > 0 && (
+              {newPasswordValue.length > 0 && (
                 <button
                   type="button"
                   onClick={() => setShowNewPassword((prev) => !prev)}
@@ -202,8 +193,11 @@ export default function ChangePasswordModal({
                   {showNewPassword ? <EyeClosedIcon /> : <Eye />}
                 </button>
               )}
+              
             </div>
-
+            {errors.newPassword && (
+              <p className="text-destructive text-sm mt-1 pl-1">{errors.newPassword.message}</p>
+            )}
             {newPasswordValue.length > 0 && (
               // Password Guide
               <div className="mt-4 text-sm space-y-1">
@@ -218,34 +212,25 @@ export default function ChangePasswordModal({
                 </p>
               </div>
             )}
-
-            {errors.newPassword && (
-              <p className="text-destructive text-sm mt-1">{errors.newPassword.message}</p>
-            )}
           </div>
 
           {/* CONFIRM PASSWORD */}
           <div>
-            <Label htmlFor="confirmPassword" className="text-foreground text-md">Confirm New Password</Label>
-            <div className="mt-2 relative">
-              <Input
+            <div className="relative">
+              <FloatingLabelInput
+                id="confirmPassword"
+                label="Confirm Password"
                 type={showConfirmPassword ? "text" : "password"}
-                placeholder="••••••••"
-                autoComplete="new-password"
-                {...register("confirmPassword", {
-                  validate: (value) => {
-                    const err = validatePassword(value);
-                    if (err) return err;
-                    if (value !== newPasswordValue) return "Passwords do not match";
-                    return true;
-                  },
-                })}
-                className={`bg-input text-foreground pr-10
-                  ${(confirmPasswordValue.length > 0 && newPasswordValue === confirmPasswordValue)
-                      ? "bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
-                      : "border-border"
-                  }
-                `}
+                autoComplete="password"
+                disabled={isSubmitting}
+                className={`bg-input text-foreground pr-10 ${
+                  confirmPasswordValue?.length === 0 
+                    ? "border-border"
+                    : isValidConfirmPassword
+                    ? "!bg-success/10 border-transparent focus-visible:border-success focus-visible:ring-0 shadow-none"
+                    : "!bg-destructive/10 border-transparent focus-visible:border-destructive focus-visible:ring-0 shadow-none"
+                }`}
+                {...register("confirmPassword")}
               />
               {confirmPasswordValue && confirmPasswordValue.length > 0 && (
                 <button
@@ -257,9 +242,9 @@ export default function ChangePasswordModal({
                 </button>
               )}
             </div>
-            {errors.confirmPassword && (
-              <p className="text-destructive text-sm mt-1">{errors.confirmPassword.message}</p>
-            )}
+          {errors.confirmPassword && (
+            <p className="text-destructive text-sm mt-1 pl-1">{errors.confirmPassword.message}</p>
+          )}
           </div>
 
           {errors.root && (

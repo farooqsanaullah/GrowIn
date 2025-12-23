@@ -1,5 +1,5 @@
 import { Schema, model, models } from "mongoose";
-import { EMAIL_REGEX } from "@/lib/constants";
+import { z } from "zod";
 import { isValidNumber, parsePhoneNumberFromString } from "libphonenumber-js";
 
 interface SocialLinks {
@@ -65,11 +65,21 @@ const userSchema = new Schema<IUser>(
     },
     email: {
       type: String,
-      required: [true, "Email is required"],
+      required: true,
       unique: true,
       trim: true,
       lowercase: true,
-      match: [EMAIL_REGEX, "Please enter a valid email address"],
+      validate: {
+        validator: (value: string) => {
+          try {
+            z.string().email().parse(value); // use Zod’s email validator
+            return true;
+          } catch {
+            return false;
+          }
+        },
+        message: "Please enter a valid email address",
+      },
     },
     phone: {
         type: String,
