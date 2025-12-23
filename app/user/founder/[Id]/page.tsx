@@ -20,7 +20,7 @@ const FounderProfile = async ({ params }: { params: Promise<{ Id: string }> }) =
   
   try {
     data = await profilesApi.getFounderByUsername(Id);
-    console.log("Fetched founder data:", data);
+    
     
   } catch (error) {
     console.error("Error fetching founder data:", error);
@@ -96,13 +96,8 @@ const FounderProfile = async ({ params }: { params: Promise<{ Id: string }> }) =
     joinedDate: user.joinedDate || "Recently joined"
   };
 
-  // Convert string IDs to numbers for component compatibility and handle empty portfolio
-  const formattedPortfolioData = portfolioData && portfolioData.length > 0 
-    ? portfolioData.map((item: any, index: number) => ({
-        ...item,
-        id: index + 1 // Use index + 1 as numeric ID
-      }))
-    : [];
+
+
 
   return (
     <>
@@ -112,7 +107,7 @@ const FounderProfile = async ({ params }: { params: Promise<{ Id: string }> }) =
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <ProfileSidebar user={founderData} colors={colors} />
             <PortfolioSection 
-              portfolioData={formattedPortfolioData}
+              portfolioData={portfolioData}
               portfolioStats={portfolioStats}
               portfolioType="founder"
               portfolioTitle="Portfolio"
