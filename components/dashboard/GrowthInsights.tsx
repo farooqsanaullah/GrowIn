@@ -46,19 +46,19 @@ export function GrowthInsights() {
       'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
     ];
-    
+
     const currentMonth = new Date().getMonth();
     const last6Months = [];
-    
+
     for (let i = 5; i >= 0; i--) {
       const monthIndex = (currentMonth - i + 12) % 12;
       const month = months[monthIndex];
-      
+
       // Simulate growth data based on startups
       const baseFollowers = Math.max(50, startups.length * 20);
       const growth = Math.random() * 30 + 10; // 10-40% growth
       const followers = Math.floor(baseFollowers * (1 + (i * growth) / 100));
-      
+
       last6Months.push({
         month,
         followers,
@@ -66,7 +66,7 @@ export function GrowthInsights() {
         startups: Math.min(startups.length, Math.floor(startups.length * (1 + i * 0.1))),
       });
     }
-    
+
     return last6Months;
   };
 
@@ -90,12 +90,12 @@ export function GrowthInsights() {
       "#F97316", // Orange
       "#34D399", // Emerald-light
     ];
-    
+
     startups.forEach(startup => {
       const category = startup.categoryType || startup.industry || 'Other';
       categories[category] = (categories[category] || 0) + 1;
     });
-    
+
     return Object.entries(categories).map(([name, value], index) => ({
       name,
       value,
@@ -103,7 +103,7 @@ export function GrowthInsights() {
     }));
   };
 
-  
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -122,15 +122,6 @@ export function GrowthInsights() {
           if (response.success && response.data) {
             startups = response.data;
           }
-        }
-        
-
-        const response = await startupsApi.getByFounder(userId);
-        
-        if (response.success && response.data) {
-          const startups = response.data;
-          setMonthlyData(generateMonthlyData(startups));
-          setCategoryData(generateCategoryData(startups));
         }
 
         setMonthlyData(generateMonthlyData(startups));
@@ -173,7 +164,7 @@ export function GrowthInsights() {
             <p className="text-sm text-muted-foreground">Last 6 months performance</p>
           </div>
         </div>
-        
+
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={monthlyData}>
@@ -188,14 +179,14 @@ export function GrowthInsights() {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted-foreground))" opacity={0.3} />
-              <XAxis 
-                dataKey="month" 
+              <XAxis
+                dataKey="month"
                 stroke="hsl(var(--muted-foreground))"
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
               />
-              <YAxis 
+              <YAxis
                 stroke="hsl(var(--muted-foreground))"
                 fontSize={12}
                 tickLine={false}
@@ -246,7 +237,7 @@ export function GrowthInsights() {
             <p className="text-sm text-muted-foreground">Distribution by industry</p>
           </div>
         </div>
-        
+
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
@@ -274,13 +265,13 @@ export function GrowthInsights() {
             </PieChart>
           </ResponsiveContainer>
         </div>
-        
+
         {/* Legend */}
         <div className="mt-4 grid grid-cols-2 gap-2">
           {categoryData.map((item, index) => (
             <div key={index} className="flex items-center gap-2 text-sm">
-              <div 
-                className="w-3 h-3 rounded-full" 
+              <div
+                className="w-3 h-3 rounded-full"
                 style={{ backgroundColor: item.color }}
               ></div>
               <span className="text-card-foreground truncate">{item.name}</span>

@@ -81,7 +81,7 @@ export const startupsApi = {
    * Get startups by founder ID
    */
   getByFounder: async (
-    founderId: string,
+    founderId?: string,
     filters: Pick<StartupFilters, "page" | "limit"> = {}
   ): Promise<StartupListResponse> => {
     const url = buildUrl(
