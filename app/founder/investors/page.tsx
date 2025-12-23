@@ -83,7 +83,7 @@ export default function InvestorsPage() {
           </div>
         </div>
 
-        {loading ? (
+        {filtered.length === 0 || loading ? (
           <div className="space-y-4">
             {[...Array(6)].map((_, i) => (
               <div key={i} className="flex items-center p-4 bg-muted/30 rounded-lg border border-border/50">
@@ -105,12 +105,6 @@ export default function InvestorsPage() {
             <h3 className="text-lg font-medium mb-2">Error loading investors</h3>
             <p className="text-muted-foreground mb-4">{error}</p>
             <Button onClick={() => setLoading(true)}>Retry</Button>
-          </div>
-        ) : filtered.length === 0 ? (
-          <div className="text-center py-12">
-            <User className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-medium mb-2">No investors found</h3>
-            <p className="text-muted-foreground">No investors are associated with your startups yet.</p>
           </div>
         ) : (
           <div className="space-y-4">
