@@ -11,7 +11,6 @@ import type {
   AnalyticsResponse,
 } from "@/lib/types/api";
 
-const API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000").replace(/\/$/, "");
 
 const fetchAPI = async <T>(
   url: string,
@@ -143,9 +142,7 @@ export const investmentsApi = {
     filters: Pick<InvestmentFilters, "page" | "limit" | "status"> = {},
     options: RequestInit = {}
   ): Promise<InvestmentListResponse> => {
-    const baseUrl = investorId 
-      ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/investor/${investorId}/portfolio`
-      : `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/investor/portfolio`;
+    const baseUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/investor/${investorId}/portfolio`
     const url = buildUrl(baseUrl, filters);
     return fetchAPI<InvestmentListResponse>(url, options);
   },
@@ -154,9 +151,7 @@ export const investmentsApi = {
     investorId?: string,
     period: "1m" | "3m" | "6m" | "1y" | "all" = "6m"
   ): Promise<AnalyticsResponse> => {
-    const baseUrl = investorId 
-      ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/investor/${investorId}/analytics`
-      : `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/investor/analytics`;
+    const baseUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/investor/${investorId}/analytics`
     const url = `${baseUrl}?period=${period}`;
     return fetchAPI<AnalyticsResponse>(url);
   },
