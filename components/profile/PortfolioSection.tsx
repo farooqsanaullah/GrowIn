@@ -1,7 +1,7 @@
 "use client";
 
 interface Portfolio {
-  id: number;
+  id: string;
   startupName: string;
   logo: string;
   investedDate: string;
