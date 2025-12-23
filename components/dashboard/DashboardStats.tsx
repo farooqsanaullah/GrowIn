@@ -5,7 +5,6 @@ import { Building2, Users, Eye, TrendingUp, Target } from "lucide-react";
 import { StatsCard } from "./StatsCard";
 import { startupsApi } from "@/lib/helpers/api/startups";
 import { useSession } from "next-auth/react";
-import type { Startup } from "@/lib/types/api";
 
 interface DashboardStatsData {
   totalStartups: number;

@@ -3,6 +3,9 @@ import mongoose, { Schema, Document } from 'mongoose';
 import "./user.model";
 import "./startup.model";
 
+import "./user.model";
+import "./startup.model";
+
 export interface IInvestment extends Document {
   investorId: mongoose.Types.ObjectId;
   startupId: mongoose.Types.ObjectId;
@@ -30,6 +33,7 @@ const InvestmentSchema = new Schema<IInvestment>({
   cancelledAt: { type: Date },
   refundedAt: { type: Date },
 }, { timestamps: true });
+
 
 InvestmentSchema.index({ investorId: 1, startupId: 1 }, { unique: true });
 

@@ -23,7 +23,7 @@ import {
   Building2
 } from "lucide-react";
 import Link from "next/link";
-import { startupsApi } from "@/lib/helpers/api/startups";
+import { startupsApi } from "@/lib/api/startups";
 import type { Startup, StartupFilters } from "@/lib/types/api";
 
 export default function DiscoverPage() {

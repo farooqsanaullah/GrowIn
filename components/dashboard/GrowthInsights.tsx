@@ -170,12 +170,12 @@ export function GrowthInsights() {
             <AreaChart data={monthlyData}>
               <defs>
                 <linearGradient id="colorFollowers" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.1}/>
+                  <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8} />
+                  <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.1} />
                 </linearGradient>
                 <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(220 70% 50%)" stopOpacity={0.6}/>
-                  <stop offset="95%" stopColor="hsl(220 70% 50%)" stopOpacity={0.05}/>
+                  <stop offset="5%" stopColor="hsl(220 70% 50%)" stopOpacity={0.6} />
+                  <stop offset="95%" stopColor="hsl(220 70% 50%)" stopOpacity={0.05} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted-foreground))" opacity={0.3} />
