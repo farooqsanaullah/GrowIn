@@ -1,3 +1,4 @@
+// hooks/useMessages.ts
 import { useState, useEffect, useCallback } from 'react';
 import { IMessage } from '@/lib/types/index';
 
@@ -10,79 +11,80 @@ export function useMessages(conversationId: string) {
   useEffect(() => {
     if (!conversationId) return;
 
-    async function fetchMessages() {
+    const fetchMessages = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`/api/messages?conversationId=${conversationId}`);
+        setError(null);
         
-        if (!res.ok) {
+        const response = await fetch(
+          `/api/messages?conversationId=${conversationId}&limit=50`
+        );
+
+        if (!response.ok) {
           throw new Error('Failed to fetch messages');
         }
 
-        const data = await res.json();
+        const data = await response.json();
         setMessages(data.messages || []);
-        setError(null);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        console.error('Error fetching messages:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load messages');
       } finally {
         setLoading(false);
       }
-    }
+    };
 
     fetchMessages();
   }, [conversationId]);
 
-  // Add a new message to the list (used by Pusher)
-  const addMessage = useCallback((newMessage: IMessage) => {
+  // Add message to local state (called by Pusher or optimistic updates)
+  const addMessage = useCallback((message: IMessage) => {
     setMessages((prev) => {
-      // Check if message already exists to prevent duplicates
-      const exists = prev.some(
-        (msg) => msg._id.toString() === newMessage._id.toString()
-      );
+      // Check if message already exists by ID
+      const exists = prev.some(m => m._id.toString() === message._id.toString());
+      if (exists) {
+        console.log('Message already exists, skipping:', message._id);
+        return prev;
+      }
       
-      if (exists) return prev;
-      
-      return [...prev, newMessage];
+      console.log('Adding new message to state:', message._id);
+      return [...prev, message];
     });
   }, []);
 
-  // Send a new message
+  // Send message - returns the created message for optimistic update handling
   const sendMessage = useCallback(
-    async (content: string) => {
-      if (!content.trim()) {
-        throw new Error('Message content cannot be empty');
-      }
-
+    async (content: string): Promise<IMessage | null> => {
       try {
-        const res = await fetch('/api/messages', {
+        const response = await fetch('/api/messages', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
             conversationId,
-            content: content.trim(),
+            content,
           }),
         });
 
-        if (!res.ok) {
-          const data = await res.json();
-          throw new Error(data.error || 'Failed to send message');
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to send message');
         }
 
-        const data = await res.json();
+        const data = await response.json();
+        const newMessage = data.message;
+
+        // DON'T add the message here - it will come via Pusher
+        // OR it was already added optimistically in the component
         
-        // Add the message to local state immediately
-        if (data.message) {
-          addMessage(data.message);
-        }
-
-        return data.message;
+        return newMessage;
       } catch (err) {
+        console.error('Error sending message:', err);
         throw err;
       }
     },
-    [conversationId, addMessage]
+    [conversationId]
   );
 
   return {
