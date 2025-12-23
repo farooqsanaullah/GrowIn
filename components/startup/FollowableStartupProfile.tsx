@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { Star, FileText, Download, ExternalLink, MessageCircle, Loader2 } from "lucide-react";
+import { Star, FileText, Download, ExternalLink, MessageCircle, Loader2,  Linkedin, Twitter, Facebook, Instagram, Github, Globe } from "lucide-react";
 import { Startup } from "@/lib/types/startup";
 import Link from "next/link";
 import toast from "react-hot-toast";
@@ -245,29 +245,59 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
           {/* Sticky Section Nav */}
           <div className="sticky top-0 bg-white z-10 py-2 px-4 border-b border-gray-200 flex justify-between items-center">
             <div className="flex gap-4">
-              <button onClick={() => scrollToSection("description")} className="font-semibold hover:underline"
-                style={{ color: 'var(--text-primary)' }}>
+              <button 
+                onClick={() => scrollToSection("description")} 
+                className="font-bold transition-transform hover:-translate-y-1 duration-200 cursor-pointer"
+                style={{ color: 'var(--text-primary)' }}
+              >
                 Description
               </button>
-              <button onClick={() => scrollToSection("team")} className="font-semibold hover:underline"
-                style={{ color: 'var(--text-primary)' }}>
+              <button 
+                onClick={() => scrollToSection("team")} 
+                className="font-bold transition-transform hover:-translate-y-1 duration-200 cursor-pointer"
+                style={{ color: 'var(--text-primary)' }}
+              >
                 Team
               </button>
               {startup.pitch?.length > 0 && (
-                <button onClick={() => scrollToSection("pitch")} className="font-semibold hover:underline"
-                  style={{ color: 'var(--text-primary)' }}>
+                <button 
+                  onClick={() => scrollToSection("pitch")} 
+                  className="font-bold transition-transform hover:-translate-y-1 duration-200 cursor-pointer"
+                  style={{ color: 'var(--text-primary)' }}
+                >
                   Pitch Deck
                 </button>
               )}
             </div>
 
-            <div className="flex gap-3">
-              {Object.entries(startup.socialLinks || {}).map(([key, url]) => (
-                <a key={key} href={url} target="_blank" rel="noopener noreferrer" className="text-gray-700 hover:text-primary" title={key}>
-                  <ExternalLink size={20} />
+           <div className="flex gap-3">
+            {Object.entries(startup.socialLinks || {}).map(([key, url]) => {
+              const iconMap: { [key: string]: any } = {
+                linkedin: <Linkedin size={26} />,
+                twitter: <Twitter size={26} />,
+                facebook: <Facebook size={26} />,
+                instagram: <Instagram size={26} />,
+                github: <Github size={26} />,
+                website: <Globe size={26} />,
+              };
+              
+              const icon = iconMap[key.toLowerCase()] || <ExternalLink size={20} />;
+              
+              return (
+                <a 
+                  key={key} 
+                  href={url} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="hover:text-primary transition-colors hover:-translate-y-1 duration-200" 
+                  style={{ color: 'var(--text-primary)' }}
+                  title={key}
+                >
+                  {icon}
                 </a>
-              ))}
-            </div>
+              );
+            })}
+          </div>
           </div>
 
           {/* Description */}
@@ -417,21 +447,21 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
                 </div>
 
                 <div className="mt-6 pt-4 border-t border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex items-center justify-between rounded-lg p-4 shadow-sm text-white" style={{backgroundColor: 'var(--bg-secondary)'}}>
+                  <div className="flex flex-col gap-1 rounded-lg p-4 shadow-sm text-white" style={{backgroundColor: 'var(--bg-secondary)'}}>
                     <div className="flex items-center gap-2">
-                      <span className="text-green-600 text-lg font-bold">💰</span>
-                      <span className="font-semibold" style={{color: 'var(--text-primary)'}}>Raised:</span>
+                      <span className="text-xl">💰</span>
+                      <span className="font-semibold text-xl" style={{color: 'var(--text-primary)'}}>Raised:</span>
                     </div>
-                    <span className="font-bold text-lg" style={{color: 'var(--text-primary)'}}>{formatAmount(startup.totalRaised ?? 0)}</span>
+                    <span className="font-bold text-lg break-words text-center" style={{color: 'var(--text-primary)'}}>{formatAmount(startup.totalRaised ?? 0)}</span>
                   </div>
 
-                  <div className="flex items-center justify-between rounded-lg p-4 shadow-sm text-white" style={{backgroundColor: 'var(--bg-secondary)'}}>
+                  <div className="flex flex-col gap-1 rounded-lg p-4 shadow-sm text-white" style={{backgroundColor: 'var(--bg-secondary)'}}>
                     <div className="flex items-center gap-2">
                       <Star className="text-yellow-400 fill-yellow-400" size={20} />
-                      <span className="font-semibold" style={{color: 'var(--text-primary)'}}>Rating</span>
+                      <span className="font-semibold text-xl" style={{color: 'var(--text-primary)'}}>Rating:</span>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <span className="font-bold" style={{color: 'var(--text-primary)'}}>{avgRating.toFixed(1)}</span>
+                    <div className="flex items-center gap-1 justify-center">
+                      <span className="font-bold text-lg" style={{color: 'var(--text-primary)'}}>{avgRating.toFixed(1)}</span>
                       <span className="text-xs" style={{color: 'var(--text-primary)'}}>({ratingCount})</span>
                     </div>
                   </div>
