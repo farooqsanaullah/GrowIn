@@ -119,6 +119,7 @@ const PortfolioSection = ({
                 e.currentTarget.style.borderColor = colors.textMuted + '20';
                 e.currentTarget.style.backgroundColor = 'transparent';
               }}
+              onClick={() => window.location.href = `/startup/${item.id}`}
             >
               <div className="flex items-center gap-4">
                 <img
