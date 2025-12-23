@@ -5,6 +5,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { IMessage } from '@/lib/types/index';
 import { usePusherSubscription } from '@/hooks/usePusherSubs';
+import { Send, Loader2 } from 'lucide-react';
 
 interface ChatPageClientProps {
   conversationId: string;
@@ -86,7 +87,7 @@ export default function ChatPageClient({ conversationId }: ChatPageClientProps) 
 
   const getSenderName = (message: IMessage) => {
     if (typeof message.senderId === 'object' && 'userName' in message.senderId) {
-      return (message.senderId as IUser).userName;
+      return message.senderId.userName;
     }
     return message.senderName || 'Unknown';
   };
@@ -100,7 +101,7 @@ export default function ChatPageClient({ conversationId }: ChatPageClientProps) 
       .slice(0, 2);
   };
 
-  if (loading)
+  if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
         <div className="text-center">
@@ -109,8 +110,9 @@ export default function ChatPageClient({ conversationId }: ChatPageClientProps) 
         </div>
       </div>
     );
-  
-  if (error)
+  }
+
+  if (error) {
     return (
       <div className="flex items-center justify-center h-screen bg-gradient-to-br from-red-50 via-white to-orange-50">
         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md">
@@ -141,7 +143,7 @@ export default function ChatPageClient({ conversationId }: ChatPageClientProps) 
         ) : (
           messages.map((message, index) => {
             const isOwn = isOwnMessage(message);
-            const senderName = getSenderName(message) || 'Q';
+            const senderName = getSenderName(message) || (isOwn ? 'You' : 'Unknown');
             const showAvatar = index === 0 || !isOwnMessage(messages[index - 1]) || isOwnMessage(messages[index - 1]) !== isOwn;
             
             return (

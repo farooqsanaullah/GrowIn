@@ -1,124 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { IConversation, IUser } from '@/lib/types';
 import { MessageCircle } from 'lucide-react';
-import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { usePusherSubscription } from '@/hooks/usePusherSubs';
-
-interface UserInfo {
-  _id: string;
-  userName: string;
-  avatar?: string;
-  image?: string;
-  role?: string;
-}
-
-interface Participant {
-  userId: UserInfo;
-  role: string;
-}
-
-interface LastMessage {
-  content: string;
-  sentAt: string;
-  senderId: UserInfo | string;
-}
-
-interface ConversationData {
-  _id: string;
-  participants: Participant[];
-  startupId: string;
-  isTeamChat: boolean;
-  lastMessage?: LastMessage;
-  lastMessageAt: string;
-  createdAt: string;
-}
 
 interface StartupMessagesProps {
-  startupId: string;
+  conversations: IConversation[];
 }
 
-const StartupMessages = ({ startupId }: StartupMessagesProps) => {
-  // const { data: session } = useSession();
+const StartupMessages = ({ conversations }: StartupMessagesProps) => {
   const router = useRouter();
-  const [conversations, setConversations] = useState<ConversationData[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  // // ✅ Subscribe to startup channel for updates
-  // usePusherSubscription({
-  //   channelName: `startup-${startupId}`,
-  //   eventName: 'new-message',
-  //   enabled: !!startupId && !!session?.user?.id,
-  //   onEvent: (data: any) => {
-  //     const { conversationId, message } = data;
-
-  //     setConversations((prev) => {
-  //       const index = prev.findIndex((c) => c._id === conversationId);
-  //       if (index === -1) return prev;
-
-  //       const updated = [...prev];
-  //       const conv = { ...updated[index] };
-
-  //       conv.lastMessage = {
-  //         content: message.content || message.text || '',
-  //         sentAt: message.createdAt,
-  //         senderId: message.senderId,
-  //       };
-  //       conv.lastMessageAt = message.createdAt;
-
-  //       // Move to top
-  //       updated.splice(index, 1);
-  //       return [conv, ...updated];
-  //     });
-
-  //     // Show notification if message is from someone else
-  //     const senderId = typeof message.senderId === 'object'
-  //       ? message.senderId._id
-  //       : message.senderId;
-
-  //     if (senderId !== session?.user?.id) {
-  //       showNotification(message);
-  //     }
-  //   },
-  // });
-
-  useEffect(() => {
-    fetchConversations();
-  }, [startupId]);
-
-  // useEffect(() => {
-  //   if ('Notification' in window && Notification.permission === 'default') {
-  //     Notification.requestPermission();
-  //   }
-  // }, []);
-
-  const fetchConversations = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch(`/api/startups/${startupId}/conversations`);
-      const data = await res.json();
-      setConversations(data.conversations || []);
-    } catch (err) {
-      console.error('Failed to fetch conversations', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // const showNotification = (message: any) => {
-  //   if ('Notification' in window && Notification.permission === 'granted') {
-  //     const sender = typeof message.senderId === 'object' ? message.senderId : null;
-  //     new Notification('New Message', {
-  //       body: `${sender?.userName || 'Someone'}: ${
-  //         (message.content || message.text || '').slice(0, 50)
-  //       }...`,
-  //       icon: sender?.avatar || sender?.image || '/default-avatar.png',
-  //     });
-  //   }
-  // };
-
-  const formatTime = (date?: string) => {
+  const formatTime = (date?: string | Date) => {
     if (!date) return '';
     const now = new Date();
     const msgDate = new Date(date);
@@ -130,12 +23,18 @@ const StartupMessages = ({ startupId }: StartupMessagesProps) => {
     return msgDate.toLocaleDateString();
   };
 
-  const getInvestorInfo = (conv: ConversationData): UserInfo | undefined =>
-    conv.participants?.find((p) => p.role === 'investor')?.userId;
+  // Get the investor participant (populated) safely
+  const getInvestorInfo = (conv: IConversation): IUser | undefined => {
+    const participant = conv.participants.find(p => p.role === 'investor');
+    const user = participant?.userId;
 
-  if (loading) {
-    return <div className="py-12 text-center">Loading conversations...</div>;
-  }
+    // Only return if userId is populated as object
+    if (user && typeof user === 'object' && 'name' in user) {
+      return user as IUser;
+    }
+
+    return undefined;
+  };
 
   return (
     <div className="max-w-5xl mx-auto p-4">
@@ -155,20 +54,20 @@ const StartupMessages = ({ startupId }: StartupMessagesProps) => {
           <div className="p-16 text-center text-gray-500">No messages yet.</div>
         ) : (
           <div className="divide-y divide-gray-200">
-            {conversations.map((conv) => {
+            {conversations.map(conv => {
               const investor = getInvestorInfo(conv);
               const lastMsg = conv.lastMessage;
 
               return (
                 <div
-                  key={conv._id}
-                  onClick={() => router.push(`/messages/${conv._id}`)}
+                  key={conv._id.toString()}
+                  onClick={() => router.push(`/messages/${conv._id.toString()}`)}
                   className="p-5 cursor-pointer hover:bg-gray-100 transition-all"
                 >
                   <div className="flex justify-between items-start gap-4">
                     <div className="flex-1">
                       <h3 className="font-semibold">
-                        {investor?.userName || 'Unknown Investor'}
+                        {investor?.userName || investor?.name || 'Unknown Investor'}
                       </h3>
                       {lastMsg?.content && (
                         <p className="text-sm text-gray-700 line-clamp-2">
