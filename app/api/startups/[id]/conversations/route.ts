@@ -12,10 +12,6 @@ export async function GET(
   try {
     const params = await context.params;
     const user = await getCurrentUser();
-    
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
 
     await connectDB();
 
