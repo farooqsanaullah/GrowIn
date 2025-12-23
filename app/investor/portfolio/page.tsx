@@ -175,8 +175,7 @@ export default function PortfolioPage() {
           </p>
         </div>
         <Button asChild>
-          <Link href="/investor/discover">
-            <Plus className="h-4 w-4 mr-2" />
+          <Link href="/explore-investors">
             Discover Startups
           </Link>
         </Button>
