@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { User, MapPin, Wallet, Search, Loader } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Investor {
   _id: string;
@@ -36,7 +37,6 @@ export default function AdminInvestorsPage() {
         setLoading(false);
       }
     };
-
     fetchInvestors();
   }, []);
 
@@ -71,14 +71,37 @@ export default function AdminInvestorsPage() {
     );
   });
 
+  // Skeleton for the investor ribbon
+  const SkeletonInvestor = () => (
+    <Card className="flex items-center justify-between p-4 space-x-4 animate-pulse">
+      {/* Left */}
+      <div className="flex items-center gap-4">
+        <Skeleton className="h-12 w-12 rounded-lg" />
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-3 w-40" />
+        </div>
+      </div>
+
+      {/* Middle */}
+      <div className="hidden sm:flex items-center gap-2">
+        <Skeleton className="h-4 w-16" />
+      </div>
+
+      {/* Right */}
+      <div className="flex items-center gap-3">
+        <Skeleton className="h-6 w-16 rounded-full" />
+        <Skeleton className="h-6 w-24 rounded" />
+      </div>
+    </Card>
+  );
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold">Investors</h1>
-        <p className="text-muted-foreground">
-          Manage all registered investors
-        </p>
+        <p className="text-muted-foreground">Manage all registered investors</p>
       </div>
 
       {/* Search */}
@@ -94,8 +117,10 @@ export default function AdminInvestorsPage() {
 
       {/* Content */}
       {loading ? (
-        <div className="flex justify-center py-16">
-          <Loader className="h-6 w-6 animate-spin text-muted-foreground" />
+        <div className="space-y-4">
+          {[...Array(6)].map((_, i) => (
+            <SkeletonInvestor key={i} />
+          ))}
         </div>
       ) : filtered.length === 0 ? (
         <p className="text-muted-foreground text-center py-12">
@@ -138,9 +163,7 @@ export default function AdminInvestorsPage() {
               {/* Middle */}
               <div className="hidden sm:flex items-center gap-2 text-sm">
                 <Wallet className="h-4 w-4 text-muted-foreground" />
-                <span className="font-medium">
-                  {inv.totalInvestments} investments
-                </span>
+                <span className="font-medium">{inv.totalInvestments} investments</span>
               </div>
 
               {/* Right */}
@@ -157,7 +180,7 @@ export default function AdminInvestorsPage() {
                   onClick={() => toggleStatus(inv._id, inv.status)}
                 >
                   {updatingId === inv._id ? (
-                    <Loader className="h-4 w-4 animate-spin" />
+                    <Loader className="h-4 w-4 rounded" />
                   ) : inv.status === "active" ? (
                     "Deactivate"
                   ) : (
