@@ -18,9 +18,12 @@ export interface IUser {
 
 // Participant interface - can be populated or just an ID
 export interface IParticipant {
-  userId: Types.ObjectId | IUser | string;
+  userId: IUser | Types.ObjectId | string;
   role: UserRole;
   _id?: Types.ObjectId | string;
+  userName: string;
+  avatar?: string;
+  image?: string;
 }
 
 // Last message interface

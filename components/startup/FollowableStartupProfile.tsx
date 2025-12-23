@@ -2,10 +2,11 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { Star, FileText, Download, ExternalLink } from "lucide-react";
+import { Star, FileText, Download, ExternalLink, MessageCircle, Loader2 } from "lucide-react";
 import { Startup } from "@/lib/types/startup";
 import Link from "next/link";
 import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 interface Props {
   startup: Startup;
@@ -13,6 +14,7 @@ interface Props {
 
 const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) => {
   const { data: session } = useSession();
+  const router = useRouter();
   const [startup, setStartup] = useState(initialStartup);
   const [investmentAmount, setInvestmentAmount] = useState("");
   const [isFollowed, setIsFollowed] = useState(false);
@@ -22,6 +24,7 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
   const [isInvesting, setIsInvesting] = useState(false);
   const [isRatingSubmitting, setIsRatingSubmitting] = useState(false);
   const [showFullDesc, setShowFullDesc] = useState(false);
+  const [isStartingConversation, setIsStartingConversation] = useState(false);
   const descriptionRef = useRef<HTMLDivElement>(null);
   const teamRef = useRef<HTMLDivElement>(null);
   const pitchRef = useRef<HTMLDivElement>(null);
@@ -57,6 +60,46 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
     } catch (err) {
       console.error('Download failed:', err);
       toast.error("Something went wrong while downloading the pitch deck");
+    }
+  };
+
+  const handleStartConversation = async (founderId: string) => {
+    if (!session?.user) {
+      toast.error('Please log in to message this startup');
+      return;
+    }
+
+    if (session.user.role !== 'investor') {
+      toast.error('Only investors can start conversations');
+      return;
+    }
+
+    setIsStartingConversation(true);
+
+    try {
+      const response = await fetch('/api/conversations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipientId: founderId,
+          recipientRole: 'founder',
+          startupId: startup._id,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to start conversation');
+      }
+
+      const data = await response.json();
+      toast.success('Conversation started!');
+      router.push(`/messages/${data.conversation._id}`);
+    } catch (error) {
+      console.error('Error starting conversation:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to start conversation');
+    } finally {
+      setIsStartingConversation(false);
     }
   };
 
@@ -260,15 +303,15 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
           {/* Team */}
           {startup.founders?.length > 0 && (
             <div ref={teamRef} className="bg-white rounded-2xl p-6 shadow-md border border-gray-200">
-              <h2 className="text-2xl font-bold mb-4 text-primary">Our Team</h2>
+              <h2 className="text-2xl font-bold mb-4 text-primary">Founders</h2>
               <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory">
                 {startup.founders.map((member: any, i: number) => (
                   <div key={i} className="flex-shrink-0 w-64 snap-start">
-                    <div className="flex gap-4 items-start hover:shadow-md transition rounded-lg p-2">
+                    <div className="flex gap-4 items-start hover:shadow-md transition rounded-lg p-2 relative">
                       <div className="w-16 h-16 rounded-full overflow-hidden ring-4 ring-gray-200 flex-shrink-0 ml-2 mt-2">
                         <img src={member.profileImage || "/fallback-image.png"} alt={member.userName} className="w-full h-full object-cover" />
                       </div>
-                      <div>
+                      <div className="flex-1">
                         <Link href={`/user/founder/${member._id}`}>
                           <h3 className="text-lg font-bold text-primary">{member.userName}</h3>
                         </Link>
@@ -276,6 +319,36 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
                           {member.role ? member.role : i === 0 ? "Founder" : "Co-Founder"}
                         </p>
                       </div>
+                      
+                      {/* Message Icon - Only for first founder and only for investors */}
+                      {i === 0 && session?.user?.role === 'investor' && (
+                        <button
+                          onClick={() => handleStartConversation(member._id)}
+                          disabled={isStartingConversation}
+                          className="
+                            absolute top-3 right-3
+                            p-3 rounded-full
+                            bg-gradient-to-r from-emerald-500 to-green-600
+                            text-white
+                            shadow-lg
+                            transition-all duration-300 ease-out
+                            hover:from-emerald-600 hover:to-green-700
+                            hover:scale-105
+                            hover:shadow-xl
+                            active:scale-95
+                            disabled:opacity-50
+                            disabled:cursor-not-allowed
+                          "
+
+                          title="Message this founder"
+                        >
+                          {isStartingConversation ? (
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                          ) : (
+                            <MessageCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                          )}
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
