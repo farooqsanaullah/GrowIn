@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { User, MapPin, Wallet, Search, Loader2 } from "lucide-react";
+import { User, MapPin, Wallet, Search, Loader } from "lucide-react";
 
 interface Investor {
   _id: string;
@@ -82,7 +82,7 @@ export default function AdminInvestorsPage() {
       </div>
 
       {/* Search */}
-      <div className="relative max-w-md">
+      <div className="relative w-full">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           placeholder="Search investors..."
@@ -95,7 +95,7 @@ export default function AdminInvestorsPage() {
       {/* Content */}
       {loading ? (
         <div className="flex justify-center py-16">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          <Loader className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       ) : filtered.length === 0 ? (
         <p className="text-muted-foreground text-center py-12">
@@ -153,10 +153,11 @@ export default function AdminInvestorsPage() {
                   size="sm"
                   variant="outline"
                   disabled={updatingId === inv._id}
+                  className="cursor-pointer"
                   onClick={() => toggleStatus(inv._id, inv.status)}
                 >
                   {updatingId === inv._id ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <Loader className="h-4 w-4 animate-spin" />
                   ) : inv.status === "active" ? (
                     "Deactivate"
                   ) : (
