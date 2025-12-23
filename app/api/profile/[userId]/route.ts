@@ -12,7 +12,7 @@ type API_Props = {
   params: Promise<{ userId: string }>;
 };
 
-// GET single user with portfolio data
+
 export async function GET(_: NextRequest, context: API_Props) {
   try {
     await connectDB();
@@ -20,7 +20,7 @@ export async function GET(_: NextRequest, context: API_Props) {
     const { userId } = await context.params;
 
     const user = await User.findById(userId).select("-password");
-
+    
     if (!user) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
@@ -29,7 +29,7 @@ export async function GET(_: NextRequest, context: API_Props) {
     let portfolioStats: any = {};
 
     if (user.role === "founder") {
-      // Get startups founded by this user
+
       const startups = await Startup.find({ founders: user._id })
         .select("title description profilePic status createdAt ratingCount avgRating")
         .sort({ createdAt: -1 });
@@ -51,7 +51,7 @@ export async function GET(_: NextRequest, context: API_Props) {
         stat4: { value: user.skills?.length || 0, label: "Skills" }
       };
     } else if (user.role === "investor") {
-      // Get investments made by this user
+
       const investments = await Investment.find({ investorId: user._id })
         .populate({
           path: "startupId",
@@ -60,13 +60,13 @@ export async function GET(_: NextRequest, context: API_Props) {
         .sort({ createdAt: -1 });
 
       portfolioData = investments.map(investment => ({
-        id: investment._id,
+        id: investment.startupId._id,
         startupName: investment.startupId.title,
         logo: investment.startupId.profilePic || "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=60&h=60&fit=crop",
         investedDate: getRelativeTime(investment.createdAt),
         status: investment.startupId.status || "active",
         investmentAmount: `$${investment.amount.toLocaleString()}`,
-        currentValue: `$${Math.round(investment.amount * (1.2 + Math.random() * 0.8)).toLocaleString()}`, // Mock current value
+        currentValue: `$${Math.round(investment.amount * (1.2 + Math.random() * 0.8)).toLocaleString()}`,
         description: investment.startupId.description
       }));
 
@@ -104,7 +104,7 @@ export async function GET(_: NextRequest, context: API_Props) {
   }
 }
 
-// Helper function to get relative time
+
 function getRelativeTime(date: Date): string {
   const now = new Date();
   const diffInMonths = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24 * 30));
@@ -120,7 +120,7 @@ function getRelativeTime(date: Date): string {
   }
 }
 
-// PUT (Update single user)
+
 export async function PUT(req: NextRequest, context: API_Props) {
   try {
     await connectDB();
@@ -135,7 +135,7 @@ export async function PUT(req: NextRequest, context: API_Props) {
 
     const body = await req.json();
 
-    // Validating body using Zod schema
+
     const parsed = UpdateUserSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
@@ -144,10 +144,10 @@ export async function PUT(req: NextRequest, context: API_Props) {
       );
     }
 
-    // Preventing updating email even if provided
+
     const { email, ...updateData } = parsed.data;
 
-    // Updating user by ID instead of userName
+
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       { $set: updateData },
