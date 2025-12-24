@@ -107,38 +107,40 @@ export default function AdminFoundersPage() {
               className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 hover:shadow-md transition space-y-2 sm:space-y-0"
             >
               {/* Left */}
-              <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
-                  {f.profileImage ? (
-                    <img
-                      src={f.profileImage}
-                      alt={f.name || f.userName}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <User className="h-6 w-6 text-muted-foreground" />
-                  )}
-                </div>
-                <div className="flex flex-col gap-1">
-                  <p className="font-semibold">{f.name || f.userName}</p>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <MapPin className="h-4 w-4" />
-                    {f.city || f.country
-                      ? `${f.city ?? ""}${f.city && f.country ? ", " : ""}${f.country ?? ""}`
-                      : "Location not set"}
+              <div className="flex flex-col items-center gap-2">
+                <div className="flex gap-4">
+                  <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
+                    {f.profileImage ? (
+                      <img
+                        src={f.profileImage}
+                        alt={f.name || f.userName}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <User className="h-6 w-6 text-muted-foreground" />
+                    )}
                   </div>
-                  {/* Skills tags */}
-                  {f.skills && f.skills.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {f.skills.slice(0, 3).map((skill, idx) => (
-                        <Badge key={idx} variant="secondary" className="border-blue-400 bg-blue-50 text-blue-600 rounded-sm">{skill}</Badge>
-                      ))}
-                      {f.skills.length > 3 && (
-                        <Badge variant="secondary" className="border-blue-400 bg-blue-50 rounded-sm">+{f.skills.length - 3} more</Badge>
-                      )}
+                  <div className="flex flex-col gap-1">
+                    <p className="font-semibold">{f.name || f.userName}</p>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <MapPin className="h-4 w-4" />
+                      {f.city || f.country
+                        ? `${f.city ?? ""}${f.city && f.country ? ", " : ""}${f.country ?? ""}`
+                        : "Location not set"}
                     </div>
-                  )}
+                  </div>
                 </div>
+                {/* Skills tags */}
+                {f.skills && f.skills.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {f.skills.slice(0, 3).map((skill, idx) => (
+                      <Badge key={idx} variant="secondary" className="border-blue-400 bg-blue-50 text-blue-600 rounded-sm">{skill}</Badge>
+                    ))}
+                    {f.skills.length > 3 && (
+                      <Badge variant="secondary" className="border-blue-400 bg-blue-50 rounded-sm">+{f.skills.length - 3} more</Badge>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Right */}

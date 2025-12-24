@@ -106,47 +106,39 @@ export default function AdminInvestorsPage() {
           {filtered.map((inv) => (
             <Card
               key={inv._id}
-              className="flex items-center justify-between p-4 hover:shadow-md transition"
+              className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 hover:shadow-md transition space-y-2 sm:space-y-0"
             >
               {/* Left */}
-              <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
-                  {inv.profileImage ? (
-                    <img
-                      src={inv.profileImage}
-                      alt={inv.name || inv.userName}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <User className="h-6 w-6 text-muted-foreground" />
-                  )}
-                </div>
-
-                <div>
-                  <p className="font-semibold">
-                    {inv.name || inv.userName}
-                  </p>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <MapPin className="h-4 w-4" />
-                    {inv.city || inv.country
-                      ? `${inv.city ?? ""}${inv.city && inv.country ? ", " : ""}${inv.country ?? ""}`
-                      : "Location not set"}
+              <div className="flex flex-col items-center gap-2">
+                <div className="flex gap-4">
+                  <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
+                    {inv.profileImage ? (
+                      <img
+                        src={inv.profileImage}
+                        alt={inv.name || inv.userName}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <User className="h-6 w-6 text-muted-foreground" />
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <p className="font-semibold">{inv.name || inv.userName}</p>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <MapPin className="h-4 w-4" />
+                      {inv.city || inv.country
+                        ? `${inv.city ?? ""}${inv.city && inv.country ? ", " : ""}${inv.country ?? ""}`
+                        : "Location not set"}
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Middle */}
-              <div className="hidden sm:flex items-center gap-2 text-sm">
-                <Wallet className="h-4 w-4 text-muted-foreground" />
-                <span className="font-medium">{inv.totalInvestments} investments</span>
-              </div>
-
               {/* Right */}
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mt-2 sm:mt-0">
                 <Badge variant={inv.status === "active" ? "default" : "secondary"}>
                   {inv.status}
                 </Badge>
-
                 <Button
                   size="sm"
                   variant="outline"
@@ -162,6 +154,9 @@ export default function AdminInvestorsPage() {
                     "Activate"
                   )}
                 </Button>
+                <Badge variant="outline" className="border-green-400 bg-green-50 text-green-600 rounded-sm py-1.5 px-3">
+                  {inv.totalInvestments} investments
+                </Badge>
               </div>
             </Card>
           ))}
