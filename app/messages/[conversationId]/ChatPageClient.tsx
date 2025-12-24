@@ -105,7 +105,7 @@ export default function ChatPageClient({ conversationId }: ChatPageClientProps) 
     return (
       <div className="flex items-center justify-center h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-indigo-600 mx-auto mb-4" />
+          <Loader2 className="w-12 h-12 animate-spin text-indigo-600 mx-auto mb-4 mt-20" />
           <p className="text-gray-600 font-medium">Loading messages...</p>
         </div>
       </div>
