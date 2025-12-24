@@ -15,10 +15,10 @@ export async function PATCH(
     const { status } = body;
 
     // Validate status
-    const allowedStatuses = ["active", "inactive", "pending", "closed"];
+    const allowedStatuses = ["active", "inactive", "closed"];
     if (!allowedStatuses.includes(status)) {
       return error(
-        "Invalid status value. Allowed: active, inactive, pending, closed",
+        "Invalid status value. Allowed: active, inactive, closed",
         400
       );
     }

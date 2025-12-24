@@ -41,7 +41,7 @@ interface EquityRange {
   equity: number;
 }
 
-type StartupStatus = 'active' | 'inactive' | 'pending' | 'closed';
+type StartupStatus = 'active' | 'inactive' | 'closed';
 
 
 interface Startup {

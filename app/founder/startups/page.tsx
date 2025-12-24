@@ -105,8 +105,6 @@ export default function StartupsPage() {
     switch (status) {
       case "active":
         return "bg-success/10 text-success";
-      case "pending":
-        return "bg-yellow-500/10 text-yellow-600";
       case "inactive":
         return "bg-muted text-muted-foreground";
       case "closed":
@@ -151,7 +149,6 @@ export default function StartupsPage() {
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
                 <SelectItem value="inactive">Inactive</SelectItem>
                 <SelectItem value="closed">Closed</SelectItem>
               </SelectContent>

@@ -171,7 +171,7 @@ export default function AdminStartupsPage() {
                   </DropdownMenuTrigger>
 
                   <DropdownMenuContent align="center">
-                    {["active", "inactive", "pending", "closed"].map((status) => (
+                    {["active", "inactive", "closed"].map((status) => (
                       <DropdownMenuItem
                         key={status}
                         className="cursor-pointer capitalize"

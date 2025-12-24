@@ -45,8 +45,6 @@ export function RecentStartups() {
     switch (status.toLowerCase()) {
       case "active":
         return "bg-success/10 text-success";
-      case "pending":
-        return "bg-yellow-500/10 text-yellow-600";
       case "inactive":
         return "bg-muted text-muted-foreground";
       default:

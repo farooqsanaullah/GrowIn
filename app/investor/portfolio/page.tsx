@@ -156,8 +156,6 @@ export default function PortfolioPage() {
     switch (status) {
       case "completed":
         return "bg-success/10 text-success";
-      case "pending":
-        return "bg-yellow-500/10 text-yellow-600";
       case "cancelled":
         return "bg-destructive/10 text-destructive";
       default:
