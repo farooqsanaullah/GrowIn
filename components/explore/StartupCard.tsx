@@ -99,12 +99,11 @@ const StartupCard: React.FC<StartupCardProps> = ({ startup }) => {
           </p>
 
           <p
-            className="text-sm mt-2 line-clamp-3"
+            className="text-sm mt-2 line-clamp-2"
             style={{ color: colors.textMuted }}
           >
             {startup.description || ""}
           </p>
-
           <div
             className="flex items-center justify-between mt-4 text-sm"
             style={{ color: colors.textSecondary }}

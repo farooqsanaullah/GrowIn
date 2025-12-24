@@ -1,5 +1,3 @@
-import Header from "@/components/landingpage/Header";
-import Footer from "@/components/landingpage/Footer";
 import InvestorsExploreClient from "@/components/explore/InvestorsExploreClient";
 
 export const revalidate = 60;
@@ -32,7 +30,6 @@ export default async function ExploreInvestorsPage() {
 
   return (
     <div>
-      <Header />
       <div className="space-y-6 container mx-auto px-4 pt-38 pb-12">
         <div className="flex justify-between items-center">
           <div>
@@ -48,7 +45,6 @@ export default async function ExploreInvestorsPage() {
           initialTotalPages={initialTotalPages}
         />
       </div>
-      <Footer />
     </div>
   );
 }

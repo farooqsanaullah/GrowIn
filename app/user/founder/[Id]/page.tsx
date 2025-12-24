@@ -1,5 +1,3 @@
-import Footer from "@/components/landingpage/Footer";
-import Header from "@/components/landingpage/Header";
 import ProfileSidebar from "@/components/profile/ProfileSidebar";
 import PortfolioSection from "@/components/profile/PortfolioSection";
 import { profilesApi } from "@/lib/api/profiles";
@@ -31,7 +29,6 @@ const FounderProfile = async ({ params }: { params: Promise<{ Id: string }> }) =
   if (!data?.success || !data.data?.user) {
     return (
       <>
-        <Header />
         <div className="min-h-screen mt-20 font-montserrat" style={{ backgroundColor: '#fafafa' }}>
           <div className="max-w-9xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
@@ -48,7 +45,6 @@ const FounderProfile = async ({ params }: { params: Promise<{ Id: string }> }) =
             </div>
           </div>
         </div>
-        <Footer />
       </>
     );
   }
@@ -57,7 +53,6 @@ const FounderProfile = async ({ params }: { params: Promise<{ Id: string }> }) =
   if (data.data.user.role !== 'founder') {
     return (
       <>
-        <Header />
         <div className="min-h-screen mt-20 font-montserrat" style={{ backgroundColor: '#fafafa' }}>
           <div className="max-w-9xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
@@ -74,7 +69,6 @@ const FounderProfile = async ({ params }: { params: Promise<{ Id: string }> }) =
             </div>
           </div>
         </div>
-        <Footer />
       </>
     );
   }
@@ -107,7 +101,6 @@ const FounderProfile = async ({ params }: { params: Promise<{ Id: string }> }) =
 
   return (
     <>
-      <Header />
       <div className="min-h-screen mt-20 font-montserrat" style={{ backgroundColor: '#fafafa' }}>
         <div className="max-w-9xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -122,7 +115,6 @@ const FounderProfile = async ({ params }: { params: Promise<{ Id: string }> }) =
           </div>
         </div>
       </div>
-      <Footer />
     </>
   );
 };

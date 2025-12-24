@@ -63,45 +63,6 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
     }
   };
 
-  const handleStartConversation = async (founderId: string) => {
-    if (!session?.user) {
-      toast.error('Please log in to message this startup');
-      return;
-    }
-
-    if (session.user.role !== 'investor') {
-      toast.error('Only investors can start conversations');
-      return;
-    }
-
-    setIsStartingConversation(true);
-
-    try {
-      const response = await fetch('/api/conversations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          recipientId: founderId,
-          recipientRole: 'founder',
-          startupId: startup._id,
-        }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to start conversation');
-      }
-
-      const data = await response.json();
-      toast.success('Conversation started!');
-      router.push(`/messages/${data.conversation._id}`);
-    } catch (error) {
-      console.error('Error starting conversation:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to start conversation');
-    } finally {
-      setIsStartingConversation(false);
-    }
-  };
 
   useEffect(() => {
     if (session?.user?.id && Array.isArray(startup.followers)) {
@@ -350,35 +311,6 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
                         </p>
                       </div>
                       
-                      {/* Message Icon - Only for first founder and only for investors */}
-                      {i === 0 && session?.user?.role === 'investor' && (
-                        <button
-                          onClick={() => handleStartConversation(member._id)}
-                          disabled={isStartingConversation}
-                          className="
-                            absolute top-3 right-3
-                            p-3 rounded-full
-                            bg-gradient-to-r from-emerald-500 to-green-600
-                            text-white
-                            shadow-lg
-                            transition-all duration-300 ease-out
-                            hover:from-emerald-600 hover:to-green-700
-                            hover:scale-105
-                            hover:shadow-xl
-                            active:scale-95
-                            disabled:opacity-50
-                            disabled:cursor-not-allowed
-                          "
-
-                          title="Message this founder"
-                        >
-                          {isStartingConversation ? (
-                            <Loader2 className="w-5 h-5 animate-spin" />
-                          ) : (
-                            <MessageCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                          )}
-                        </button>
-                      )}
                     </div>
                   </div>
                 ))}
