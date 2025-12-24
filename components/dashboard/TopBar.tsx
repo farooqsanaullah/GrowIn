@@ -1,7 +1,7 @@
 "use client";
 
 import { Bell, Search, User, LogOut, KeyRound } from "lucide-react";
-import { signOut } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui";
+import ChangePasswordModal from "@/components/modals/ChangePasswordModal";
+import { useCallback, useState } from "react";
 
 interface TopBarProps {
   title?: string;
@@ -21,6 +23,9 @@ interface TopBarProps {
 
 export function TopBar({ title = "Dashboard", description }: TopBarProps) {
   const router = useRouter();
+  const [isOpen, setIsOpen] = useState(false);
+  const { data: session } = useSession();
+  const token = session?.user.id;
 
   const handleLogout = () => {
     signOut({
@@ -29,8 +34,13 @@ export function TopBar({ title = "Dashboard", description }: TopBarProps) {
   };
 
   const handleChangePassword = () => {
-    router.push("/forgot-password");
+    setIsOpen(true);
   };
+  
+  const handleClose = useCallback(() => {
+    setIsOpen(false);
+  }, [router]);
+
   return (
     <header className="h-16 bg-background border-b border-border px-6 flex items-center justify-between">
       <div className="flex items-center space-x-4 flex-1">
@@ -67,7 +77,7 @@ export function TopBar({ title = "Dashboard", description }: TopBarProps) {
             <Button
               variant="ghost"
               size="icon-sm"
-              className="text-muted-foreground hover:text-foreground"
+              className="text-muted-foreground hover:text-foreground cursor-pointer"
             >
               <User className="h-5 w-5" />
             </Button>
@@ -75,13 +85,13 @@ export function TopBar({ title = "Dashboard", description }: TopBarProps) {
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleChangePassword}>
+            <DropdownMenuItem className="cursor-pointer" onClick={handleChangePassword}>
               <KeyRound className="mr-2 h-4 w-4" />
               Change Password
             </DropdownMenuItem>
             <DropdownMenuItem 
               onClick={handleLogout}
-              className="text-destructive focus:text-destructive"
+              className="text-destructive focus:text-destructive cursor-pointer"
             >
               <LogOut className="mr-2 h-4 w-4" />
               Logout
@@ -89,6 +99,12 @@ export function TopBar({ title = "Dashboard", description }: TopBarProps) {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+      <ChangePasswordModal
+        isOpen={isOpen}
+        onClose={handleClose}
+        isForgotPasswordFlow={false}
+        token={token}
+      />
     </header>
   );
 }
