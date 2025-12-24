@@ -37,7 +37,7 @@ function ExploreContent() {
     const fetchStartups = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/startups?${params.toString()}`, { cache: "no-store" });
+        const res = await fetch(`/api/startups?${params.toString()}`, { cache: "no-store" });
         const json = await res.json();
         setStartups(json.data || []);
         setTotalStartups(json.meta?.total || 0);
