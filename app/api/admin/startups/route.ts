@@ -9,7 +9,7 @@ export async function GET() {
     // Fetch all startups
     const startups = await Startup.find({})
       .select(
-        "_id title description founders investors badges categoryType industry ratingCount avgRating equityRange profilePic totalRaised"
+        "_id title description founders investors badges categoryType industry followers status ratingCount avgRating equityRange profilePic totalRaised"
       )
       .sort({ createdAt: -1 })
       .lean();
