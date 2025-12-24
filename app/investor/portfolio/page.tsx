@@ -154,9 +154,11 @@ export default function PortfolioPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "completed":
+      case "paid":
         return "bg-success/10 text-success";
-      case "cancelled":
+      case "pending":
+        return "bg-yellow-50 border-yellow-300 text-yellow-700";
+      case "failed":
         return "bg-destructive/10 text-destructive";
       default:
         return "bg-muted text-muted-foreground";

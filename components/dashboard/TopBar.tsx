@@ -80,7 +80,7 @@ export function TopBar({ title = "Dashboard", description }: TopBarProps) {
       </div>
 
       {loadingStatus ? (
-        <div className="h-6 w-20 bg-muted animate-pulse rounded-sm mr-2" />
+        <div className="h-8 w-20 bg-muted animate-pulse rounded-sm mr-2" />
       ) : userStatus ? (
         <Badge
           className={`capitalize px-3 py-2 text-xs border rounded-sm ${userStatus === 'inactive' ? 'cursor-pointer' : ''} ${USER_STATUS_STYLES[userStatus]} mr-2`}

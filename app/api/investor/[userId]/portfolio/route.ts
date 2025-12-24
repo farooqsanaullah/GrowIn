@@ -60,8 +60,8 @@ export async function GET(
         followers: investment.startupId.followers || 0
       },
       amount: investment.amount,
-      equity: 5, // Default equity percentage since not in model
-      status: 'completed', // Default status since not in model
+      equity: investment.equity,
+      status: investment.status, 
       investmentDate: investment.createdAt,
       createdAt: investment.createdAt,
       updatedAt: investment.updatedAt
