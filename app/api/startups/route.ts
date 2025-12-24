@@ -3,6 +3,7 @@ import { connectDB } from "@/lib/db/connect";
 import Startup from "@/lib/models/startup.model";
 import Investment from "@/lib/models/investment.model";
 import { Types } from "mongoose";
+import { NextResponse } from "next/server";
 import { successResponse, errorResponse } from "@/lib/utils/apiResponse";
 import {
   parseQueryParams,
@@ -71,12 +72,18 @@ export async function GET(request: NextRequest) {
       totalRaised: totalsMap[(startup._id as Types.ObjectId).toString()] || 0,
     }));
 
-    return successResponse(startupsWithTotal, "Startups retrieved successfully", 200, {
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
-    });
+    return NextResponse.json(
+      {
+        data: startupsWithTotal,
+        meta: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+        },
+      },
+      { status: 200 }
+    );
 
   } catch (error: any) {
     return errorResponse("Failed to fetch startups: " + error.message, 500);
