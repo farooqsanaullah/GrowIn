@@ -14,7 +14,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui";
 import ChangePasswordModal from "@/components/modals/ChangePasswordModal";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import StatusRequestModal from "../modals/StatusRequestModal";
+import { USER_STATUS_STYLES } from "@/lib/constants/user";
 
 interface TopBarProps {
   title?: string;
@@ -24,8 +27,28 @@ interface TopBarProps {
 export function TopBar({ title = "Dashboard", description }: TopBarProps) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+  const [requestOpen, setRequestOpen] = useState(false);
+  const [userStatus, setUserStatus] = useState<string | null>(null);
+  const [loadingStatus, setLoadingStatus] = useState(true);
   const { data: session } = useSession();
   const token = session?.user.id;
+
+  useEffect(() => {
+    const fetchStatus = async () => {
+      try {
+        const res = await fetch("/api/auth/me");
+        const data = await res.json();
+        setUserStatus(data.status);
+      } catch (err) {
+        console.error("Failed to fetch user status");
+      } finally {
+        setLoadingStatus(false);
+      }
+    };
+
+    fetchStatus();
+  }, []);
+
 
   const handleLogout = () => {
     signOut({
@@ -41,6 +64,10 @@ export function TopBar({ title = "Dashboard", description }: TopBarProps) {
     setIsOpen(false);
   }, [router]);
 
+  const handleRequestOpen = () => {
+    userStatus === 'inactive' ? setRequestOpen(true) : null;
+  }
+
   return (
     <header className="h-16 bg-background border-b border-border px-6 flex items-center justify-between">
       <div className="flex items-center space-x-4 flex-1">
@@ -52,6 +79,17 @@ export function TopBar({ title = "Dashboard", description }: TopBarProps) {
         </div>
       </div>
 
+      {loadingStatus ? (
+        <div className="h-6 w-20 bg-muted animate-pulse rounded-sm mr-2" />
+      ) : userStatus ? (
+        <Badge
+          className={`capitalize px-3 py-2 text-xs border rounded-sm ${userStatus === 'inactive' ? 'cursor-pointer' : ''} ${USER_STATUS_STYLES[userStatus]} mr-2`}
+          onClick={handleRequestOpen}
+          title={userStatus === 'inactive' ? "Click to request status change" : ""}
+        >
+          {userStatus}
+        </Badge>
+      ) : null}
       <div className="flex items-center space-x-4">
         <div className="relative hidden md:block">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -105,6 +143,13 @@ export function TopBar({ title = "Dashboard", description }: TopBarProps) {
         isForgotPasswordFlow={false}
         token={token}
       />
+      <StatusRequestModal
+        open={requestOpen}
+        onClose={() => setRequestOpen(false)}
+        userEmail={session?.user?.email || ""}
+        currentStatus={userStatus || ""}
+      />
+
     </header>
   );
 }

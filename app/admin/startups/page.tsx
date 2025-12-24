@@ -13,6 +13,7 @@ import {
 } from "@/components/ui";
 import { SkeletonStartups } from "@/components/skeletons/admin/startups";
 import { getInitials } from "@/lib/helpers";
+import { USER_STATUS_STYLES } from "@/lib/constants/user";
 
 interface EquityRange {
   range: string;
@@ -36,13 +37,6 @@ interface Startup {
   profilePic?: string;
   totalRaised?: number;
 }
-
-const statusStyles: Record<string, string> = {
-  active: "bg-green-50 text-green-700 border-green-300 hover:bg-green-100 transition-colors duration-300",
-  inactive: "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200 transition-colors duration-300",
-  pending: "bg-yellow-50 text-yellow-700 border-yellow-300 hover:bg-yellow-100 transition-colors duration-300",
-  closed: "bg-red-50 text-red-700 border-red-300 hover:bg-red-100 transition-colors duration-300",
-};
 
 export default function AdminStartupsPage() {
   const [startups, setStartups] = useState<Startup[]>([]);
@@ -163,7 +157,7 @@ export default function AdminStartupsPage() {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Badge
-                      className={`w-full flex-1 cursor-pointer capitalize px-3 py-1.5 rounded-sm flex items-center justify-center gap-1 ${statusStyles[startup.status || "active"]}`}
+                      className={`w-full flex-1 cursor-pointer capitalize px-3 py-1.5 rounded-sm flex items-center justify-center gap-1 ${USER_STATUS_STYLES[startup.status || "active"]}`}
                     >
                       {updatingId === startup._id ? (
                         <Loader className="h-4 w-4 animate-spin" />
