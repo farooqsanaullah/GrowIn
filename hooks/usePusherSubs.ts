@@ -18,25 +18,25 @@ export function usePusherSubscription({
   const channelRef = useRef<Channel | null>(null);
 
   useEffect(() => {
-    if (!enabled || !channelName) return;
+    if (!enabled || !channelName || !pusherClient) return;
 
-    console.log(`🔌 Subscribing to: ${channelName}`);
-    
+    console.log(`Subscribing to: ${channelName}`);
+
     const channel = pusherClient.subscribe(channelName);
     channelRef.current = channel;
 
     channel.bind(eventName, onEvent);
 
     channel.bind('pusher:subscription_succeeded', () => {
-      console.log(`✅ Connected to: ${channelName}`);
+      console.log(`Connected to: ${channelName}`);
     });
 
     channel.bind('pusher:subscription_error', (err: any) => {
-      console.error(`❌ Subscription error on ${channelName}:`, err);
+      console.error(`Subscription error on ${channelName}:`, err);
     });
 
     return () => {
-      console.log(`🔌 Unsubscribing from: ${channelName}`);
+      console.log(`Unsubscribing from: ${channelName}`);
       channel.unbind_all();
       pusherClient.unsubscribe(channelName);
     };
