@@ -5,8 +5,9 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { User, MapPin, Wallet, Search, Loader } from "lucide-react";
+import { MapPin, Search, Loader } from "lucide-react";
 import { SkeletonInvestor } from "@/components/skeletons/admin/investors";
+import { getInitials } from "@/lib/helpers";
 
 interface Investor {
   _id: string;
@@ -92,7 +93,7 @@ export default function AdminInvestorsPage() {
 
       {/* Content */}
       {loading ? (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[...Array(6)].map((_, i) => (
             <SkeletonInvestor key={i} />
           ))}
@@ -102,61 +103,57 @@ export default function AdminInvestorsPage() {
           No investors found
         </p>
       ) : (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {filtered.map((inv) => (
             <Card
               key={inv._id}
-              className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 hover:shadow-md transition space-y-2 sm:space-y-0"
+              className="relative p-4 hover:shadow-lg transition flex flex-col gap-3"
             >
-              {/* Left */}
-              <div className="flex flex-col items-center gap-2">
-                <div className="flex gap-4">
-                  <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
-                    {inv.profileImage ? (
-                      <img
-                        src={inv.profileImage}
-                        alt={inv.name || inv.userName}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <User className="h-6 w-6 text-muted-foreground" />
-                    )}
+              {/* Top: Profile Image + Investments badge */}
+              <div className="relative w-full h-32 rounded-lg overflow-hidden">
+                {inv.profileImage ? (
+                  <img
+                    src={inv.profileImage}
+                    alt={inv.name || inv.userName}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-muted flex items-center justify-center font-semibold text-foreground text-2xl">
+                    {getInitials(inv.name, inv.userName)}
                   </div>
-                  <div className="flex flex-col gap-1">
-                    <p className="font-semibold">{inv.name || inv.userName}</p>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <MapPin className="h-4 w-4" />
-                      {inv.city || inv.country
-                        ? `${inv.city ?? ""}${inv.city && inv.country ? ", " : ""}${inv.country ?? ""}`
-                        : "Location not set"}
-                    </div>
-                  </div>
-                </div>
+                )}
+
+                {/* Total Investments Badge on top-right */}
+                <Badge className="absolute top-2 right-2 bg-green-50 text-green-600 rounded-sm py-1 px-3 flex items-center gap-1 shadow-sm">
+                  {inv.totalInvestments} investments
+                </Badge>
               </div>
 
-              {/* Right */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mt-2 sm:mt-0">
-                <Badge variant={inv.status === "active" ? "default" : "secondary"}>
-                  {inv.status}
-                </Badge>
+              {/* Name + Activate/Deactivate Button */}
+              <div className="flex justify-between items-center mt-2">
+                <p className="font-semibold text-lg">{inv.name || inv.userName}</p>
                 <Button
                   size="sm"
-                  variant="outline"
+                  variant={inv.status === "active" ? "outline" : "default"}
                   disabled={updatingId === inv._id}
                   className="cursor-pointer"
                   onClick={() => toggleStatus(inv._id, inv.status)}
                 >
-                  {updatingId === inv._id ? (
-                    <Loader className="h-6 w-6 animate-spin text-muted-foreground" />
-                  ) : inv.status === "active" ? (
-                    "Deactivate"
-                  ) : (
-                    "Activate"
-                  )}
+                  {updatingId === inv._id
+                    ? <Loader className="h-6 w-6 animate-spin text-muted-foreground" />
+                    : inv.status === "active" ? "Deactivate" : "Activate"}
                 </Button>
-                <Badge variant="outline" className="border-green-400 bg-green-50 text-green-600 rounded-sm py-1.5 px-3">
-                  {inv.totalInvestments} investments
-                </Badge>
+              </div>
+
+              {/* Separator */}
+              <div className="border-t mt-2 pt-2"></div>
+
+              {/* Location */}
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <MapPin className="h-4 w-4" />
+                {inv.city || inv.country
+                  ? `${inv.city ?? ""}${inv.city && inv.country ? ", " : ""}${inv.country ?? ""}`
+                  : "Location not set"}
               </div>
             </Card>
           ))}

@@ -2,25 +2,26 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export const SkeletonInvestor = () => (
-  <Card className="flex items-center justify-between p-4 space-x-4 animate-pulse">
-    {/* Left */}
-    <div className="flex items-center gap-4">
-      <Skeleton className="h-12 w-12 rounded-lg" />
-      <div className="flex flex-col gap-2">
-        <Skeleton className="h-4 w-32" />
-        <Skeleton className="h-3 w-40" />
-      </div>
+  <Card className="relative p-4 animate-pulse flex flex-col gap-3">
+    {/* Top: Profile Image + Investments Badge */}
+    <div className="relative w-full h-32 rounded-lg overflow-hidden">
+      <Skeleton className="w-full h-full rounded-lg" />
+      <Skeleton className="absolute top-2 right-2 h-6 w-24 rounded-sm" />
     </div>
 
-    {/* Middle */}
-    <div className="hidden sm:flex items-center gap-2">
-      <Skeleton className="h-4 w-16" />
+    {/* Name + Status Button */}
+    <div className="flex justify-between items-center mt-2">
+      <Skeleton className="h-5 w-32 rounded" />
+      <Skeleton className="h-6 w-20 rounded-full" />
     </div>
 
-    {/* Right */}
-    <div className="flex items-center gap-3">
-      <Skeleton className="h-6 w-16 rounded-full" />
-      <Skeleton className="h-6 w-24 rounded" />
+    {/* Separator */}
+    <div className="border-t mt-2 pt-2"></div>
+
+    {/* Location */}
+    <div className="flex items-center gap-2 text-sm">
+      <Skeleton className="h-4 w-4 rounded" />
+      <Skeleton className="h-4 w-24 rounded" />
     </div>
   </Card>
 );

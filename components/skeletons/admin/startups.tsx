@@ -2,34 +2,40 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export const SkeletonStartups = () => (
-  <Card className="flex flex-col sm:flex-row justify-between p-4 animate-pulse">
-    {/* Left */}
-    <div className="flex flex-col gap-2">
-      <div className="flex items-start sm:items-center gap-4">
-        <Skeleton className="h-16 w-24 rounded-lg" />
-        <div className="flex flex-col gap-1 w-full">
-          <Skeleton className="h-5 w-32" />
-          <Skeleton className="h-4 w-48" />
-        </div>
-      </div>
-      <div className="flex gap-1">
-        <Skeleton className="h-5 w-16" />
-        <Skeleton className="h-5 w-20" />
-        <Skeleton className="h-5 w-20" />
-      </div>
+  <Card className="relative p-4 flex flex-col gap-3 animate-pulse">
+    
+    {/* Image Section */}
+    <div className="relative w-full h-32 rounded-lg overflow-hidden">
+      <Skeleton className="w-full h-full rounded-lg" />
+
+      {/* Top-left: Industry */}
+      <Skeleton className="absolute top-2 left-2 h-5 w-16 rounded-sm" />
+
+      {/* Top-right: Category */}
+      <Skeleton className="absolute top-2 right-2 h-5 w-16 rounded-sm" />
     </div>
 
-    {/* Middle */}
-    <div className="flex flex-col sm:items-center gap-4 mt-2 sm:mt-0">
-      <Skeleton className="h-4 w-24" />
-      <Skeleton className="h-4 w-24" />
-      <Skeleton className="h-4 w-24" />
+    {/* Title + Description */}
+    <div className="flex flex-col items-center gap-2 mt-2">
+      <Skeleton className="h-5 w-32" />
+      <Skeleton className="h-4 w-full" />
+      <Skeleton className="h-4 w-5/6" />
     </div>
 
-    {/* Right */}
-    <div className="flex items-center gap-3 px-4 py-8 mt-2 sm:mt-0">
-      <Skeleton className="h-6 w-24 rounded-sm" /> {/* Status placeholder */}
-      <Skeleton className="h-6 w-32 rounded-sm" /> {/* Equity placeholder */}
+    {/* Status + Equity (Full width buttons) */}
+    <div className="flex w-full gap-2 mt-1">
+      <Skeleton className="h-8 w-full rounded-sm" />
+      <Skeleton className="h-8 w-full rounded-sm" />
+    </div>
+
+    {/* Separator */}
+    <div className="border-t mt-2 pt-2"></div>
+
+    {/* Founders | Investors | Raised */}
+    <div className="flex justify-between text-sm">
+      <Skeleton className="h-4 w-20" />
+      <Skeleton className="h-4 w-24" />
+      <Skeleton className="h-4 w-20" />
     </div>
   </Card>
 );

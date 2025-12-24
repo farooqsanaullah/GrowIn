@@ -12,7 +12,7 @@ import {
   DropdownMenuItem,
 } from "@/components/ui";
 import { SkeletonStartups } from "@/components/skeletons/admin/startups";
-
+import { getInitials } from "@/lib/helpers";
 
 interface EquityRange {
   range: string;
@@ -62,7 +62,6 @@ export default function AdminStartupsPage() {
         setLoading(false);
       }
     };
-
     fetchStartups();
   }, []);
 
@@ -78,17 +77,13 @@ export default function AdminStartupsPage() {
   const updateStatus = async (id: string, status: string) => {
     try {
       setUpdatingId(id);
-
       await fetch(`/api/admin/startups/${id}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
       });
-
       setStartups((prev) =>
-        prev.map((s) =>
-          s._id === id ? { ...s, status } : s
-        )
+        prev.map((s) => (s._id === id ? { ...s, status } : s))
       );
     } finally {
       setUpdatingId(null);
@@ -116,7 +111,7 @@ export default function AdminStartupsPage() {
 
       {/* Content */}
       {loading ? (
-        <div className="space-y-4 mt-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-6">
           {[...Array(6)].map((_, i) => (
             <SkeletonStartups key={i} />
           ))}
@@ -126,91 +121,57 @@ export default function AdminStartupsPage() {
           No startups found
         </p>
       ) : (
-        <div className="space-y-4 mt-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-6">
           {filtered.map((startup) => (
-            <Card
-              key={startup._id}
-              className="flex flex-col sm:flex-row justify-between p-4 hover:shadow-md transition"
-            >
-              {/* Left */}
-              <div className="flex flex-col gap-2">
-                <div className="flex items-start sm:items-center gap-4">
-                  <div className="h-16 w-16 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
-                    {startup.profilePic ? (
-                      <img
-                        src={startup.profilePic}
-                        alt={startup.title}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <span className="text-muted-foreground font-bold text-xl">
-                        {startup.title.charAt(0)}
-                      </span>
-                    )}
+            <Card key={startup._id} className="relative p-4 hover:shadow-lg transition flex flex-col gap-3">
+              
+              {/* Profile Image + Category & Industry badges */}
+              <div className="relative w-full h-32 rounded-lg overflow-hidden">
+                {startup.profilePic ? (
+                  <img
+                    src={startup.profilePic}
+                    alt={startup.title}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-muted flex items-center justify-center font-bold text-2xl text-foreground">
+                    {getInitials(startup.title)}
                   </div>
+                )}
 
-                  <div>
-                    <p className="font-semibold">{startup.title}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {startup.description.slice(0, 20)}
-                      {startup.description.length > 20 ? "..." : ""}
-                    </p>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {startup.badges.map((badge, i) => (
-                        <Badge key={i} variant="outline">
-                          {badge}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                </div>
+                {/* Top-left: Industry */}
+                <Badge className="absolute top-2 left-2 bg-yellow-50 text-yellow-700 rounded-sm px-2 py-1 text-xs shadow-sm">
+                  {startup.industry}
+                </Badge>
 
-                <div className="flex gap-2">
-                  <Badge 
-                    variant="outline" 
-                    className="px-2 py-1.5 rounded-sm border-blue-400 bg-blue-50 text-blue-600"
-                  >{startup.categoryType}</Badge>
-                  <Badge 
-                    variant="outline" 
-                    className="px-2 py-1.5 rounded-sm border-yellow-400 bg-yellow-50 text-yellow-600"
-                  >{startup.industry}</Badge>
-                  <p>
-                    Rating: <span className="text-sm font-semibold">{startup.avgRating.toFixed(1)}</span> ({startup.ratingCount})
-                  </p>
-                </div>
+                {/* Top-right: CategoryType */}
+                <Badge className="absolute top-2 right-2 bg-blue-50 text-blue-700 rounded-sm px-2 py-1 text-xs shadow-sm">
+                  {startup.categoryType}
+                </Badge>
               </div>
 
-              {/* Middle */}
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4 mt-2 sm:mt-0">
-                <div className="text-sm">
-                  <p>
-                    <span className="font-semibold">{startup.founders.length}</span>{" "}
-                    Founders
-                  </p>
-                  <p>
-                    <span className="font-semibold">{startup.investors.length}</span>{" "}
-                    Investors
-                  </p>
-                  <p>
-                    <span className="font-semibold">{startup.totalRaised || 0}</span>{" "}
-                    Raised
-                  </p>
-                </div>
+              {/* Title + Description */}
+              <div className="flex flex-col justify-between items-center mt-2">
+                <p className="font-semibold text-lg">{startup.title}</p>
+                <p className="text-sm text-muted-foreground line-clamp-2 flex-1">{startup.description}</p>
               </div>
 
-              {/* Right */}
-              <div className="flex items-center gap-3 px-4 py-8 mt-2 sm:mt-0">
-                {/* Status Dropdown */}
+              {/* Status Dropdown + Equity Ranges Dropdown */}
+              <div className="flex w-full gap-2 mt-1">
+                
+                {/* Status */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Badge
-                      variant="outline"
-                      className={`cursor-pointer capitalize px-3 py-1.5 rounded-sm ${statusStyles[startup.status || "active"]}`}
+                      className={`w-full flex-1 cursor-pointer capitalize px-3 py-1.5 rounded-sm flex items-center justify-center gap-1 ${statusStyles[startup.status || "active"]}`}
                     >
                       {updatingId === startup._id ? (
-                        <Loader className="h-6 w-6 animate-spin text-muted-foreground" />
+                        <Loader className="h-4 w-4 animate-spin" />
                       ) : (
-                        startup.status
+                        <>
+                          <ChevronDown className="h-4 w-4" />
+                          {startup.status}
+                        </>
                       )}
                     </Badge>
                   </DropdownMenuTrigger>
@@ -219,7 +180,7 @@ export default function AdminStartupsPage() {
                     {["active", "inactive", "pending", "closed"].map((status) => (
                       <DropdownMenuItem
                         key={status}
-                        className="capitalize cursor-pointer"
+                        className="cursor-pointer capitalize"
                         onClick={() => updateStatus(startup._id, status)}
                       >
                         {status}
@@ -228,16 +189,16 @@ export default function AdminStartupsPage() {
                   </DropdownMenuContent>
                 </DropdownMenu>
 
-                {/* Equity Dropdown */}
+                {/* Equity */}
                 {startup.equityRange.length > 0 ? (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Badge
                         variant="default"
-                        className="cursor-pointer px-3 py-1.5 rounded-sm flex items-center"
+                        className="w-full flex-1 cursor-pointer px-3 py-1.5 rounded-sm flex items-center justify-center gap-1"
                       >
-                        <ChevronDown className="mr-1 h-4 w-4" />
-                        Equity Ranges ({startup.equityRange.length})
+                        <ChevronDown className="h-4 w-4" />
+                        Equity ({startup.equityRange.length})
                       </Badge>
                     </DropdownMenuTrigger>
 
@@ -251,8 +212,23 @@ export default function AdminStartupsPage() {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 ) : (
-                  <Badge variant="secondary">No equity info</Badge>
+                  <Badge
+                    variant="secondary"
+                    className="w-full flex-1 px-3 py-1.5 rounded-sm flex items-center justify-center"
+                  >
+                    No equity info
+                  </Badge>
                 )}
+              </div>
+
+              {/* Separator */}
+              <div className="border-t mt-2 pt-2"></div>
+
+              {/* Founders | Investors | Raised */}
+              <div className="flex justify-between text-sm">
+                <p>Founders: <span className="font-semibold">{startup.founders.length}</span></p>
+                <p>Investors: <span className="font-semibold">{startup.investors.length}</span></p>
+                <p>Raised: <span className="font-semibold">{startup.totalRaised || 0}</span></p>
               </div>
             </Card>
           ))}

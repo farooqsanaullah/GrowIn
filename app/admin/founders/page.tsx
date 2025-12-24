@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { User, MapPin, Search, Loader } from "lucide-react";
 import { SkeletonFounder } from "@/components/skeletons/admin/founders";
+import { getInitials } from "@/lib/helpers";
 
 interface Founder {
   _id: string;
@@ -102,28 +103,35 @@ export default function AdminFoundersPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {filtered.map((f) => (
-            <Card key={f._id} className="p-4 hover:shadow-md transition flex flex-col gap-3">
-              {/* Top Row: Profile + Name + Button */}
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-3">
-                  <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
-                    {f.profileImage ? (
-                      <img
-                        src={f.profileImage}
-                        alt={f.name || f.userName}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <User className="h-6 w-6 text-muted-foreground" />
-                    )}
+            <Card key={f._id} className="relative p-4 hover:shadow-lg transition flex flex-col gap-3">
+              {/* Top: Profile Image + Startups badge */}
+              <div className="relative w-full h-32 rounded-lg overflow-hidden">
+                {f.profileImage ? (
+                  <img
+                    src={f.profileImage}
+                    alt={f.name || f.userName}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-muted flex items-center justify-center font-semibold text-foreground text-2xl">
+                    {getInitials(f.name, f.userName)}
                   </div>
-                  <p className="font-semibold">{f.name || f.userName}</p>
-                </div>
+                )}
+
+                {/* Total Startups Badge on top-right */}
+                <Badge className="absolute top-2 right-2 bg-green-50 text-green-600 rounded-sm py-1 px-3 flex items-center gap-1 shadow-sm">
+                  {f.totalStartups} startups
+                </Badge>
+              </div>
+
+              {/* Name + Activate/Deactivate Button */}
+              <div className="flex justify-between items-center mt-2">
+                <p className="font-semibold text-lg">{f.name || f.userName}</p>
                 <Button
                   size="sm"
                   variant={f.status === "active" ? "outline" : "default"}
                   disabled={updatingId === f._id}
-                  className=" cursor-pointer"
+                  className="cursor-pointer"
                   onClick={() => toggleStatus(f._id, f.status)}
                 >
                   {updatingId === f._id
@@ -132,27 +140,25 @@ export default function AdminFoundersPage() {
                 </Button>
               </div>
 
-              {/* Middle Row: Startups + Skills */}
-              <div className="flex flex-col gap-2 items-center mt-4">
-                <Badge variant="outline" className="border-green-400 bg-green-50 text-green-600 rounded-sm py-1.5 px-3 flex items-center gap-1 w-max">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  {f.totalStartups} startups
-                </Badge>
-
-                {f.skills && f.skills.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {f.skills.slice(0, 3).map((skill, idx) => (
-                      <Badge key={idx} variant="secondary" className="border-blue-400 bg-blue-50 text-blue-600 rounded-sm">{skill}</Badge>
+              {/* Skills Dropdown */}
+              {f.skills && f.skills.length > -1 && (
+                <details className="mt-1">
+                  <summary className="cursor-pointer text-sm text-muted-foreground">Skills ({f.skills.length})</summary>
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {f.skills.map((skill, idx) => (
+                      <Badge key={idx} variant="secondary" className="border-blue-400 bg-blue-50 text-blue-600 rounded-sm">
+                        {skill}
+                      </Badge>
                     ))}
-                    {f.skills.length > 3 && (
-                      <Badge variant="secondary" className="border-blue-400 bg-blue-50 rounded-sm">+{f.skills.length - 3} more</Badge>
-                    )}
                   </div>
-                )}
-              </div>
+                </details>
+              )}
 
-              {/* Bottom Row: Separator + Location */}
-              <div className="border-t pt-2 flex justify-center items-center gap-2 text-sm text-muted-foreground">
+              {/* Separator */}
+              <div className="border-t mt-2 pt-2"></div>
+
+              {/* Location */}
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <MapPin className="h-4 w-4" />
                 {f.city || f.country
                   ? `${f.city ?? ""}${f.city && f.country ? ", " : ""}${f.country ?? ""}`
