@@ -78,7 +78,7 @@ export default function AdminFoundersPage() {
       </div>
 
       {/* Search */}
-      <div className="relative w-full w-full">
+      <div className="relative w-full">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           placeholder="Search founders..."
@@ -90,7 +90,7 @@ export default function AdminFoundersPage() {
 
       {/* Content */}
       {loading ? (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[...Array(6)].map((_, i) => (
             <SkeletonFounder key={i} />
           ))}
@@ -100,15 +100,12 @@ export default function AdminFoundersPage() {
           No founders found
         </p>
       ) : (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {filtered.map((f) => (
-            <Card
-              key={f._id}
-              className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 hover:shadow-md transition space-y-2 sm:space-y-0"
-            >
-              {/* Left */}
-              <div className="flex flex-col items-center gap-2">
-                <div className="flex gap-4">
+            <Card key={f._id} className="p-4 hover:shadow-md transition flex flex-col gap-3">
+              {/* Top Row: Profile + Name + Button */}
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-3">
                   <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
                     {f.profileImage ? (
                       <img
@@ -120,19 +117,30 @@ export default function AdminFoundersPage() {
                       <User className="h-6 w-6 text-muted-foreground" />
                     )}
                   </div>
-                  <div className="flex flex-col gap-1">
-                    <p className="font-semibold">{f.name || f.userName}</p>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <MapPin className="h-4 w-4" />
-                      {f.city || f.country
-                        ? `${f.city ?? ""}${f.city && f.country ? ", " : ""}${f.country ?? ""}`
-                        : "Location not set"}
-                    </div>
-                  </div>
+                  <p className="font-semibold">{f.name || f.userName}</p>
                 </div>
-                {/* Skills tags */}
+                <Button
+                  size="sm"
+                  variant={f.status === "active" ? "outline" : "default"}
+                  disabled={updatingId === f._id}
+                  className=" cursor-pointer"
+                  onClick={() => toggleStatus(f._id, f.status)}
+                >
+                  {updatingId === f._id
+                    ? <Loader className="h-6 w-6 animate-spin text-muted-foreground" />
+                    : f.status === "active" ? "Deactivate" : "Activate"}
+                </Button>
+              </div>
+
+              {/* Middle Row: Startups + Skills */}
+              <div className="flex flex-col gap-2 items-center mt-4">
+                <Badge variant="outline" className="border-green-400 bg-green-50 text-green-600 rounded-sm py-1.5 px-3 flex items-center gap-1 w-max">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  {f.totalStartups} startups
+                </Badge>
+
                 {f.skills && f.skills.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-1">
+                  <div className="flex flex-wrap gap-1">
                     {f.skills.slice(0, 3).map((skill, idx) => (
                       <Badge key={idx} variant="secondary" className="border-blue-400 bg-blue-50 text-blue-600 rounded-sm">{skill}</Badge>
                     ))}
@@ -143,25 +151,12 @@ export default function AdminFoundersPage() {
                 )}
               </div>
 
-              {/* Right */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mt-2 sm:mt-0">
-                <Badge variant={f.status === "active" ? "default" : "secondary"}>
-                  {f.status}
-                </Badge>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={updatingId === f._id}
-                  className="cursor-pointer"
-                  onClick={() => toggleStatus(f._id, f.status)}
-                >
-                  {updatingId === f._id
-                    ? <Loader className="h-6 w-6 animate-spin text-muted-foreground" />
-                    : f.status === "active" ? "Deactivate" : "Activate"}
-                </Button>
-                <Badge variant="outline" className="border-green-400 bg-green-50 text-green-600 rounded-sm py-1.5 px-3">
-                  {f.totalStartups} startups
-                </Badge>
+              {/* Bottom Row: Separator + Location */}
+              <div className="border-t pt-2 flex justify-center items-center gap-2 text-sm text-muted-foreground">
+                <MapPin className="h-4 w-4" />
+                {f.city || f.country
+                  ? `${f.city ?? ""}${f.city && f.country ? ", " : ""}${f.country ?? ""}`
+                  : "Location not set"}
               </div>
             </Card>
           ))}
