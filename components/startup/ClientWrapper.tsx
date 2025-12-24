@@ -20,57 +20,35 @@ interface Props {
 
 const MessagesButton: React.FC<{ startup: Startup, conversations: IConversation[] }> = ({ startup, conversations }) => {
   const { data: session } = useSession();
-  const [showMessages, setShowMessages] = useState(false);
+  const [open, setOpen] = useState(false);
 
-
-  const isFounderOfStartup = startup.founders?.some(
-    (founder) => founder._id === session?.user?.id
+  const isFounder = startup.founders?.some(
+    f => f._id === session?.user?.id
   );
 
+  if (!isFounder) return null;
 
-  if (!isFounderOfStartup) {
-    return null;
-  }
 
   return (
     <>
-      {/* Floating Messages Button */}
       <button
-        onClick={() => setShowMessages(!showMessages)}
-        className="fixed bottom-6 right-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110 z-50 flex items-center gap-2"
-        aria-label="Toggle messages"
+        onClick={() => setOpen(true)}
+        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 p-4 rounded-full shadow-xl hover:scale-110 transition-all"
+        style={{
+          background:
+            'linear-gradient(135deg, #60a5fa, #a78bfa)',
+          color: 'white',
+        }}
       >
         <MessageCircle className="w-6 h-6" />
-        <span className="font-semibold">Messages</span>
+        Messages
       </button>
 
-      {/* Messages Modal/Panel */}
-      {showMessages && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 flex items-center justify-center p-4">
-          <div className="relative w-full max-w-5xl max-h-[90vh] overflow-auto">
-            <button
-              onClick={() => setShowMessages(false)}
-              className="absolute top-4 right-4 bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition-colors z-10"
-              aria-label="Close messages"
-            >
-              <svg
-                className="w-6 h-6 text-gray-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-            <StartupMessages conversations={conversations} />
-          </div>
-        </div>
-      )}
+      <StartupMessages
+        conversations={conversations}
+        isOpen={open}
+        onClose={() => setOpen(false)}
+      />
     </>
   );
 };
