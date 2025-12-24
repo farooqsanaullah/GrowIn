@@ -6,12 +6,12 @@ import {
   Card,
   Badge,
   Input,
-  Skeleton,
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui";
+import { SkeletonStartups } from "@/components/skeletons/admin/startups";
 
 
 interface EquityRange {
@@ -38,44 +38,11 @@ interface Startup {
 }
 
 const statusStyles: Record<string, string> = {
-  active: "bg-green-50 text-green-700 border-green-300",
-  inactive: "bg-gray-100 text-gray-700 border-gray-300",
-  pending: "bg-yellow-50 text-yellow-700 border-yellow-300",
-  closed: "bg-red-50 text-red-700 border-red-300",
+  active: "bg-green-50 text-green-700 border-green-300 hover:bg-green-100 transition-colors duration-300",
+  inactive: "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200 transition-colors duration-300",
+  pending: "bg-yellow-50 text-yellow-700 border-yellow-300 hover:bg-yellow-100 transition-colors duration-300",
+  closed: "bg-red-50 text-red-700 border-red-300 hover:bg-red-100 transition-colors duration-300",
 };
-
-const SkeletonStartups = () => (
-  <Card className="flex flex-col sm:flex-row justify-between p-4 animate-pulse">
-    {/* Left */}
-    <div className="flex flex-col gap-2">
-      <div className="flex items-start sm:items-center gap-4">
-        <Skeleton className="h-16 w-24 rounded-lg" />
-        <div className="flex flex-col gap-1 w-full">
-          <Skeleton className="h-5 w-32" />
-          <Skeleton className="h-4 w-48" />
-        </div>
-      </div>
-      <div className="flex gap-1">
-        <Skeleton className="h-5 w-16" />
-        <Skeleton className="h-5 w-20" />
-        <Skeleton className="h-5 w-20" />
-      </div>
-    </div>
-
-    {/* Middle */}
-    <div className="flex flex-col sm:items-center gap-4 mt-2 sm:mt-0">
-      <Skeleton className="h-4 w-24" />
-      <Skeleton className="h-4 w-24" />
-      <Skeleton className="h-4 w-24" />
-    </div>
-
-    {/* Right */}
-    <div className="flex items-center gap-3 px-4 py-8 mt-2 sm:mt-0">
-      <Skeleton className="h-6 w-24 rounded-sm" /> {/* Status placeholder */}
-      <Skeleton className="h-6 w-32 rounded-sm" /> {/* Equity placeholder */}
-    </div>
-  </Card>
-);
 
 export default function AdminStartupsPage() {
   const [startups, setStartups] = useState<Startup[]>([]);
