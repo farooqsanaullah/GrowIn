@@ -1,6 +1,4 @@
 import ClientExplore from "@/components/explore/ClientExplore";
-import Footer from "@/components/landingpage/Footer";
-import Header from "@/components/landingpage/Header";
 import { Startup } from "@/lib/types/startup";
 
 
@@ -37,7 +35,6 @@ export default async function ExplorePage() {
     
     <div>
       
-      <Header />
     <div className="bg-gray-50 min-h-screen pt-20"
       style={{
           background: `linear-gradient(135deg, ${colors.bgPrimary}, ${colors.bgSecondary})`,
@@ -54,7 +51,6 @@ export default async function ExplorePage() {
           <p className="text-center text-red-600">Failed to load startups. Please try again later.</p>
         )}
       </div>
-      <Footer />
     </div>
 
     </div>

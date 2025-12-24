@@ -1,11 +1,11 @@
-import ChatPageClient from './ChatPageClient';
+"use client";
 
-interface ChatPageProps {
-  params: Promise<{ conversationId: string }>;
-}
+import ChatPageClient from "./ChatPageClient";
+import { useParams } from "next/navigation";
 
-export default async function ChatPage({ params }: ChatPageProps) {
-  const { conversationId } = await params; // unwrap the promise
+export default function ChatPage() {
+  const params = useParams();
+  const conversationId = params.conversationId as string;
 
   return <ChatPageClient conversationId={conversationId} />;
 }
