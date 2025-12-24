@@ -10,7 +10,7 @@ export interface IInvestment extends Document {
   investorId: mongoose.Types.ObjectId;
   startupId: mongoose.Types.ObjectId;
   amount: number;
-  status: 'pending' | 'paid' | 'failed' | 'cancelled' | 'refunded' | 'expired';
+  status: 'pending' | 'paid' | 'failed' | 'voided' | 'refunded';
   stripeInvoiceId?: string;
   stripeCustomerId?: string;
   paidAt?: Date;

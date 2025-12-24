@@ -139,7 +139,7 @@ interface Investment {
   amount: number;
   equity?: number;
   investmentDate: string;
-  status: 'pending' | 'completed' | 'cancelled';
+  status: 'pending' | 'paid' | 'failed' | 'voided' | 'refunded';
   startup?: Startup;
   investor?: Investor;
   valuation?: number;
