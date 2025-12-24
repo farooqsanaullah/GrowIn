@@ -153,10 +153,10 @@ export default function AdminFoundersPage() {
                   {f.skills && f.skills.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-1">
                       {f.skills.slice(0, 3).map((skill, idx) => (
-                        <Badge key={idx} variant="secondary" className="border border-blue-200 bg-blue-50 text-blue-600">{skill}</Badge>
+                        <Badge key={idx} variant="secondary" className="border-blue-400 bg-blue-50 text-blue-600 rounded-sm">{skill}</Badge>
                       ))}
                       {f.skills.length > 3 && (
-                        <Badge variant="secondary" className="border border-blue-300 bg-blue-50 text-blue-600">+{f.skills.length - 3} more</Badge>
+                        <Badge variant="secondary" className="border-blue-400 bg-blue-50 rounded-sm">+{f.skills.length - 3} more</Badge>
                       )}
                     </div>
                   )}
@@ -179,10 +179,7 @@ export default function AdminFoundersPage() {
                     ? <Loader className="h-6 w-6 animate-spin text-muted-foreground" />
                     : f.status === "active" ? "Deactivate" : "Activate"}
                 </Button>
-                {/* <span className="text-sm font-medium text-muted-foreground">
-                  {f.totalStartups} startups
-                </span> */}
-                <Badge variant="outline" className="border border-green-500 bg-green-50 text-green-600 rounded-sm py-1.5 px-3">
+                <Badge variant="outline" className="border-green-400 bg-green-50 text-green-600 rounded-sm py-1.5 px-3">
                   {f.totalStartups} startups
                 </Badge>
               </div>
