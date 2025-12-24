@@ -38,7 +38,7 @@ export function usePusherSubscription({
     return () => {
       console.log(`Unsubscribing from: ${channelName}`);
       channel.unbind_all();
-      pusherClient.unsubscribe(channelName);
+      pusherClient?.unsubscribe(channelName);
     };
   }, [channelName, eventName, enabled]);
 
