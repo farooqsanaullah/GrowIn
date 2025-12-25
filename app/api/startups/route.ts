@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
 
     const investmentTotals = await Investment.aggregate([
       { $match: { startupId: { $in: startupIds } } },
-      { $group: { _id: "$startupId", totalRaised: { $sum: "$amount" } } },
+      { $group: { _id: "$startupId", totalRaised: { $sum: "$amount" }, followers: { $sum: 1 } } },
     ]);
 
     const totalsMap = investmentTotals.reduce((acc, item) => {
