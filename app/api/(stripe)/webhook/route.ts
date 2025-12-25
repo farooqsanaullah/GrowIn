@@ -3,8 +3,7 @@ import Investment from "@/lib/models/investment.model";
 import { connectDB } from "@/lib/db/connect";
 import Startup from "@/lib/models/startup.model";
 import { sendInvestmentEmails } from "@/lib/helpers";
-
-
+import { IUser } from "@/lib/models/user.model";
 
 export async function POST(req: Request) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -46,56 +45,31 @@ export async function POST(req: Request) {
         { stripeInvoiceId: invoice.id, status: { $ne: "paid" } }, // idempotent
         { status: "paid", paidAt: new Date() },
         { new: true }
-      )
-        .populate({
-          path: "startupId",
-          populate: { path: "founders", model: "User" } // populate founders array
-        })
-        .populate("investorId")
-        ;
+      ).populate("investorId");
 
       if (!investment) break;
 
-      // Update startup totalRaised and investors list
+      // getting totalRaised
       const [{ totalRaised = 0 } = {}] = await Investment.aggregate([
         { $match: { startupId: investment.startupId, status: "paid" } },
         { $group: { _id: null, totalRaised: { $sum: "$amount" } } },
       ]);
-
-      await Startup.findByIdAndUpdate(investment.startupId, {
+      
+      // Update startup totalRaised and investors list
+      await Startup.findByIdAndUpdate(investment.startupId._id, {
         totalRaised,
         $addToSet: { investors: investment.investorId },
       });
 
-      // Fetch founder and investor details
-      // const startup = investment.startupId;
       const startup = await Startup.findById(investment.startupId).populate("founders");
-      // console.log("🚀 ~ POST ~ startup:", startup)
       const investor = investment.investorId;
-      // console.log("🚀 ~ POST ~ investor:", investor)
-      const founder = startup.founders[0];
-      // console.log("🚀 ~ POST ~ founder:", founder)
-
-      // if (!founder) {
-      //   console.error("❌ Missing founder for emails");
-      //   break;
-      // }
-
-      // if (!investor) {
-      //   console.error("❌ Missing investor for emails");
-      //   break;
-      // }
-
-      // if (!startup) {
-      //   console.error("❌ Missing startup for emails");
-      //   break;
-      // }
+      const founders = startup.founders as IUser[];
 
       await sendInvestmentEmails({
-        founder: {
-          name: founder?.name ?? founder?.userName ?? "Unknown Founder",
-          email: founder?.email ?? "muhammadmateen546@gmail.com",
-        },
+        founders: startup.founders.map((f: IUser) => ({
+          name: f.name ?? f.userName ?? "Unknown Founder",
+          email: f.email,
+        })),
         investor: {
           name: investor.name ?? investor.userName ?? "Unknown Investor",
           email: investor.email,
