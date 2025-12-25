@@ -12,7 +12,7 @@ export function LayoutWrapper({ children }: LayoutWrapperProps) {
   const pathname = usePathname();
   
   // Routes that should not have header and footer
-  const excludedRoutes = ['/founder', '/investor'];
+  const excludedRoutes = ['/admin', '/founder', '/investor', '/signin', '/signup', '/forgot-password', '/reset-password'];
   
   // Check if current path starts with any excluded route
   const shouldExcludeHeaderFooter = excludedRoutes.some(route => 

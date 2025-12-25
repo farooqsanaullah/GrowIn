@@ -10,6 +10,9 @@ export async function GET(req: Request) {
 
   const role = session.user.role;
 
+  if (role === "admin")
+    return NextResponse.redirect(new URL("/admin/dashboard", req.url));
+
   if (role === "investor")
     return NextResponse.redirect(new URL("/investor/dashboard", req.url));
 

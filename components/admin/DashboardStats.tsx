@@ -4,8 +4,6 @@ import { useEffect, useState } from "react";
 import { Building2, Users, Eye, TrendingUp, Target, Briefcase } from "lucide-react";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { startupsApi } from "@/lib/helpers/api/startups";
-import { useSession } from "next-auth/react";
-import Startup from "@/lib/models/startup.model";
 
 interface DashboardStatsData {
   totalStartups: number;
@@ -16,8 +14,6 @@ interface DashboardStatsData {
 }
 
 export function DashboardStats() {
-  // const { data: session } = useSession();
-  // const founderId = session?.user?.id;
   const [stats, setStats] = useState<DashboardStatsData>({
     totalStartups: 0,
     totalFollowers: 0,
@@ -34,14 +30,12 @@ export function DashboardStats() {
 
         const response = await startupsApi.getAll();
 
-        if (response.success && response.data) {
+        if (response.data) {
           const startups = response.data;
 
           const totalFollowers = startups.reduce((acc, startup) => acc + startup.followers.length, 0);
           const activeStartups = startups.filter(startup => startup.status === 'active').length;
           const totalInvestments = startups.reduce((acc, startup) => acc + (startup.totalRaised || 0), 0);
-
-          // Mock total views calculation (in a real app, this would come from analytics)
           const totalViews = startups.reduce((acc, startup) => acc + (startup.followers.length * 12), 0);
 
           setStats({
