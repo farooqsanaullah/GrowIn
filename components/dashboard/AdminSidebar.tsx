@@ -111,7 +111,7 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
           <div className="border-t border-sidebar-border p-3">
             <Button
               variant="ghost"
-              className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+              className="cursor-pointer w-full justify-start text-sidebar-foreground hover:bg-destructive/10 hover:text-destructive"
               onClick={() => signOut()}
             >
               <LogOut className="mr-3 h-5 w-5" />

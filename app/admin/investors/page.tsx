@@ -1,13 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { MapPin, Search, Loader } from "lucide-react";
+import { Search } from "lucide-react";
 import { SkeletonInvestor } from "@/components/skeletons/admin/investors";
-import { getInitials } from "@/lib/helpers";
+import { AdminCard } from "@/components/admin/AdminCard";
 
 interface Investor {
   _id: string;
@@ -105,57 +102,20 @@ export default function AdminInvestorsPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {filtered.map((inv) => (
-            <Card
+            <AdminCard
               key={inv._id}
-              className="relative p-4 hover:shadow-lg transition flex flex-col gap-3"
-            >
-              {/* Top: Profile Image + Investments badge */}
-              <div className="relative w-full h-32 rounded-lg overflow-hidden">
-                {inv.profileImage ? (
-                  <img
-                    src={inv.profileImage}
-                    alt={inv.name || inv.userName}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-muted flex items-center justify-center font-semibold text-foreground text-2xl">
-                    {getInitials(inv.name, inv.userName)}
-                  </div>
-                )}
-
-                {/* Total Investments Badge on top-right */}
-                <Badge className="absolute top-2 right-2 bg-green-50 text-green-600 rounded-sm py-1 px-3 flex items-center gap-1 shadow-sm">
-                  {inv.totalInvestments} investments
-                </Badge>
-              </div>
-
-              {/* Name + Activate/Deactivate Button */}
-              <div className="flex justify-between items-center mt-2">
-                <p className="font-semibold text-lg">{inv.name || inv.userName}</p>
-                <Button
-                  size="sm"
-                  variant={inv.status === "active" ? "outline" : "default"}
-                  disabled={updatingId === inv._id}
-                  className="cursor-pointer"
-                  onClick={() => toggleStatus(inv._id, inv.status)}
-                >
-                  {updatingId === inv._id
-                    ? <Loader className="h-6 w-6 animate-spin text-muted-foreground" />
-                    : inv.status === "active" ? "Deactivate" : "Activate"}
-                </Button>
-              </div>
-
-              {/* Separator */}
-              <div className="border-t mt-2 pt-2"></div>
-
-              {/* Location */}
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <MapPin className="h-4 w-4" />
-                {inv.city || inv.country
-                  ? `${inv.city ?? ""}${inv.city && inv.country ? ", " : ""}${inv.country ?? ""}`
-                  : "Location not set"}
-              </div>
-            </Card>
+              id={inv._id}
+              name={inv.name}
+              userName={inv.userName}
+              profileImage={inv.profileImage}
+              city={inv.city}
+              country={inv.country}
+              status={inv.status}
+              count={inv.totalInvestments}
+              countLabel="investments"
+              updatingId={updatingId}
+              onToggleStatus={toggleStatus}
+            />
           ))}
         </div>
       )}

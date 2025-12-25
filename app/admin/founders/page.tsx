@@ -1,13 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { User, MapPin, Search, Loader } from "lucide-react";
+import { Search} from "lucide-react";
 import { SkeletonFounder } from "@/components/skeletons/admin/founders";
-import { getInitials } from "@/lib/helpers";
+import { AdminCard } from "@/components/admin/AdminCard";
 
 interface Founder {
   _id: string;
@@ -103,68 +100,21 @@ export default function AdminFoundersPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {filtered.map((f) => (
-            <Card key={f._id} className="relative p-4 hover:shadow-lg transition flex flex-col gap-3">
-              {/* Top: Profile Image + Startups badge */}
-              <div className="relative w-full h-32 rounded-lg overflow-hidden">
-                {f.profileImage ? (
-                  <img
-                    src={f.profileImage}
-                    alt={f.name || f.userName}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-muted flex items-center justify-center font-semibold text-foreground text-2xl">
-                    {getInitials(f.name, f.userName)}
-                  </div>
-                )}
-
-                {/* Total Startups Badge on top-right */}
-                <Badge className="absolute top-2 right-2 bg-green-50 text-green-600 rounded-sm py-1 px-3 flex items-center gap-1 shadow-sm">
-                  {f.totalStartups} startups
-                </Badge>
-              </div>
-
-              {/* Name + Activate/Deactivate Button */}
-              <div className="flex justify-between items-center mt-2">
-                <p className="font-semibold text-lg">{f.name || f.userName}</p>
-                <Button
-                  size="sm"
-                  variant={f.status === "active" ? "outline" : "default"}
-                  disabled={updatingId === f._id}
-                  className="cursor-pointer"
-                  onClick={() => toggleStatus(f._id, f.status)}
-                >
-                  {updatingId === f._id
-                    ? <Loader className="h-6 w-6 animate-spin text-muted-foreground" />
-                    : f.status === "active" ? "Deactivate" : "Activate"}
-                </Button>
-              </div>
-
-              {/* Skills Dropdown */}
-              {f.skills && f.skills.length > -1 && (
-                <details className="mt-1">
-                  <summary className="cursor-pointer text-sm text-muted-foreground">Skills ({f.skills.length})</summary>
-                  <div className="mt-1 flex flex-wrap gap-1">
-                    {f.skills.map((skill, idx) => (
-                      <Badge key={idx} variant="secondary" className="border-blue-400 bg-blue-50 text-blue-600 rounded-sm">
-                        {skill}
-                      </Badge>
-                    ))}
-                  </div>
-                </details>
-              )}
-
-              {/* Separator */}
-              <div className="border-t mt-2 pt-2"></div>
-
-              {/* Location */}
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <MapPin className="h-4 w-4" />
-                {f.city || f.country
-                  ? `${f.city ?? ""}${f.city && f.country ? ", " : ""}${f.country ?? ""}`
-                  : "Location not set"}
-              </div>
-            </Card>
+            <AdminCard
+              key={f._id}
+              id={f._id}
+              name={f.name}
+              userName={f.userName}
+              profileImage={f.profileImage}
+              city={f.city}
+              country={f.country}
+              status={f.status}
+              count={f.totalStartups}
+              countLabel="startups"
+              skills={f.skills}
+              updatingId={updatingId}
+              onToggleStatus={toggleStatus}
+            />
           ))}
         </div>
       )}
