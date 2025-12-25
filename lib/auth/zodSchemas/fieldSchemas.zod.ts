@@ -6,7 +6,7 @@ import {
   ALLOWED_ROLES,
   PASSWORD_SPECIAL_CHAR_REGEX,
   PHONE_REGEX,
-} from "@/lib/constants";
+} from "@/lib/constants/general";
 
 // Username
 export const UserNameSchema = z

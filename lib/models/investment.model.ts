@@ -10,7 +10,7 @@ export interface IInvestment extends Document {
   investorId: mongoose.Types.ObjectId;
   startupId: mongoose.Types.ObjectId;
   amount: number;
-  status: 'pending' | 'paid' | 'failed' | 'cancelled' | 'refunded' | 'expired';
+  status: 'pending' | 'paid' | 'failed' | 'cancelled' | 'refunded';
   stripeInvoiceId?: string;
   stripeCustomerId?: string;
   paidAt?: Date;
@@ -35,7 +35,8 @@ const InvestmentSchema = new Schema<IInvestment>({
 }, { timestamps: true });
 
 
-InvestmentSchema.index({ investorId: 1, startupId: 1 }, { unique: true });
+// InvestmentSchema.index({ investorId: 1, startupId: 1 }, { unique: true });
+// --> investor can make more than 1 payment
 
 
 InvestmentSchema.index({ investorId: 1, createdAt: -1 });

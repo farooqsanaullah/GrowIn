@@ -7,42 +7,22 @@ export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const isDev = NODE_ENV === "development";
 
-  // --- FETCH NEXTAUTH SESSION TOKEN ---
+  isDev && console.log("[Middleware] Requested path:", pathname);
+
   const nextAuthToken = await getToken({ req, secret: NEXTAUTH_SECRET! });
+  isDev && console.log("[Middleware] NextAuthJWT token exists:", !!nextAuthToken);
 
-  isDev &&
-    console.log(
-      "[Middleware] Path:", pathname,
-      "| NextAuthJWT token exists:", !!nextAuthToken
-    );
-
-  // =============================================================================
-  //  ROLE-BASED GUARD
-  //  Prevents users from accessing other roles' areas
-  // =============================================================================
-  if (nextAuthToken?.role) {
-    const userRole = nextAuthToken.role; // "investor" | "founder"
-    const isTryingFounderArea = pathname.startsWith("/founder");
-    const isTryingInvestorArea = pathname.startsWith("/investor");
-
-    if (userRole === "investor" && isTryingFounderArea) {
-      return NextResponse.redirect(
-        new URL("/investor/dashboard?error=forbidden", req.url)
-      );
-    }
-
-    if (userRole === "founder" && isTryingInvestorArea) {
-      return NextResponse.redirect(
-        new URL("/founder/dashboard?error=forbidden", req.url)
-      );
-    }
-  }
+  const isApiRoute = pathname.startsWith("/api/");
+  const isAuthApi = pathname.startsWith("/api/auth/");
+  const isAdminApi = pathname.startsWith("/api/admin/");
+  const isFounderApi = pathname.startsWith("/api/founder/");
+  const isInvestorApi = pathname.startsWith("/api/investor/");
 
   // =============================================================================
-  //  PUBLIC AUTH ROUTES
-  //  If already authenticated → redirect to dashboard
+  // PUBLIC AUTH ROUTES
   // =============================================================================
   if (pathname.startsWith("/signin") || pathname.startsWith("/signup")) {
+    isDev && console.log("[Middleware] Public auth route accessed");
     if (nextAuthToken) {
       isDev && console.log("[Middleware] Already signed in → redirecting to /dashboard");
       return NextResponse.redirect(new URL("/dashboard", req.url));
@@ -51,37 +31,97 @@ export async function middleware(req: NextRequest) {
   }
 
   // =============================================================================
-  //  PROTECTED PAGES & API ROUTES
+  // PROTECTED ROUTES (pages + APIs)
   // =============================================================================
-  const isProtectedApi = pathname.startsWith("/api/auth/");
-  const requiresAuth = pathname.startsWith("/founder") || pathname.startsWith("/investor") || isProtectedApi;
+  const protectedPaths =
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/founder") ||
+    pathname.startsWith("/investor") ||
+    isAuthApi ||
+    isFounderApi ||
+    isInvestorApi ||
+    isAdminApi;
 
-  if (requiresAuth) {
+  if (protectedPaths) {
+    isDev && console.log("[Middleware] Protected route detected");
+
+    // Not authenticated → block
     if (!nextAuthToken) {
-      if (isProtectedApi) {
-        return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-      } else {
-        isDev && console.warn("[Middleware] Unauthorized access to protected page");
-        return NextResponse.redirect(new URL("/signin?error=unauthorized", req.url));
-      }
+      isDev && console.log("[Middleware] Unauthorized access attempt");
+      if (isApiRoute) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+      return NextResponse.redirect(new URL("/signin?error=unauthorized", req.url));
     }
 
-    // Authenticated → allow access
-    return NextResponse.next();
+    // Role-based protection
+    const role = nextAuthToken.role;
+    isDev && console.log("[Middleware] User role:", role);
+
+    if (isApiRoute) {
+      isDev && console.log("[Middleware] API route access");
+
+      if (isAdminApi && role !== "admin") {
+        isDev && console.log("[Middleware] Access denied to admin API");
+        return NextResponse.json({ message: "Access denied" }, { status: 403 });
+      }
+      if (isFounderApi && role !== "founder") {
+        isDev && console.log("[Middleware] Access denied to founder API");
+        return NextResponse.json({ message: "Access denied" }, { status: 403 });
+      }
+      if (isInvestorApi && role !== "investor") {
+        isDev && console.log("[Middleware] Access denied to investor API");
+        return NextResponse.json({ message: "Access denied" }, { status: 403 });
+      }
+    } else {
+      isDev && console.log("[Middleware] Page route access");
+
+      const isAdminArea = pathname.startsWith("/admin");
+      const isFounderArea = pathname.startsWith("/founder");
+      const isInvestorArea = pathname.startsWith("/investor");
+
+      switch (role) {
+        case "admin":
+          if (!isAdminArea) {
+            isDev && console.log("[Middleware] Redirecting admin to /admin/dashboard");
+            return NextResponse.redirect(new URL("/admin/dashboard", req.url));
+          }
+          break;
+        case "founder":
+          if (!isFounderArea) {
+            isDev && console.log("[Middleware] Redirecting founder to /founder/dashboard");
+            return NextResponse.redirect(new URL("/founder/dashboard", req.url));
+          }
+          break;
+        case "investor":
+          if (!isInvestorArea) {
+            isDev && console.log("[Middleware] Redirecting investor to /investor/dashboard");
+            return NextResponse.redirect(new URL("/investor/dashboard", req.url));
+          }
+          break;
+        default:
+          isDev && console.log("[Middleware] Unknown role → redirect to signin");
+          return NextResponse.redirect(new URL("/signin?error=unauthorized", req.url));
+      }
+    }
   }
 
-  // Allow all other public routes
+  // =============================================================================
+  // ALLOW PUBLIC ROUTES
+  // =============================================================================
+  isDev && console.log("[Middleware] Allowing public access");
   return NextResponse.next();
 }
 
 // =============================================================================
 //  MIDDLEWARE MATCHER
-//  Runs middleware only for relevant routes
 // =============================================================================
 export const config = {
   matcher: [
     "/founder/:path*",
     "/investor/:path*",
+    "/admin/:path*",
+    "/api/founder/:path*",
+    "/api/investor/:path*",
+    "/api/admin/:path*",
     "/api/auth/forgot-password",
     "/api/auth/reset-password",
     "/api/auth/change-password",

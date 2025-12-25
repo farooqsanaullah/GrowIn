@@ -18,7 +18,7 @@ export const startupFormSchema = z.object({
 
   industry: z.string().min(1, "Industry is required"),
 
-  status: z.enum(["active", "inactive", "pending", "closed"]).default("active"),
+  status: z.enum(["active", "inactive", "closed"]).default("active"),
 
   profilePic: z.string().url("Invalid URL format").optional().or(z.literal("")),
 
@@ -91,7 +91,6 @@ export const CATEGORY_TYPE_OPTIONS = ["B2B", "B2C", "C2B", "C2C"];
 // Status options
 export const STATUS_OPTIONS = [
   { value: "active", label: "Active" },
-  { value: "pending", label: "Pending" },
   { value: "inactive", label: "Inactive" },
   { value: "closed", label: "Closed" },
 ];

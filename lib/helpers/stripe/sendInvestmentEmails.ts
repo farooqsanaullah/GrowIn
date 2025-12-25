@@ -6,10 +6,10 @@ import {
 
 
 type SendInvestmentEmailsProps = {
-  founder: {
+  founders: {
     name: string;
     email: string;
-  };
+  }[];
   investor: {
     name: string;
     email: string;
@@ -22,7 +22,7 @@ type SendInvestmentEmailsProps = {
 };
 
 export async function sendInvestmentEmails({
-  founder,
+  founders,
   investor,
   startup,
   amount,
@@ -32,17 +32,22 @@ export async function sendInvestmentEmails({
 
   try {
     /* ---------- Founder email ---------- */
-    await resend.emails.send({
-      from: process.env.EMAIL_FROM!,
-      to: founder.email,
-      ...founderInvestmentReceivedEmail({
-        founderName: founder.name,
-        investorName: investor.name,
-        startupName: startup.title,
-        amount,
-        currency,
-      }),
-    });
+    await Promise.all(
+      founders.map(founder =>
+        resend.emails.send({
+          from: process.env.EMAIL_FROM!,
+          // to: founder.email,
+          to: 'muhammad.mateen@amroodlabs.com',
+          ...founderInvestmentReceivedEmail({
+            founderName: founder.name,
+            investorName: investor.name,
+            startupName: startup.title,
+            amount,
+            currency,
+          }),
+        })
+      )
+    );
 
     /* ---------- Investor email ---------- */
     await resend.emails.send({

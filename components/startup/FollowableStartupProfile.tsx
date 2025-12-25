@@ -390,7 +390,7 @@ const FollowableStartupProfile: React.FC<Props> = ({ startup: initialStartup }) 
                     className={`w-full mt-3 py-2 font-semibold rounded-lg transition`}
                     style={{ backgroundColor: isInvesting ? 'gray' : 'var(--text-primary)', color: '#fff', cursor: isInvesting ? 'not-allowed' : 'pointer' }}
                   >
-                    {isInvesting ? "Investing..." : "Invest Now"}
+                    {isInvesting ? "Proceeding..." : "Invest Now"}
                   </button>
                 </div>
 

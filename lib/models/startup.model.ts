@@ -100,7 +100,7 @@ const startupSchema = new Schema<IStartup>(
 
     status: {
       type: String,
-      enum: ["active", "inactive", "pending", "closed"],
+      enum: ["active", "inactive", "closed"],
       default: "active",
     },
     ratingCount: {

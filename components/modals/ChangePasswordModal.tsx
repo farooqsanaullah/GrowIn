@@ -154,7 +154,8 @@ export default function ChangePasswordModal({
                   type="button"
                   onClick={() => setShowCurrentPassword((prev) => !prev)}
                   className="absolute right-2 inset-y-0 flex items-center text-muted-foreground cursor-pointer"
-                >
+                  tabIndex={-1}
+               >
                   {showCurrentPassword ? <EyeClosedIcon /> : <Eye />}
                 </button>
               )}
@@ -189,6 +190,7 @@ export default function ChangePasswordModal({
                   type="button"
                   onClick={() => setShowNewPassword((prev) => !prev)}
                   className="absolute right-2 inset-y-0 flex items-center text-muted-foreground cursor-pointer"
+                  tabIndex={-1}
                 >
                   {showNewPassword ? <EyeClosedIcon /> : <Eye />}
                 </button>
@@ -237,6 +239,7 @@ export default function ChangePasswordModal({
                   type="button"
                   onClick={() => setShowConfirmPassword((prev) => !prev)}
                   className="absolute right-2 inset-y-0 flex items-center text-muted-foreground cursor-pointer"
+                  tabIndex={-1}
                 >
                   {showConfirmPassword ? <EyeClosedIcon /> : <Eye />}
                 </button>

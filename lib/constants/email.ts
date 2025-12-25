@@ -1,5 +1,3 @@
-// lib/constants/email.ts
-
 type EmailTemplateProps = {
   founderName: string;
   investorName: string;

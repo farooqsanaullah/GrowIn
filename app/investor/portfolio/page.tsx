@@ -146,10 +146,12 @@ export default function PortfolioPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "completed":
+      case "paid":
         return "bg-success/10 text-success";
       case "pending":
-        return "bg-yellow-500/10 text-yellow-600";
+      case "refunded":
+        return "bg-yellow-50 border-yellow-300 text-yellow-700";
+      case "failed":
       case "cancelled":
         return "bg-destructive/10 text-destructive";
       default:
@@ -261,7 +263,7 @@ export default function PortfolioPage() {
                         {investment.startup?.description || "No description available"}
                       </p>
                       <div className="flex items-center space-x-4 text-xs text-muted-foreground">
-                        <span>Invested: {formatCurrency(investment.amount)}</span>
+                        <span>Invested: <b>{formatCurrency(investment.amount)}</b></span>
                         {investment.equity && <span>Equity: {investment.equity}%</span>}
                         <span>Date: {new Date(investment.investmentDate).toLocaleDateString()}</span>
                       </div>
