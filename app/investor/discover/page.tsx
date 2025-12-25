@@ -68,7 +68,7 @@ export default function DiscoverPage() {
 
       const response = await startupsApi.getAll(filters);
       
-      if (response.success && response.data) {
+      if (response.data) {
         setStartups(response.data);
         setTotalPages(response.pagination?.totalPages || 1);
       } else {
