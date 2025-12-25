@@ -7,57 +7,22 @@ export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const isDev = NODE_ENV === "development";
 
-  // --- FETCH NEXTAUTH SESSION TOKEN ---
+  isDev && console.log("[Middleware] Requested path:", pathname);
+
   const nextAuthToken = await getToken({ req, secret: NEXTAUTH_SECRET! });
+  isDev && console.log("[Middleware] NextAuthJWT token exists:", !!nextAuthToken);
 
-  // Determine if the request is for an API route
   const isApiRoute = pathname.startsWith("/api/");
+  const isAuthApi = pathname.startsWith("/api/auth/");
+  const isAdminApi = pathname.startsWith("/api/admin/");
+  const isFounderApi = pathname.startsWith("/api/founder/");
+  const isInvestorApi = pathname.startsWith("/api/investor/");
 
   // =============================================================================
-  //  ROLE-BASED GUARD FOR PAGES ONLY (skip APIs)
-  // =============================================================================
-  if (nextAuthToken?.role && !isApiRoute) {
-    const userRole = nextAuthToken.role; // "investor" | "founder" | "admin"
-
-    isDev &&
-      console.log(
-        "[Middleware] Path: ", pathname,
-        "| Role: ", userRole,
-        "| NextAuthJWT token exists: ", !!nextAuthToken,
-      );
-
-    const isAdminArea = pathname.startsWith("/admin");
-    const isFounderArea = pathname.startsWith("/founder");
-    const isInvestorArea = pathname.startsWith("/investor");
-
-    switch (userRole) {
-      case "admin":
-        if (!isAdminArea) {
-          return NextResponse.redirect(new URL("/admin/dashboard", req.url));
-        }
-        break;
-
-      case "founder":
-        if (!isFounderArea) {
-          return NextResponse.redirect(new URL("/founder/dashboard", req.url));
-        }
-        break;
-
-      case "investor":
-        if (!isInvestorArea) {
-          return NextResponse.redirect(new URL("/investor/dashboard", req.url));
-        }
-        break;
-
-      default:
-        return NextResponse.redirect(new URL("/signin?error=unauthorized", req.url));
-    }
-  }
-
-  // =============================================================================
-  //  PUBLIC AUTH ROUTES
+  // PUBLIC AUTH ROUTES
   // =============================================================================
   if (pathname.startsWith("/signin") || pathname.startsWith("/signup")) {
+    isDev && console.log("[Middleware] Public auth route accessed");
     if (nextAuthToken) {
       isDev && console.log("[Middleware] Already signed in → redirecting to /dashboard");
       return NextResponse.redirect(new URL("/dashboard", req.url));
@@ -66,35 +31,83 @@ export async function middleware(req: NextRequest) {
   }
 
   // =============================================================================
-  //  PROTECTED PAGES & API ROUTES
+  // PROTECTED ROUTES (pages + APIs)
   // =============================================================================
-  const isAuthApi = pathname.startsWith("/api/auth/");
-  const isAdminApi = pathname.startsWith("/api/admin/");
-  const requiresAuth =
+  const protectedPaths =
+    pathname.startsWith("/admin") ||
     pathname.startsWith("/founder") ||
     pathname.startsWith("/investor") ||
-    pathname.startsWith("/admin") ||
     isAuthApi ||
+    isFounderApi ||
+    isInvestorApi ||
     isAdminApi;
 
-  if (requiresAuth) {
+  if (protectedPaths) {
+    isDev && console.log("[Middleware] Protected route detected");
+
+    // Not authenticated → block
     if (!nextAuthToken) {
-      if (isAuthApi || isAdminApi) {
-        return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-      } else {
-        isDev && console.warn("[Middleware] Unauthorized access to protected page");
-        return NextResponse.redirect(new URL("/signin?error=unauthorized", req.url));
+      isDev && console.log("[Middleware] Unauthorized access attempt");
+      if (isApiRoute) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+      return NextResponse.redirect(new URL("/signin?error=unauthorized", req.url));
+    }
+
+    // Role-based protection
+    const role = nextAuthToken.role;
+    isDev && console.log("[Middleware] User role:", role);
+
+    if (isApiRoute) {
+      isDev && console.log("[Middleware] API route access");
+
+      if (isAdminApi && role !== "admin") {
+        isDev && console.log("[Middleware] Access denied to admin API");
+        return NextResponse.json({ message: "Access denied" }, { status: 403 });
+      }
+      if (isFounderApi && role !== "founder") {
+        isDev && console.log("[Middleware] Access denied to founder API");
+        return NextResponse.json({ message: "Access denied" }, { status: 403 });
+      }
+      if (isInvestorApi && role !== "investor") {
+        isDev && console.log("[Middleware] Access denied to investor API");
+        return NextResponse.json({ message: "Access denied" }, { status: 403 });
+      }
+    } else {
+      isDev && console.log("[Middleware] Page route access");
+
+      const isAdminArea = pathname.startsWith("/admin");
+      const isFounderArea = pathname.startsWith("/founder");
+      const isInvestorArea = pathname.startsWith("/investor");
+
+      switch (role) {
+        case "admin":
+          if (!isAdminArea) {
+            isDev && console.log("[Middleware] Redirecting admin to /admin/dashboard");
+            return NextResponse.redirect(new URL("/admin/dashboard", req.url));
+          }
+          break;
+        case "founder":
+          if (!isFounderArea) {
+            isDev && console.log("[Middleware] Redirecting founder to /founder/dashboard");
+            return NextResponse.redirect(new URL("/founder/dashboard", req.url));
+          }
+          break;
+        case "investor":
+          if (!isInvestorArea) {
+            isDev && console.log("[Middleware] Redirecting investor to /investor/dashboard");
+            return NextResponse.redirect(new URL("/investor/dashboard", req.url));
+          }
+          break;
+        default:
+          isDev && console.log("[Middleware] Unknown role → redirect to signin");
+          return NextResponse.redirect(new URL("/signin?error=unauthorized", req.url));
       }
     }
-
-    // Role-based API protection
-    if (isAdminApi && nextAuthToken.role !== "admin") {
-      return NextResponse.json({ message: "Access denied" }, { status: 403 });
-    }
-
-    return NextResponse.next();
   }
 
+  // =============================================================================
+  // ALLOW PUBLIC ROUTES
+  // =============================================================================
+  isDev && console.log("[Middleware] Allowing public access");
   return NextResponse.next();
 }
 
@@ -106,6 +119,8 @@ export const config = {
     "/founder/:path*",
     "/investor/:path*",
     "/admin/:path*",
+    "/api/founder/:path*",
+    "/api/investor/:path*",
     "/api/admin/:path*",
     "/api/auth/forgot-password",
     "/api/auth/reset-password",
