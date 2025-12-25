@@ -32,6 +32,7 @@ export function TopBar({ title = "Dashboard", description }: TopBarProps) {
   const [loadingStatus, setLoadingStatus] = useState(true);
   const { data: session } = useSession();
   const token = session?.user.id;
+  const userRole = session?.user.role; // "investor" | "founder" | "admin"
 
   useEffect(() => {
     const fetchStatus = async () => {
@@ -81,7 +82,7 @@ export function TopBar({ title = "Dashboard", description }: TopBarProps) {
 
       {loadingStatus ? (
         <div className="h-8 w-20 bg-muted animate-pulse rounded-sm mr-2" />
-      ) : userStatus ? (
+      ) : userStatus && userRole !== 'admin' ? (
         <Badge
           className={`capitalize px-3 py-2 text-xs border rounded-sm ${userStatus === 'inactive' ? 'cursor-pointer' : ''} ${USER_STATUS_STYLES[userStatus]} mr-2`}
           onClick={handleRequestOpen}

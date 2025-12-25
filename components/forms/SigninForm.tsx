@@ -62,7 +62,9 @@ export default function SigninForm({ providers }: SigninFormProps) {
       const session = await fetch("/api/auth/session").then(r => r.json());
       const role = session?.user?.role;
 
-      if (role === "founder") {
+      if (role === "admin") {
+        router.push("/admin/dashboard");
+      } else if (role === "founder") {
         router.push("/founder/dashboard");
       } else if (role === "investor") {
         router.push("/investor/dashboard");
