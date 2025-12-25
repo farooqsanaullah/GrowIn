@@ -159,6 +159,7 @@ const AIMatchButton: React.FC<{ startup: Startup }> = ({ startup }) => {
           e.currentTarget.style.boxShadow = '0 8px 25px rgba(22, 38, 61, 0.4)';
         }}
         onMouseLeave={(e) => {
+
           e.currentTarget.style.transform = 'scale(1.1)';
           e.currentTarget.style.boxShadow = '0 4px 15px rgba(22, 38, 61, 0.25)';
         }}
