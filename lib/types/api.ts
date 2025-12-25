@@ -62,6 +62,7 @@ interface Startup {
   avgRating: number;
   equityRange: EquityRange[];
   profilePic?: string;
+  totalRaised?: number;
   createdAt: string;
   updatedAt: string;
 }
