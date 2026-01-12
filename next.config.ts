@@ -1,0 +1,34 @@
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  output: "standalone",
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '2mb',
+    },
+  },
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "avatars.githubusercontent.com",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: 'https',
+        hostname: 'growin-startup-pitches.s3.eu-north-1.amazonaws.com',
+        port: '',
+        pathname: '/**',
+      },  
+    ],
+  },
+};
+
+export default nextConfig;
