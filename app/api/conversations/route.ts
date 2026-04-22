@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from "@/lib/db/connect";
-import Conversation from '@/lib/models/converstaion.model';
+import Conversation from '@/lib/models/conversation.model';
 import { getCurrentUser, canInitiateConversation } from '@/lib/auth/session';
 import { CreateConversationRequest, IConversation } from '@/lib/types/index';
 import mongoose from 'mongoose';
