@@ -1,20 +1,14 @@
 import type {
   ApiResponse,
-  Investment,
   CreateInvestmentData,
   InvestmentFilters,
   InvestmentListResponse,
   InvestmentResponse,
-  PortfolioStats,
   PortfolioStatsResponse,
-  AnalyticsData,
   AnalyticsResponse,
 } from "@/lib/types/api";
 
-// Helper to get the base URL, fallback to empty string for relative URLs
-const getBaseUrl = () => {
-  return process.env.NEXT_PUBLIC_API_BASE_URL || "";
-};
+const getBaseUrl = () => "";
 
 const fetchAPI = async <T>(
   url: string,

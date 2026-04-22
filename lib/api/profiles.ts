@@ -5,14 +5,7 @@ import type {
 } from "@/lib/types/api";
 
 
-const getBaseUrl = () => {
-
-  if (process.env.NEXT_PUBLIC_API_BASE_URL) {
-    return process.env.NEXT_PUBLIC_API_BASE_URL;
-  }
-
-  return "";
-};
+const getBaseUrl = () => "";
 
 const API_BASE_URL = getBaseUrl();
 

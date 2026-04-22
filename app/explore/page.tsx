@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 const fetchStartups = async (query: string): Promise<Startup[]> => {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/startups?limit=7${query}`, { cache: 'no-store' });
+    const res = await fetch(`${process.env.NEXTAUTH_URL}/api/startups?limit=7${query}`, { cache: 'no-store' });
     if (!res.ok) throw new Error(`Failed to fetch startups: ${res.status}`);
     const data = await res.json();
     return data?.data || [];
