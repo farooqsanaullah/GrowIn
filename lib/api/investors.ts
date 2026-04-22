@@ -2,9 +2,6 @@ import type {
   ApiResponse,
 } from "@/lib/types/api";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
-
-
 export interface InvestorFilters {
   page?: number;
   limit?: number;
@@ -128,10 +125,7 @@ export interface InvestorResponse {
   message: string;
 }
 
-const fetchAPI = async <T>(
-  url: string,
-  options: RequestInit = {}
-): Promise<T> => {
+const fetchAPI = async <T>(url: string, options: RequestInit = {}): Promise<T> => {
   const response = await fetch(url, {
     headers: {
       "Content-Type": "application/json",
@@ -141,67 +135,54 @@ const fetchAPI = async <T>(
   });
 
   if (!response.ok) {
-    const errorData = (await response
-      .json()
-      .catch(() => ({}))) as ApiResponse<null>;
+    const errorData = (await response.json().catch(() => ({}))) as ApiResponse<null>;
     throw new Error(errorData.message || `HTTP ${response.status}`);
   }
 
   return response.json() as Promise<T>;
 };
 
-
 const buildQueryParams = (filters: Record<string, any>): string => {
   const params = new URLSearchParams();
-  
   Object.entries(filters).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== '') {
+    if (value !== undefined && value !== null && value !== "") {
       params.set(key, String(value));
     }
   });
-
   return params.toString();
 };
 
-
 const buildUrl = (baseUrl: string, filters?: Record<string, any>): string => {
-  if (!filters || Object.keys(filters).length === 0) {
-    return baseUrl;
-  }
+  if (!filters || Object.keys(filters).length === 0) return baseUrl;
   const query = buildQueryParams(filters);
   return query ? `${baseUrl}?${query}` : baseUrl;
 };
 
 export const investorsApi = {
-  
+
   getAll: async (filters: InvestorFilters = {}): Promise<InvestorListResponse> => {
-    const url = buildUrl(`${API_BASE_URL}/api/investors`, filters);
-    return fetchAPI<InvestorListResponse>(url);
+    return fetchAPI<InvestorListResponse>(buildUrl("/api/investors", filters));
   },
 
   getById: async (id: string): Promise<InvestorResponse> => {
-    return fetchAPI<InvestorResponse>(`${API_BASE_URL}/api/investors/${id}`);
+    return fetchAPI<InvestorResponse>(`/api/investors/${id}`);
   },
 
-
-  search: async (query: string, filters: Omit<InvestorFilters, 'search'> = {}): Promise<InvestorListResponse> => {
+  search: async (query: string, filters: Omit<InvestorFilters, "search"> = {}): Promise<InvestorListResponse> => {
     return investorsApi.getAll({ ...filters, search: query });
   },
 
-
-  getByLocation: async (city?: string, country?: string, filters: Omit<InvestorFilters, 'city' | 'country'> = {}): Promise<InvestorListResponse> => {
+  getByLocation: async (city?: string, country?: string, filters: Omit<InvestorFilters, "city" | "country"> = {}): Promise<InvestorListResponse> => {
     return investorsApi.getAll({ ...filters, city, country });
   },
 
-
-  getByFundingRange: async (minFunding?: number, maxFunding?: number, filters: Omit<InvestorFilters, 'minFunding' | 'maxFunding'> = {}): Promise<InvestorListResponse> => {
+  getByFundingRange: async (minFunding?: number, maxFunding?: number, filters: Omit<InvestorFilters, "minFunding" | "maxFunding"> = {}): Promise<InvestorListResponse> => {
     return investorsApi.getAll({ ...filters, minFunding, maxFunding });
   },
 
-
-  getVerified: async (filters: Omit<InvestorFilters, 'isVerified'> = {}): Promise<InvestorListResponse> => {
-    return investorsApi.getAll({ ...filters, isVerified: 'true' });
-  }
+  getVerified: async (filters: Omit<InvestorFilters, "isVerified"> = {}): Promise<InvestorListResponse> => {
+    return investorsApi.getAll({ ...filters, isVerified: "true" });
+  },
 };
 
 export default investorsApi;

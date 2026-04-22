@@ -299,6 +299,7 @@ export default function SignupForm({ providers }: SignupFormProps) {
                   <button
                     type="button"
                     onClick={() => setShowPassword((prev) => !prev)}
+                    tabIndex={-1}
                     className="absolute right-2 inset-y-0 flex items-center text-muted-foreground cursor-pointer"
                   >
                     {showPassword ? <EyeClosedIcon /> : <Eye />}
@@ -346,6 +347,7 @@ export default function SignupForm({ providers }: SignupFormProps) {
                 {confirmValue.length > 0 && (
                   <button
                     type="button"
+                    tabIndex={-1}
                     onClick={() => setShowConfirm((prev) => !prev)}
                     className="absolute right-2 inset-y-0 flex items-center text-muted-foreground cursor-pointer"
                   >

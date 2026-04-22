@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from "@/lib/db/connect";
-import Conversation from '@/lib/models/converstaion.model';
+import Conversation from '@/lib/models/conversation.model';
 import Message from '@/lib/models/message.model';
 import { getCurrentUser } from '@/lib/auth/session';
 import { pusherServer } from '@/lib/pusher/pusher-server';
@@ -34,9 +34,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('📝 Creating message for conversation:', conversationId);
-    console.log('👤 Sender:', user.name, user.id);
-
     const message = await Message.create({
       conversationId,
       senderId: user.id,
@@ -44,7 +41,7 @@ export async function POST(request: NextRequest) {
       senderRole: user.role,
       type: "text",
       text: content.trim(),
-      content: content.trim(), 
+      content: content.trim(),
     });
 
     await Conversation.findByIdAndUpdate(conversationId, {
@@ -69,58 +66,39 @@ export async function POST(request: NextRequest) {
       content: populatedMessage.text || populatedMessage.content,
     };
 
-    console.log("🚀 Message created:", messageWithContent._id);
-
-    // ✅ CRITICAL: Trigger ALL relevant channels
-    const pusherPayload = { 
+    const pusherPayload = {
       message: messageWithContent,
-      conversationId: conversationId 
+      conversationId,
     };
 
-    const pusherPromises = [];
+    const pusherPromises = [
+      pusherServer.trigger(
+        `private-conversation-${conversationId}`,
+        "new-message",
+        pusherPayload
+      ),
+    ];
 
-    try {
-      console.log('📡 Triggering private-conversation channel:', conversationId);
+    if (conversation.startupId) {
       pusherPromises.push(
-        pusherServer.trigger(
-          `private-conversation-${conversationId}`,
-          "new-message",
-          pusherPayload
-        )
+        pusherServer.trigger(`startup-${conversation.startupId}`, "new-message", pusherPayload)
       );
+    }
 
-      if (conversation.startupId) {
-        console.log('📡 Triggering startup channel:', conversation.startupId);
+    for (const participant of conversation.participants || []) {
+      const userId = typeof participant.userId === 'object'
+        ? participant.userId._id?.toString() || participant.userId.toString()
+        : participant.userId.toString();
+
+      if (userId && userId !== user.id) {
         pusherPromises.push(
-          pusherServer.trigger(
-            `startup-${conversation.startupId}`,
-            "new-message",
-            pusherPayload
-          )
+          pusherServer.trigger(`user-${userId}`, "new-message", pusherPayload)
         );
       }
+    }
 
-      const participants = conversation.participants || [];
-      for (const participant of participants) {
-        const userId = typeof participant.userId === 'object' 
-          ? participant.userId._id?.toString() || participant.userId.toString()
-          : participant.userId.toString();
-        
-        if (userId && userId !== user.id) {
-          console.log('📡 Triggering user channel for participant:', userId);
-          pusherPromises.push(
-            pusherServer.trigger(
-              `user-${userId}`,
-              "new-message",
-              pusherPayload
-            )
-          );
-        }
-      }
-
+    try {
       await Promise.all(pusherPromises);
-      console.log("✅ All Pusher channels triggered successfully");
-
     } catch (pusherError) {
       console.error("Pusher trigger error:", pusherError);
     }
@@ -141,7 +119,6 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-
     const conversationId = searchParams.get("conversationId");
     const limit = parseInt(searchParams.get("limit") || "50");
     const before = searchParams.get("before");
@@ -161,8 +138,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
-    const query: any = { conversationId };
-
+    const query: Record<string, unknown> = { conversationId };
     if (before) {
       query.createdAt = { $lt: new Date(before) };
     }

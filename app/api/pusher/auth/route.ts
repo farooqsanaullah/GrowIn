@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from "@/lib/db/connect";
-import Conversation from '@/lib/models/converstaion.model';
+import Conversation from '@/lib/models/conversation.model';
 import { getCurrentUser } from '@/lib/auth/session';
 import { pusherServer } from '@/lib/pusher/pusher-server';
 
