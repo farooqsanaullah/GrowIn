@@ -8,8 +8,6 @@ import type {
   AnalyticsResponse,
 } from "@/lib/types/api";
 
-const getBaseUrl = () => "";
-
 const fetchAPI = async <T>(
   url: string,
   options: RequestInit = {}
@@ -32,106 +30,83 @@ const fetchAPI = async <T>(
   return response.json();
 };
 
-
-const buildQueryParams = <T extends Record<string, any>>(
-  filters: T
-): string => {
+const buildQueryParams = <T extends Record<string, any>>(filters: T): string => {
   const params = new URLSearchParams();
-
   Object.entries(filters).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== "") {
       params.set(key, String(value));
     }
   });
-
   return params.toString();
 };
 
-
 const buildUrl = (baseUrl: string, filters?: Record<string, any>): string => {
-  if (!filters || Object.keys(filters).length === 0) {
-    return baseUrl;
-  }
+  if (!filters || Object.keys(filters).length === 0) return baseUrl;
   const query = buildQueryParams(filters);
   return query ? `${baseUrl}?${query}` : baseUrl;
 };
 
 export const investmentsApi = {
 
-  getAll: async (
-    filters: InvestmentFilters = {}
-  ): Promise<InvestmentListResponse> => {
-    const url = buildUrl(`${getBaseUrl()}/investment`, filters);
-    return fetchAPI<InvestmentListResponse>(url);
+  getAll: async (filters: InvestmentFilters = {}): Promise<InvestmentListResponse> => {
+    return fetchAPI<InvestmentListResponse>(buildUrl("/api/investment", filters));
   },
-
 
   getById: async (id: string): Promise<InvestmentResponse> => {
-    return fetchAPI<InvestmentResponse>(`${getBaseUrl()}/investment/${id}`);
+    return fetchAPI<InvestmentResponse>(`/api/investment/${id}`);
   },
-
 
   getByInvestor: async (
     investorId: string,
     filters: Omit<InvestmentFilters, "investorId"> = {}
   ): Promise<InvestmentListResponse> => {
-    const url = buildUrl(
-      `${getBaseUrl()}/investment/investor/${investorId}`,
-      filters
+    return fetchAPI<InvestmentListResponse>(
+      buildUrl(`/api/investment/investor/${investorId}`, filters)
     );
-    return fetchAPI<InvestmentListResponse>(url);
   },
-
 
   getByStartup: async (
     startupId: string,
     filters: Omit<InvestmentFilters, "startupId"> = {}
   ): Promise<InvestmentListResponse> => {
-    const url = buildUrl(
-      `${getBaseUrl()}/investment/startup/${startupId}`,
-      filters
+    return fetchAPI<InvestmentListResponse>(
+      buildUrl(`/api/investment/startup/${startupId}`, filters)
     );
-    return fetchAPI<InvestmentListResponse>(url);
   },
 
-
   create: async (data: CreateInvestmentData): Promise<InvestmentResponse> => {
-    return fetchAPI<InvestmentResponse>(`${getBaseUrl()}/investment`, {
+    return fetchAPI<InvestmentResponse>("/api/investment", {
       method: "POST",
       body: JSON.stringify(data),
     });
   },
-
 
   update: async (
     id: string,
     data: Partial<CreateInvestmentData>
   ): Promise<InvestmentResponse> => {
-    return fetchAPI<InvestmentResponse>(`${getBaseUrl()}/investment/${id}`, {
+    return fetchAPI<InvestmentResponse>(`/api/investment/${id}`, {
       method: "PUT",
       body: JSON.stringify(data),
     });
   },
 
-
   cancel: async (id: string): Promise<InvestmentResponse> => {
-    return fetchAPI<InvestmentResponse>(`${getBaseUrl()}/investment/${id}/cancel`, {
+    return fetchAPI<InvestmentResponse>(`/api/investment/${id}/cancel`, {
       method: "POST",
     });
   },
-
 
   complete: async (id: string): Promise<InvestmentResponse> => {
-    return fetchAPI<InvestmentResponse>(`${getBaseUrl()}/investment/${id}/complete`, {
+    return fetchAPI<InvestmentResponse>(`/api/investment/${id}/complete`, {
       method: "POST",
     });
   },
 
-  
   getPortfolioStats: async (investorId?: string, options: RequestInit = {}): Promise<PortfolioStatsResponse> => {
-    const url = investorId 
-      ? `${getBaseUrl()}/api/investor/${investorId}/portfolio/stats`
-      : `${getBaseUrl()}/api/investor/portfolio/stats`;
+    const url = investorId
+      ? `/api/investor/${investorId}/portfolio/stats`
+      : `/api/investor/portfolio/stats`;
     return fetchAPI<PortfolioStatsResponse>(url, options);
   },
 
@@ -140,18 +115,19 @@ export const investmentsApi = {
     filters: Pick<InvestmentFilters, "page" | "limit" | "status"> = {},
     options: RequestInit = {}
   ): Promise<InvestmentListResponse> => {
-    const baseUrl = `${getBaseUrl()}/api/investor/${investorId}/portfolio`
-    const url = buildUrl(baseUrl, filters);
-    return fetchAPI<InvestmentListResponse>(url, options);
+    return fetchAPI<InvestmentListResponse>(
+      buildUrl(`/api/investor/${investorId}/portfolio`, filters),
+      options
+    );
   },
 
   getAnalytics: async (
     investorId?: string,
     period: "1m" | "3m" | "6m" | "1y" | "all" = "6m"
   ): Promise<AnalyticsResponse> => {
-    const baseUrl = `${getBaseUrl()}/api/investor/${investorId}/analytics`
-    const url = `${baseUrl}?period=${period}`;
-    return fetchAPI<AnalyticsResponse>(url);
+    return fetchAPI<AnalyticsResponse>(
+      `/api/investor/${investorId}/analytics?period=${period}`
+    );
   },
 
   getActivities: async (
@@ -169,22 +145,8 @@ export const investmentsApi = {
       logo?: string;
     };
   }>>> => {
-    const url = buildUrl(`${getBaseUrl()}/api/investor/activities`, filters);
-    return fetchAPI<ApiResponse<Array<{
-      id: string;
-      type: "investment" | "update" | "exit";
-      title: string;
-      description: string;
-      amount?: number;
-      date: string;
-      startup?: {
-        id: string;
-        name: string;
-        logo?: string;
-      };
-    }>>>(url);
+    return fetchAPI(buildUrl("/api/investor/activities", filters));
   },
-
 
   getRecommendations: async (
     filters: Pick<InvestmentFilters, "page" | "limit"> = {}
@@ -201,19 +163,6 @@ export const investmentsApi = {
     score: number;
     reasons: string[];
   }>>> => {
-    const url = buildUrl(`${getBaseUrl()}/api/investor/recommendations`, filters);
-    return fetchAPI<ApiResponse<Array<{
-      startup: {
-        id: string;
-        name: string;
-        description: string;
-        logo?: string;
-        category: string;
-        funding_target: number;
-        raised_amount: number;
-      };
-      score: number;
-      reasons: string[];
-    }>>>(url);
+    return fetchAPI(buildUrl("/api/investor/recommendations", filters));
   },
 };

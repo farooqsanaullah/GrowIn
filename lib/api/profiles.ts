@@ -4,11 +4,6 @@ import type {
   ProfileData,
 } from "@/lib/types/api";
 
-
-const getBaseUrl = () => "";
-
-const API_BASE_URL = getBaseUrl();
-
 const fetchAPI = async <T>(
   url: string,
   options: RequestInit = {}
@@ -32,73 +27,59 @@ const fetchAPI = async <T>(
 };
 
 export const profilesApi = {
-  
-  getByUsername: async (Id: string): Promise<ProfileResponse> => {
-    return fetchAPI<ProfileResponse>(`${API_BASE_URL}/api/profile/${Id}`);
-  },
 
+  getByUsername: async (Id: string): Promise<ProfileResponse> => {
+    return fetchAPI<ProfileResponse>(`/api/profile/${Id}`);
+  },
 
   getFounderByUsername: async (Id: string): Promise<ProfileResponse> => {
-    return fetchAPI<ProfileResponse>(`${API_BASE_URL}/api/profile/${Id}`);
+    return fetchAPI<ProfileResponse>(`/api/profile/${Id}`);
   },
-
 
   getInvestorByUsername: async (Id: string): Promise<ProfileResponse> => {
-    return fetchAPI<ProfileResponse>(`${API_BASE_URL}/api/profile/${Id}`);
+    return fetchAPI<ProfileResponse>(`/api/profile/${Id}`);
   },
-
 
   updateProfile: async (
     data: Partial<ProfileData["user"]>
   ): Promise<ProfileResponse> => {
-    return fetchAPI<ProfileResponse>(`${API_BASE_URL}/api/profile/update`, {
+    return fetchAPI<ProfileResponse>("/api/profile/update", {
       method: "PUT",
       body: JSON.stringify(data),
     });
   },
 
-
   getCurrentProfile: async (): Promise<ProfileResponse> => {
-    return fetchAPI<ProfileResponse>(`${API_BASE_URL}/api/profile/me`);
+    return fetchAPI<ProfileResponse>("/api/profile/me");
   },
 
-
   uploadProfileImage: async (formData: FormData): Promise<ApiResponse<{ imageUrl: string }>> => {
-    return fetchAPI<ApiResponse<{ imageUrl: string }>>(`${API_BASE_URL}/api/profile/upload-image`, {
+    return fetchAPI<ApiResponse<{ imageUrl: string }>>("/api/profile/upload-image", {
       method: "POST",
       body: formData,
-      headers: {
-        // Don't set Content-Type for FormData, let the browser set it
-      },
+      // Don't set Content-Type — browser sets it with the correct multipart boundary
+      headers: {},
     });
   },
 
-
-  toggleFollow: async (
-    username: string
-  ): Promise<ApiResponse<{ following: boolean }>> => {
+  toggleFollow: async (username: string): Promise<ApiResponse<{ following: boolean }>> => {
     return fetchAPI<ApiResponse<{ following: boolean }>>(
-      `${API_BASE_URL}/api/profile/${username}/follow`,
-      {
-        method: "POST",
-      }
+      `/api/profile/${username}/follow`,
+      { method: "POST" }
     );
   },
-
 
   getFollowers: async (username: string): Promise<ApiResponse<ProfileData["user"][]>> => {
     return fetchAPI<ApiResponse<ProfileData["user"][]>>(
-      `${API_BASE_URL}/api/profile/${username}/followers`
+      `/api/profile/${username}/followers`
     );
   },
-
 
   getFollowing: async (username: string): Promise<ApiResponse<ProfileData["user"][]>> => {
     return fetchAPI<ApiResponse<ProfileData["user"][]>>(
-      `${API_BASE_URL}/api/profile/${username}/following`
+      `/api/profile/${username}/following`
     );
   },
-
 
   search: async (
     query: string,
@@ -108,30 +89,22 @@ export const profilesApi = {
       limit?: number;
     } = {}
   ): Promise<ApiResponse<ProfileData["user"][]>> => {
-    const params = new URLSearchParams();
-    params.set("search", query);
-    
+    const params = new URLSearchParams({ search: query });
     if (options.role) params.set("role", options.role);
     if (options.page) params.set("page", String(options.page));
     if (options.limit) params.set("limit", String(options.limit));
-
-    const queryString = params.toString();
-    const url = `${API_BASE_URL}/api/profile/search${queryString ? `?${queryString}` : ""}`;
-    
-    return fetchAPI<ApiResponse<ProfileData["user"][]>>(url);
+    return fetchAPI<ApiResponse<ProfileData["user"][]>>(
+      `/api/profile/search?${params.toString()}`
+    );
   },
-
 
   verifyProfile: async (
     username: string,
     verified: boolean
   ): Promise<ApiResponse<{ verified: boolean }>> => {
     return fetchAPI<ApiResponse<{ verified: boolean }>>(
-      `${API_BASE_URL}/api/profile/${username}/verify`,
-      {
-        method: "POST",
-        body: JSON.stringify({ verified }),
-      }
+      `/api/profile/${username}/verify`,
+      { method: "POST", body: JSON.stringify({ verified }) }
     );
   },
 };
