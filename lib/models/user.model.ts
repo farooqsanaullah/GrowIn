@@ -28,7 +28,7 @@ export interface IUser {
   email: string;
   phone?: string;
   password?: string;
-  role: "investor" | "founder";
+  role: "investor" | "founder" | "admin";
   profileImage?: string;
   bio?: string;
   socialLinks?: SocialLinks;
