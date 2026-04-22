@@ -1,0 +1,37 @@
+[
+  {
+    "startup_id": "10",
+    "investor_id": "INV001",
+    "investment_amount": 5000
+  },
+  {
+    "startup_id": "10",
+    "investor_id": "INV002",
+    "investment_amount": 3500
+  },
+  {
+    "startup_id": "10",
+    "investor_id": "INV003",
+    "investment_amount": 7200
+  },
+  {
+    "startup_id": "11",
+    "investor_id": "INV004",
+    "investment_amount": 10000
+  },
+  {
+    "startup_id": "11",
+    "investor_id": "INV005",
+    "investment_amount": 8000
+  },
+  {
+    "startup_id": "12",
+    "investor_id": "INV006",
+    "investment_amount": 15000
+  },
+  {
+    "startup_id": "12",
+    "investor_id": "INV007",
+    "investment_amount": 4500
+  }
+]

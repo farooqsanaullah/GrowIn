@@ -1,0 +1,284 @@
+[
+  {
+    "_id": "1",
+    "title": "GreenCharge",
+    "description": "A sustainable battery recycling startup turning e-waste into reusable energy cells.",
+    "pitch": ["https://res.cloudinary.com/do9jik0jn/image/upload/v1761802817/blog_posts/t5pghig4m69qqleyxqgf.jpg","https://res.cloudinary.com/do9jik0jn/image/upload/v1761802817/blog_posts/t5pghig4m69qqleyxqgf.jpg","https://res.cloudinary.com/do9jik0jn/image/upload/v1761802817/blog_posts/t5pghig4m69qqleyxqgf.jpg","https://res.cloudinary.com/do9jik0jn/image/upload/v1761802817/blog_posts/t5pghig4m69qqleyxqgf.jpg","https://res.cloudinary.com/do9jik0jn/image/upload/v1761802817/blog_posts/t5pghig4m69qqleyxqgf.jpg", "https://res.cloudinary.com/do9jik0jn/image/upload/v1761802817/blog_posts/t5pghig4m69qqleyxqgf.jpg", "https://res.cloudinary.com/do9jik0jn/image/upload/v1761802817/blog_posts/t5pghig4m69qqleyxqgf.jpg", "https://res.cloudinary.com/do9jik0jn/image/upload/v1761802817/blog_posts/t5pghig4m69qqleyxqgf.jpg"],
+    "founders": ["F001", "F002"],
+    "investors": ["ABC Ventures", "Climate Capital"],
+    "badges": ["Trending", "Funded"],
+    "categoryType": "B2B",
+    "industry": "Energy / Sustainability",
+    "socialLinks": {
+      "website": "https://greencharge.io",
+      "linkedin": "https://linkedin.com/company/greencharge",
+      "twitter": "https://twitter.com/greencharge",
+      "x": "https://x.com/greencharge",
+      "instagram": "https://instagram.com/greencharge",
+      "facebook": "https://facebook.com/greencharge"
+    },
+    "followers": 3120,
+    "status": "Active",
+    "ratingCount": 145,
+    "avgRating": 2.3,
+    "equityRange": [
+      { "range": "5000-9000", "equity": 5 },
+      { "range": "10000-15000", "equity": 8 }
+    ],
+    "profilePic": "https://res.cloudinary.com/do9jik0jn/image/upload/v1761802817/blog_posts/t5pghig4m69qqleyxqgf.jpg"
+  },
+  {
+    "_id": "2",
+    "title": "EduWave",
+    "description": "A digital learning platform offering AI-powered personalized education for students.",
+    "pitch": ["https://example.com/pitch-eduwave.pptx"],
+    "founders": ["Hamza Ahmed"],
+    "investors": ["FutureEd Capital"],
+    "badges": ["Rising"],
+    "categoryType": "B2C",
+    "industry": "Education",
+    "socialLinks": {
+      "website": "https://eduwave.com",
+      "linkedin": "https://linkedin.com/company/eduwave",
+      "twitter": "https://twitter.com/eduwave"
+    },
+    "followers": 890,
+    "status": "Active",
+    "ratingCount": 52,
+    "avgRating": 4.1,
+    "equityRange": [
+      { "range": "7000-12000", "equity": 6 }
+    ],
+    "profilePic": "https://res.cloudinary.com/do9jik0jn/image/upload/v1761802817/blog_posts/t5pghig4m69qqleyxqgf.jpg"
+  },
+  {
+    "_id": "3",
+    "title": "MediLink",
+    "description": "A telemedicine platform connecting doctors with rural patients across South Asia.",
+    "pitch": ["https://example.com/pitch-medilink.pptx"],
+    "founders": ["Zainab Farooq", "Usman Tariq"],
+    "investors": [],
+    "badges": ["Rising"],
+    "categoryType": "B2C",
+    "industry": "Healthcare",
+    "socialLinks": {
+      "website": "https://medilink.org",
+      "linkedin": "https://linkedin.com/company/medilink"
+    },
+    "followers": 2400,
+    "status": "Inactive",
+    "ratingCount": 89,
+    "avgRating": 4.3,
+    "equityRange": [
+      { "range": "8000-15000", "equity": 7 }
+    ],
+    "profilePic": "https://res.cloudinary.com/do9jik0jn/image/upload/v1761802817/blog_posts/t5pghig4m69qqleyxqgf.jpg"
+  },
+  {
+    "_id": "4",
+    "title": "FinHub",
+    "description": "A platform for small businesses to manage finances and accounting easily.",
+    "pitch": ["https://example.com/pitch-finhub.pptx"],
+    "founders": ["Sara Iqbal"],
+    "investors": ["CapitalOne Ventures"],
+    "badges": ["Trending"],
+    "categoryType": "B2B",
+    "industry": "Finance",
+    "socialLinks": {
+      "website": "https://finhub.io",
+      "linkedin": "https://linkedin.com/company/finhub"
+    },
+    "followers": 1500,
+    "status": "Active",
+    "ratingCount": 95,
+    "avgRating": 4.4,
+    "equityRange": [
+      { "range": "5000-10000", "equity": 5 }
+    ],
+    "profilePic": "https://res.cloudinary.com/do9jik0jn/image/upload/v1761802817/blog_posts/t5pghig4m69qqleyxqgf.jpg"
+  },
+  {
+    "_id": "5",
+    "title": "Foodora",
+    "description": "An online food delivery platform connecting local restaurants to customers.",
+    "pitch": ["https://example.com/pitch-foodora.pptx"],
+    "founders": ["Ali Rehman"],
+    "investors": ["FoodTech Ventures"],
+    "badges": ["Funded"],
+    "categoryType": "B2C",
+    "industry": "Food & Beverage",
+    "socialLinks": {
+      "website": "https://foodora.com",
+      "linkedin": "https://linkedin.com/company/foodora"
+    },
+    "followers": 2200,
+    "status": "Active",
+    "ratingCount": 88,
+    "avgRating": 4.2,
+    "equityRange": [
+      { "range": "7000-13000", "equity": 6 }
+    ],
+    "profilePic": "https://res.cloudinary.com/do9jik0jn/image/upload/v1761802817/blog_posts/t5pghig4m69qqleyxqgf.jpg"
+  },
+  {
+    "_id": "6",
+    "title": "CleanWave",
+    "description": "A company building affordable solar solutions for homes and small businesses.",
+    "pitch": ["https://example.com/pitch-cleanwave.pptx"],
+    "founders": ["Faizan Ali"],
+    "investors": ["SolarVentures"],
+    "badges": ["Trending", "Funded"],
+    "categoryType": "B2B",
+    "industry": "Energy / Sustainability",
+    "socialLinks": {
+      "website": "https://cleanwave.io",
+      "linkedin": "https://linkedin.com/company/cleanwave"
+    },
+    "followers": 3100,
+    "status": "Active",
+    "ratingCount": 120,
+    "avgRating": 4.7,
+    "equityRange": [
+      { "range": "10000-15000", "equity": 8 }
+    ],
+    "profilePic": "https://res.cloudinary.com/do9jik0jn/image/upload/v1761802817/blog_posts/t5pghig4m69qqleyxqgf.jpg"
+  },
+  {
+    "_id": "7",
+    "title": "MoveIt",
+    "description": "A mobility platform offering ride-sharing and micro-mobility solutions in cities.",
+    "pitch": ["https://example.com/pitch-moveit.pptx"],
+    "founders": ["Zeeshan Ahmed"],
+    "investors": ["Urban Ventures"],
+    "badges": ["Rising"],
+    "categoryType": "C2C",
+    "industry": "Transportation / Mobility",
+    "socialLinks": {
+      "website": "https://moveit.io",
+      "linkedin": "https://linkedin.com/company/moveit"
+    },
+    "followers": 1300,
+    "status": "Active",
+    "ratingCount": 75,
+    "avgRating": 4.1,
+    "equityRange": [
+      { "range": "5000-9000", "equity": 5 }
+    ],
+    "profilePic": "https://res.cloudinary.com/do9jik0jn/image/upload/v1761802817/blog_posts/t5pghig4m69qqleyxqgf.jpg"
+  },
+  {
+    "_id": "8",
+    "title": "PropEase",
+    "description": "A PropTech platform simplifying buying, selling, and renting properties online.",
+    "pitch": ["https://res.cloudinary.com/do9jik0jn/image/upload/v1761802817/blog_posts/t5pghig4m69qqleyxqgf.jpg","https://res.cloudinary.com/do9jik0jn/image/upload/v1761802817/blog_posts/t5pghig4m69qqleyxqgf.jpg","https://res.cloudinary.com/do9jik0jn/image/upload/v1761802817/blog_posts/t5pghig4m69qqleyxqgf.jpg","https://res.cloudinary.com/do9jik0jn/image/upload/v1761802817/blog_posts/t5pghig4m69qqleyxqgf.jpg","https://res.cloudinary.com/do9jik0jn/image/upload/v1761802817/blog_posts/t5pghig4m69qqleyxqgf.jpg", "https://res.cloudinary.com/do9jik0jn/image/upload/v1761802817/blog_posts/t5pghig4m69qqleyxqgf.jpg", "https://res.cloudinary.com/do9jik0jn/image/upload/v1761802817/blog_posts/t5pghig4m69qqleyxqgf.jpg", "https://res.cloudinary.com/do9jik0jn/image/upload/v1761802817/blog_posts/t5pghig4m69qqleyxqgf.jpg"],
+    "founders": ["Hina Khalid"],
+    "investors": [],
+    "badges": ["Rising"],
+    "categoryType": "B2C",
+    "industry": "Real Estate",
+    "socialLinks": {
+      "website": "https://propease.com",
+      "linkedin": "https://linkedin.com/company/propease"
+    },
+    "followers": 980,
+    "status": "Active",
+    "ratingCount": 65,
+    "avgRating": 4.0,
+    "equityRange": [
+      { "range": "6000-11000", "equity": 6 }
+    ],
+    "profilePic": "https://res.cloudinary.com/do9jik0jn/image/upload/v1761802817/blog_posts/t5pghig4m69qqleyxqgf.jpg"
+  },
+  {
+    "_id": "9",
+    "title": "MediaStream",
+    "description": "A streaming platform for independent filmmakers and content creators.",
+    "pitch": ["https://res.cloudinary.com/do9jik0jn/image/upload/v1761802817/blog_posts/t5pghig4m69qqleyxqgf.jpg","https://res.cloudinary.com/do9jik0jn/image/upload/v1761802817/blog_posts/t5pghig4m69qqleyxqgf.jpg","https://res.cloudinary.com/do9jik0jn/image/upload/v1761802817/blog_posts/t5pghig4m69qqleyxqgf.jpg","https://res.cloudinary.com/do9jik0jn/image/upload/v1761802817/blog_posts/t5pghig4m69qqleyxqgf.jpg","https://res.cloudinary.com/do9jik0jn/image/upload/v1761802817/blog_posts/t5pghig4m69qqleyxqgf.jpg", "https://res.cloudinary.com/do9jik0jn/image/upload/v1761802817/blog_posts/t5pghig4m69qqleyxqgf.jpg", "https://res.cloudinary.com/do9jik0jn/image/upload/v1761802817/blog_posts/t5pghig4m69qqleyxqgf.jpg", "https://res.cloudinary.com/do9jik0jn/image/upload/v1761802817/blog_posts/t5pghig4m69qqleyxqgf.jpg"],
+    "founders": ["Ali Raza"],
+    "investors": ["Content Ventures"],
+    "badges": ["Trending"],
+    "categoryType": "B2C",
+    "industry": "Media / Entertainment",
+    "socialLinks": {
+      "website": "https://mediastream.io",
+      "linkedin": "https://linkedin.com/company/mediastream"
+    },
+    "followers": 4100,
+    "status": "Active",
+    "ratingCount": 155,
+    "avgRating": 4.8,
+    "equityRange": [
+      { "range": "10000-20000", "equity": 9 }
+    ],
+    "profilePic": "https://res.cloudinary.com/do9jik0jn/image/upload/v1761802817/blog_posts/t5pghig4m69qqleyxqgf.jpg"
+  },
+  {
+    "_id": "10",
+    "title": "SocialImpact",
+    "description": "A platform connecting volunteers, donors, and NGOs for social projects.",
+    "pitch": ["https://example.com/pitch-socialimpact.pptx"],
+    "founders": ["Sana Tariq"],
+    "investors": [],
+    "badges": ["Rising"],
+    "categoryType": "C2B",
+    "industry": "Social Impact / Nonprofit",
+    "socialLinks": {
+      "website": "https://socialimpact.org",
+      "linkedin": "https://linkedin.com/company/socialimpact"
+    },
+    "followers": 600,
+    "status": "Active",
+    "ratingCount": 30,
+    "avgRating": 4.2,
+    "equityRange": [
+      { "range": "2000-5000", "equity": 3 }
+    ],
+    "profilePic": "https://res.cloudinary.com/do9jik0jn/image/upload/v1761802817/blog_posts/t5pghig4m69qqleyxqgf.jpg"
+  },
+  {
+    "_id": "11",
+    "title": "WearFit",
+    "description": "A wearable fitness tracker for athletes and health enthusiasts.",
+    "pitch": ["https://example.com/pitch-wearfit.pptx"],
+    "founders": ["Fahad Malik"],
+    "investors": ["FitTech Ventures"],
+    "badges": ["Funded"],
+    "categoryType": "B2C",
+    "industry": "Healthcare",
+    "socialLinks": {
+      "website": "https://wearfit.com",
+      "linkedin": "https://linkedin.com/company/wearfit"
+    },
+    "followers": 2800,
+    "status": "Active",
+    "ratingCount": 110,
+    "avgRating": 4.5,
+    "equityRange": [
+      { "range": "8000-15000", "equity": 7 }
+    ],
+    "profilePic": "https://res.cloudinary.com/do9jik0jn/image/upload/v1761802817/blog_posts/t5pghig4m69qqleyxqgf.jpg"
+  },
+  {
+    "_id": "12",
+    "title": "FinSmart",
+    "description": "An AI-powered personal finance assistant for managing expenses and investments.",
+    "pitch": ["https://example.com/pitch-finsmart.pptx"],
+    "founders": ["Ayesha Khan"],
+    "investors": ["FinTech Capital"],
+    "badges": ["Trending"],
+    "categoryType": "B2C",
+    "industry": "Finance",
+    "socialLinks": {
+      "website": "https://finsmart.io",
+      "linkedin": "https://linkedin.com/company/finsmart"
+    },
+    "followers": 3200,
+    "status": "Active",
+    "ratingCount": 140,
+    "avgRating": 4.7,
+    "equityRange": [
+      { "range": "6000-12000", "equity": 6 }
+    ],
+    "profilePic": "https://res.cloudinary.com/do9jik0jn/image/upload/v1761802817/blog_posts/t5pghig4m69qqleyxqgf.jpg"
+  }
+]

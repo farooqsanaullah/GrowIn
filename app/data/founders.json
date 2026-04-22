@@ -1,0 +1,16 @@
+[
+  {
+    "id": "F001",
+    "name": "Sana Tariq",
+    "profilePic": "https://res.cloudinary.com/do9jik0jn/image/upload/v1762950091/blog_posts/rs76khv8wov4t9kc8b9l.jpg",
+    "role": "CEO & Founder",
+    "description": "Sana is passionate about connecting volunteers with social projects. She has 5 years of experience in nonprofit management."
+  },
+  {
+    "id": "F002",
+    "name": "Ali Khan",
+    "profilePic": "https://res.cloudinary.com/do9jik0jn/image/upload/v1762950091/blog_posts/rs76khv8wov4t9kc8b9l.jpg",
+    "role": "CTO & Co-Founder",
+    "description": "Ali is a full-stack developer with expertise in building scalable web platforms."
+  }
+]
