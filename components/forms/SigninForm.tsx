@@ -132,6 +132,7 @@ export default function SigninForm({ providers }: SigninFormProps) {
               <button
                 type="button"
                 onClick={() => setShowPassword(prev => !prev)}
+                tabIndex={-1}
                 className="absolute right-2 inset-y-0 flex items-center text-muted-foreground cursor-pointer"
               >
                 {showPassword ? <EyeClosedIcon /> : <Eye />}

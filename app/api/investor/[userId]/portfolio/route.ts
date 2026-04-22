@@ -19,13 +19,7 @@ export async function GET(
     const limit = parseInt(searchParams.get('limit') || '10');
     const status = searchParams.get('status');
 
-    // Build query for investments
-    let investmentQuery: any = { investorId: userId };
-    
-    // Note: Status filtering removed since Investment model doesn't have status field
-    // if (status && status !== 'all') {
-    //   investmentQuery.status = status;
-    // }
+    const investmentQuery = { investorId: userId };
 
     // Get investments with startup details
     const investments = await Investment.find(investmentQuery)

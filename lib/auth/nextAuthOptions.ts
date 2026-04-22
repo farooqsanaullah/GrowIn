@@ -22,11 +22,8 @@ const {
 
 const isDev = NODE_ENV === "development";
 
-// Rate limiter for credentials login
-const rateLimiter = new RateLimiterMemory({
-  points: 5, // 5 attempts
-  duration: 900, // Per 15 minutes
-});
+// 5 attempts per 15 minutes
+const rateLimiter = new RateLimiterMemory({ points: 5, duration: 900 });
 
 interface GoogleProfile {
   id: string;
@@ -109,11 +106,7 @@ export const authOptions: NextAuthOptions = {
     updateAge: 60 * 60, // renew session every single hour
   },
   pages: {
-    signIn: "/signin", // custom sign-in page
-    // error: "/signin",    // redirects OAuth/sign-in errors to the same sign-in page
-    // we could also have:
-    // signOut: "/signout", // custom sign-out page
-    // newUser: "/welcome",  // page for new users after sign-up
+    signIn: "/signin",
   },
   providers: [
     CredentialsProvider({
@@ -184,12 +177,10 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    // Redirect on success
     async redirect({ baseUrl }) {
       return baseUrl + "/redirect";
     },
 
-    //  [1] signIn → Handle OAuth user creation/account linking
     async signIn({ user, account, profile }) {
       // Let adapter handle credentials login
       if (account?.provider === "credentials") return true;
@@ -206,22 +197,14 @@ export const authOptions: NextAuthOptions = {
 
         const p = profile as OAuthProfile;
 
-        // Validate email
         const email = user?.email ?? p.email;
-        if (!email) {
-          console.warn("[OAuth] provider returned no email");
-          return false;
-        }
+        if (!email) return false;
 
-        // Sanitize profile data
         const sanitizedData = sanitizeOAuthProfile(p);
-
         // Check if user already exists
         const existingUser = await User.findOne({ email });
 
-        // ----- If user already exists -----
         if (existingUser) {
-          // Link provider
           if (
             !existingUser.provider ||
             existingUser.provider !== account?.provider
@@ -239,18 +222,13 @@ export const authOptions: NextAuthOptions = {
 
           await existingUser.save();
 
-          // Attaching DB info to user object (so JWT receives it)
           user.id = existingUser._id.toString();
           user.role = existingUser.role;
           user.name = existingUser.name;
           user.email = existingUser.email;
           
-          isDev && console.log(`[OAuth] Linked existing user to ${account.provider}`);
-
           return true;
         }
-
-        // ----- Create new OAuth user -----
         const uniqueUserName = await generateUniqueUsername(
           sanitizedData.userName,
           sanitizedData.email
@@ -268,7 +246,6 @@ export const authOptions: NextAuthOptions = {
           country: sanitizedData.country,
         });
 
-        // Attaching DB fields so JWT sees them
         user.id = newUser._id.toString();
         user.role = newUser.role;
         user.name = newUser.name;
@@ -281,53 +258,27 @@ export const authOptions: NextAuthOptions = {
       }
     },
 
-    //  [2] JWT Callback - Handle token refresh and updates
     async jwt({ token, user, account, trigger, session }) {
-      // Initial sign in
       if (user) {
         token.id = user.id;
-        // console.log("🚀 ~ [JWT] (user|token).id:", user.id)
-        token.role = user.role;     
-        // console.log("🚀 ~ [JWT] (user|token).role:", user.role)
+        token.role = user.role;
         token.name = user.name;
-        // console.log("🚀 ~ [JWT] (user|token).name:", user.name)
         token.email = user.email;
-        // console.log("🚀 ~ [JWT] (user|token).email:", user.email)
       }
 
-      // Refresh user data on session update
       if (trigger === "update" && session) {
         token = { ...token, ...session };
-        // console.log(`🚀 ~ trigger === "update" && session:`, trigger === "update" && session)
-      }
-
-      // Handle OAuth token refresh (simplified example)
-      if (account?.expires_at && Date.now() > account.expires_at * 1000) {
-        try {
-          // In practice, you'd implement token refresh logic here
-          // This depends on the specific OAuth provider
-          isDev && console.log("Token needs refresh for:", account.provider);
-        } catch (error) {
-          isDev && console.error("Token refresh failed:", error);
-        }
       }
 
       return token;
     },
 
-    //  [3] Session Callback
     async session({ session, token }) {
       if (token) {
         session.user.id = token.id as string;
-        // console.log("🚀 ~ [SESSION] token.id:", token.id)
         session.user.role = token.role as string;
-        // console.log("🚀 ~ [SESSION] token.role:", token.role)
         session.user.name = token.name as string;
-        // console.log("🚀 ~ [SESSION] token.name:", token.name)
         session.user.email = token.email as string;
-        // console.log("🚀 ~ [SESSION] token.email:", token.email)
-        
-        // Add session expiry info
         session.expires = token.exp as string;
       }
 
@@ -335,5 +286,4 @@ export const authOptions: NextAuthOptions = {
     },
   },
   secret: NEXTAUTH_SECRET!,
-  // debug: isDev,
 };
